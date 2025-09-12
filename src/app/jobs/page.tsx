@@ -1,18 +1,36 @@
 "use client";
 import React from "react";
-import Header from "@/components/header";
-import dynamic from "next/dynamic";
-// import Example from "@/components/kanban";
-const Example = dynamic(() => import("@/components/kanban"), { ssr: false });
+import Image from "next/image";
 const page = () => {
   return (
-    // <div className="overflow-x-auto h-full min-h-[calc(100vh-1rem)]">
-    //   <Header />
-    <div className="overflow-x-auto ">
-      {/* <Header /> */}
-      <Example />
+    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
+      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
+        <Image
+          className="dark:invert"
+          src="/logo.svg"
+          alt=" logo"
+          width={100}
+          height={38}
+          priority
+        />
+        <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
+          Jobs Page
+        </h1>
+
+        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
+          <li className="mb-2 tracking-[-.01em]">
+            Get started by editing{" "}
+            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
+              src/app/jobs/page.tsx
+            </code>
+            .
+          </li>
+          <li className="tracking-[-.01em]">
+            Save and see your changes instantly.
+          </li>
+        </ol>
+      </main>
     </div>
-    // </div>
   );
 };
 
