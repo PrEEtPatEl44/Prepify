@@ -77,7 +77,7 @@ export const KanbanBoard = ({ id, children, className }: KanbanBoardProps) => {
   return (
     <div
       className={cn(
-        "flex   h-[100%] max-h-[100vh] flex-col divide-y overflow-hidden !rounded-t-md border bg-secondary text-xs shadow-sm ring-2 transition-all",
+        "flex   h-[100%] max-h-[100vh] flex-col divide-y overflow-hidden !rounded-t-xl border bg-secondary text-xs shadow-sm ring-2 transition-all",
         isOver ? "ring-primary" : "ring-transparent",
         className
       )}

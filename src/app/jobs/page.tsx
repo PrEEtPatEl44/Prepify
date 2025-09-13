@@ -2,17 +2,19 @@
 import React from "react";
 import Header from "@/components/header";
 import dynamic from "next/dynamic";
-// import Example from "@/components/kanban";
+
 const Example = dynamic(() => import("@/components/kanban"), { ssr: false });
+
 const page = () => {
   return (
-    // <div className="overflow-x-auto h-full min-h-[calc(100vh-1rem)]">
-    //   <Header />
-    <div className="overflow-x-auto ">
-      {/* <Header /> */}
-      <Example />
+    <div className="h-screen flex flex-col overflow-hidden">
+      <div className="mt-6 px-1 max-w-[95%]">
+        <Header />
+      </div>
+      <div className="flex-1 overflow-hidden">
+        <Example />
+      </div>
     </div>
-    // </div>
   );
 };
 

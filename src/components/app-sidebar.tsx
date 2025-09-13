@@ -100,10 +100,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       )}
                       {item.icon && (
                         <item.icon
-                          className={isCollapsed ? "!w-4 !h-4" : "!w-5 !h-5"}
+                          className={
+                            isCollapsed ? "!w-4 !h-4" : "!w-5 !h-5 ml-4"
+                          }
                         />
                       )}
-                      <span className="text-[16px] ">{item.title}</span>
+                      <span className="text-[16px]">{item.title}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </Link>
