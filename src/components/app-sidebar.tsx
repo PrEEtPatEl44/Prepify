@@ -5,6 +5,7 @@ import { BookOpen, Briefcase, Mic, House } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { NavUser } from "@/components/nav-user";
 import Link from "next/link";
+import { createClient } from "@/utils/supabase/client";
 import {
   Sidebar,
   SidebarContent,
@@ -54,12 +55,41 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
   const [currentPath, setCurrentPath] = useState<string | null>(null);
   const { state } = useSidebar();
+
   const isCollapsed = state === "collapsed";
+  interface User {
+    name: string;
+    email: string;
+    avatar: string;
+  }
+
+  const [user, setUser] = useState<User>({
+    name: "shadCN",
+    email: "test@mail.com",
+    avatar: "/shadcn.jpg",
+  });
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getClaims().then(({ data }) => {
+      setUser({
+        name: data?.claims?.user_metadata.name,
+        email: data?.claims?.email,
+        avatar: data?.claims?.user_metadata.avatar_url,
+      });
+    });
+  }, []);
 
   // Update after client mount
   useEffect(() => {
     setCurrentPath(pathname);
   }, [pathname]);
+
+  //temp fix to avoid sidebar on auth pages
+  if (pathname.startsWith("/auth") || pathname.startsWith("/error")) {
+    return null;
+  }
+
   return (
     <Sidebar collapsible="icon" className="shadow-xl" {...props}>
       <SidebarHeader>
@@ -115,7 +145,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={user} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
