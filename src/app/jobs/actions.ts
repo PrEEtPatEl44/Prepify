@@ -1,33 +1,8 @@
-// "use server";
-
-// import { columns, exampleJobs, Column, Job } from "./jobStore";
-
-// /**
-//  * Get all columns defined in the job board
-//  * @returns Array of columns with their properties
-//  */
-// export async function getAllColumns(): Promise<Column[]> {
-//   // later this would fetch from a database
-//   // For now, we're returning the columns directly from jobStore
-//   return columns;
-// }
-
-// /**
-//  * Get all jobs currently in the system
-//  * @returns Array of job objects
-//  */
-// export async function getAllJobs(): Promise<Job[]> {
-//   // later this would fetch from a database
-//   // For now, we're returning the example jobs from jobStore
-//   return exampleJobs;
-// }
-
-
 "use server";
 
 import { columns, exampleJobs, Column, Job } from "./jobStore";
 
-// In-memory storage for development (replace with database later)  
+// In-memory storage for development (replace with database later)
 // eslint-disable-next-line prefer-const
 let jobs = [...exampleJobs];
 
@@ -54,7 +29,7 @@ export async function getAllJobs(): Promise<Job[]> {
  */
 export async function createJob(jobData: Partial<Job>): Promise<Job> {
   // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 500));
+  await new Promise((resolve) => setTimeout(resolve, 500));
 
   // Generate unique ID
   const id = `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -62,10 +37,14 @@ export async function createJob(jobData: Partial<Job>): Promise<Job> {
   // Create the new job with required fields
   const newJob: Job = {
     id,
-    name: jobData.name || '',
-    company: jobData.company || '',
-    column: jobData.column || 'col-1',
-    image: jobData.image || `https://cdn.brandfetch.io/${jobData.company?.toLowerCase().replace(/\s+/g, '')}.com?c=1idy7WQ5YtpRvbd1DQy`,
+    name: jobData.name || "",
+    company: jobData.company || "",
+    column: jobData.column || "col-1",
+    image:
+      jobData.image ||
+      `https://cdn.brandfetch.io/${jobData.company
+        ?.toLowerCase()
+        .replace(/\s+/g, "")}.com?c=1idy7WQ5YtpRvbd1DQy`,
     // Include any additional fields passed in
     jobDescription: jobData.jobDescription,
     link: jobData.link,
@@ -79,8 +58,8 @@ export async function createJob(jobData: Partial<Job>): Promise<Job> {
 
   // Add to in-memory storage
   jobs.push(newJob);
-  
-  console.log('Created new job:', newJob); // For debugging
+
+  console.log("Created new job:", newJob); // For debugging
 
   return newJob;
 }
@@ -91,14 +70,17 @@ export async function createJob(jobData: Partial<Job>): Promise<Job> {
  * @param updateData - Fields to update
  * @returns Updated job object
  */
-export async function updateJob(jobId: string, updateData: Partial<Job>): Promise<Job | null> {
+export async function updateJob(
+  jobId: string,
+  updateData: Partial<Job>
+): Promise<Job | null> {
   // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 300));
+  await new Promise((resolve) => setTimeout(resolve, 300));
 
-  const jobIndex = jobs.findIndex(job => job.id === jobId);
-  
+  const jobIndex = jobs.findIndex((job) => job.id === jobId);
+
   if (jobIndex === -1) {
-    throw new Error('Job not found');
+    throw new Error("Job not found");
   }
 
   // Update the job
@@ -114,12 +96,12 @@ export async function updateJob(jobId: string, updateData: Partial<Job>): Promis
  */
 export async function deleteJob(jobId: string): Promise<boolean> {
   // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 300));
+  await new Promise((resolve) => setTimeout(resolve, 300));
 
-  const jobIndex = jobs.findIndex(job => job.id === jobId);
-  
+  const jobIndex = jobs.findIndex((job) => job.id === jobId);
+
   if (jobIndex === -1) {
-    throw new Error('Job not found');
+    throw new Error("Job not found");
   }
 
   // Remove from array
@@ -134,6 +116,9 @@ export async function deleteJob(jobId: string): Promise<boolean> {
  * @param newColumn - Target column ID
  * @returns Updated job object
  */
-export async function moveJob(jobId: string, newColumn: string): Promise<Job | null> {
+export async function moveJob(
+  jobId: string,
+  newColumn: string
+): Promise<Job | null> {
   return updateJob(jobId, { column: newColumn });
 }
