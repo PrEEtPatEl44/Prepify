@@ -72,6 +72,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getClaims().then(({ data }) => {
+      if (!data?.claims) return;
       setUser({
         name: data?.claims?.user_metadata.name,
         email: data?.claims?.email,
