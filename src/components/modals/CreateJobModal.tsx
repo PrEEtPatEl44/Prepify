@@ -3,6 +3,29 @@
 import React, { useState, useEffect, useRef } from "react";
 import { type Job } from "@/app/jobs/jobStore";
 import { useCompanySearch, type CompanyResult } from "@/hooks/useCompanySearch";
+import Image from "next/image";
+import { Input } from "../ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "../ui/textarea";
+import { Button } from "../ui/button";
+import { Separator } from "../ui/separator";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface CreateJobModalProps {
   isOpen: boolean;
@@ -154,68 +177,47 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-[738px] h-[707px] relative bg-white rounded-2xl shadow-[0px_17px_35px_0px_rgba(23,26,31,0.24)] shadow-[0px_0px_2px_0px_rgba(23,26,31,0.12)] border-neutral-300">
-        {/* Header */}
-        <div className="w-80 h-11 left-[25px] top-[26px] absolute justify-start text-zinc-900 text-2xl font-bold font-['Inter'] leading-9">
-          Add Job Application
-        </div>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      {/* Header */}
+      <DialogContent className="px-0 min-w-xl">
+        <DialogHeader className="flex size-full items-start justify-between px-4">
+          <DialogTitle className="text-xl font-semibold">
+            Add Job Application
+          </DialogTitle>
+        </DialogHeader>
 
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="w-9 h-9 left-[678px] top-[25px] absolute overflow-hidden hover:bg-gray-100 rounded-full flex items-center justify-center transition-colors"
-          disabled={isLoading}
-        >
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path
-              d="M15 5L5 15M5 5L15 15"
-              stroke="#18181B"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
-
-        {/* Divider */}
-        <div className="w-[738px] h-0 left-0 top-[72px] absolute border border-neutral-300"></div>
-
-        <form onSubmit={handleSubmit}>
+        <Separator />
+        <form className="px-4 flex flex-col gap-2" onSubmit={handleSubmit}>
           {/* Company Field with Search Dropdown */}
-          <div className="w-[689px] h-20 left-[25px] top-[93px] absolute bg-black/0">
-            <div className="left-0 top-0 absolute justify-start text-gray-700 text-lg font-bold font-['Inter'] leading-7">
-              Company
-            </div>
-            <div className="relative">
-              <div className="w-[688px] h-12 left-0 top-[29px] absolute bg-gray-100 rounded-md outline outline-1 outline-offset-[-0.50px] outline-black/0">
-                <input
-                  ref={companyInputRef}
-                  type="text"
-                  value={formData.company}
-                  onChange={(e) => handleInputChange("company", e.target.value)}
-                  onFocus={() => {
-                    setCompanyInputFocused(true);
-                    if (formData.company.length >= 2) {
-                      setShowCompanyDropdown(true);
-                    }
-                  }}
-                  placeholder="Company"
-                  className="w-full h-full bg-transparent px-3 text-zinc-900 text-sm font-normal font-['Inter'] leading-snug outline-none"
-                  required
-                />
-                {searchLoading && (
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                    <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
-                  </div>
-                )}
-              </div>
+          <div className="">
+            <Label className="text-md font-medium ">Company</Label>
+            <div className="">
+              <Input
+                ref={companyInputRef}
+                type="text"
+                value={formData.company}
+                onChange={(e) => handleInputChange("company", e.target.value)}
+                onFocus={() => {
+                  setCompanyInputFocused(true);
+                  if (formData.company.length >= 2) {
+                    setShowCompanyDropdown(true);
+                  }
+                }}
+                placeholder="Company"
+                className="bg-gray-100"
+                required
+              />
+              {searchLoading && (
+                <div className=" right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
+                </div>
+              )}
 
               {/* Company Search Dropdown */}
               {showCompanyDropdown && results.length > 0 && (
                 <div
                   ref={dropdownRef}
-                  className="absolute top-[41px] left-0 w-[688px] bg-white border border-gray-200 rounded-md shadow-lg z-[200] max-h-64 overflow-y-auto"
+                  className="bg-white border border-gray-200 rounded-md shadow-lg z-[200] max-h-64 overflow-y-auto"
                 >
                   {results.map((company, index) => (
                     <div
@@ -224,10 +226,12 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
                       onClick={() => handleCompanySelect(company)}
                     >
                       <div className="w-8 h-8 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden flex-shrink-0">
-                        <img
+                        <Image
                           src={company.logoUrl}
                           alt={`${company.name} logo`}
                           className="w-full h-full object-contain"
+                          width={32}
+                          height={32}
                           onError={(e) => {
                             const img = e.target as HTMLImageElement;
                             img.style.display = "none";
@@ -256,147 +260,140 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
           </div>
 
           {/* Job Title Field */}
-          <div className="w-[689px] h-20 left-[25px] top-[181px] absolute bg-black/0">
-            <div className="left-0 top-0 absolute justify-start text-gray-700 text-lg font-bold font-['Inter'] leading-7">
-              Job Title
-            </div>
-            <div className="w-[688px] h-11 left-0 top-[29px] absolute bg-gray-100 rounded-md outline outline-1 outline-offset-[-0.50px] outline-black/0">
-              <input
-                type="text"
-                value={formData.jobTitle}
-                onChange={(e) => handleInputChange("jobTitle", e.target.value)}
-                placeholder="Job Title"
-                className="w-full h-full bg-transparent px-3 text-zinc-900 text-sm font-normal font-['Inter'] leading-snug outline-none"
-                required
-              />
-            </div>
+          <div className="">
+            <Label className="text-md font-medium ">Job Title</Label>
+
+            <Input
+              type="text"
+              value={formData.jobTitle}
+              onChange={(e) => handleInputChange("jobTitle", e.target.value)}
+              placeholder="Job Title"
+              className="bg-gray-100"
+              required
+            />
           </div>
 
           {/* Job Description Field */}
-          <div className="w-[689px] h-48 left-[25px] top-[266px] absolute bg-black/0">
-            <div className="left-0 top-0 absolute justify-start text-gray-700 text-lg font-bold font-['Inter'] leading-7">
-              Job Description
-            </div>
-            <div className="w-[688px] h-40 left-0 top-[29px] absolute bg-gray-100 rounded-md outline outline-1 outline-offset-[-0.50px] outline-black/0">
-              <textarea
-                value={formData.jobDescription}
-                onChange={(e) =>
-                  handleInputChange("jobDescription", e.target.value)
-                }
-                placeholder="Description"
-                className="w-full h-full bg-transparent px-3 py-2 text-zinc-900 text-sm font-normal font-['Inter'] leading-snug outline-none resize-none"
-                rows={8}
-              />
-            </div>
+          <div className="pb-8 max-h-[10rem]">
+            <Label className="text-md font-medium ">Job Description</Label>
+
+            <Textarea
+              value={formData.jobDescription}
+              onChange={(e) =>
+                handleInputChange("jobDescription", e.target.value)
+              }
+              rows={8}
+              placeholder="Job Description"
+              className="bg-gray-100 !resize-none [field-sizing-content] h-full"
+            />
           </div>
 
           {/* Select Resume Field */}
-          <div className="w-80 h-20 left-[25px] top-[461px] absolute bg-black/0">
-            <div className="left-0 top-0 absolute justify-start text-gray-700 text-lg font-bold font-['Inter'] leading-7">
-              Select Resume
-            </div>
-            <div className="w-80 h-12 left-0 top-[29px] absolute bg-gray-100 rounded-md outline outline-1 outline-offset-[-0.50px] outline-black/0 relative">
-              <select
+          <div className="flex justify-between items-center gap-4">
+            <div className="w-full">
+              <Label htmlFor="resume" className="text-md font-medium">
+                Select Resume
+              </Label>
+
+              <Select
+                name="resume"
                 value={formData.selectResume}
-                onChange={(e) =>
-                  handleInputChange("selectResume", e.target.value)
+                onValueChange={(value) =>
+                  handleInputChange("selectResume", value)
                 }
-                className="w-full h-full bg-transparent px-3 text-zinc-900 text-sm font-normal font-['Inter'] leading-snug outline-none appearance-none cursor-pointer"
               >
-                <option value="">Select Resume</option>
-                <option value="resume-1">Software Developer Resume</option>
-                <option value="resume-2">Frontend Developer Resume</option>
-                <option value="resume-3">Full Stack Resume</option>
-              </select>
-              <div className="w-4 h-4 left-[302px] top-[16.50px] absolute overflow-hidden pointer-events-none">
-                <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
-                  <path
-                    d="M1 1L6 6L11 1"
-                    stroke="#18181B"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
+                <SelectTrigger className="w-full h-full bg-gray-100 ">
+                  <SelectValue placeholder="Select a Resume" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Resume</SelectLabel>
+                    <SelectItem value="resume-1">
+                      Software Developer Resume
+                    </SelectItem>
+                    <SelectItem value="resume-2">
+                      Frontend Developer Resume
+                    </SelectItem>
+                    <SelectItem value="resume-3">Full Stack Resume</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
             </div>
-          </div>
 
-          {/* Select Cover Letter Field */}
-          <div className="w-80 h-20 left-[378px] top-[461px] absolute bg-black/0">
-            <div className="left-0 top-0 absolute justify-start text-gray-700 text-lg font-bold font-['Inter'] leading-7">
-              Select Coverletter
-            </div>
-            <div className="w-80 h-12 left-0 top-[29px] absolute bg-gray-100 rounded-md outline outline-1 outline-offset-[-0.50px] outline-black/0 relative">
-              <select
+            {/* Select Cover Letter Field */}
+            <div className="w-full">
+              <Label htmlFor="coverletter" className="text-md font-medium">
+                Select Coverletter
+              </Label>
+
+              <Select
+                name="coverletter"
                 value={formData.selectCoverletter}
-                onChange={(e) =>
-                  handleInputChange("selectCoverletter", e.target.value)
-                }
-                className="w-full h-full bg-transparent px-3 text-zinc-900 text-sm font-normal font-['Inter'] leading-snug outline-none appearance-none cursor-pointer"
+                onValueChange={(value) => {
+                  console.log(value);
+                  handleInputChange("selectCoverletter", value);
+                }}
               >
-                <option value="">Select Coverletter</option>
-                <option value="cover-1">General Cover Letter</option>
-                <option value="cover-2">Tech Focused Cover Letter</option>
-                <option value="cover-3">Startup Cover Letter</option>
-              </select>
-              <div className="w-4 h-4 left-[310px] top-[16.50px] absolute overflow-hidden pointer-events-none">
-                <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
-                  <path
-                    d="M1 1L6 6L11 1"
-                    stroke="#18181B"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
+                <SelectTrigger className="w-full h-full bg-gray-100 ">
+                  <SelectValue placeholder="Select a Coverletter" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Coverletter</SelectLabel>
+                    <SelectItem value="cover-1">
+                      Software Developer Coverletter
+                    </SelectItem>
+                    <SelectItem value="cover-2">
+                      Frontend Developer Coverletter
+                    </SelectItem>
+                    <SelectItem value="cover-3">
+                      Full Stack Coverletter
+                    </SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
             </div>
           </div>
-
           {/* Link Field */}
-          <div className="w-[689px] h-20 left-[25px] top-[548px] absolute bg-black/0">
-            <div className="left-0 top-0 absolute justify-start text-gray-700 text-lg font-bold font-['Inter'] leading-7">
-              Link
-            </div>
-            <div className="w-[688px] h-11 left-0 top-[29px] absolute bg-gray-100 rounded-md outline outline-1 outline-offset-[-0.50px] outline-black/0">
-              <input
-                type="url"
-                value={formData.link}
-                onChange={(e) => handleInputChange("link", e.target.value)}
-                placeholder="Link"
-                className="w-full h-full bg-transparent px-3 text-zinc-900 text-sm font-normal font-['Inter'] leading-snug outline-none"
-              />
-            </div>
+          <div className="">
+            <Label className="text-md font-medium ">Link</Label>
+            <Input
+              type="url"
+              value={formData.link}
+              onChange={(e) => handleInputChange("link", e.target.value)}
+              placeholder="Link"
+              className="bg-gray-100"
+            />
           </div>
-
-          {/* Cancel Button */}
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={isLoading}
-            className="w-28 h-11 left-[438px] top-[642px] absolute bg-white rounded-md outline outline-1 outline-offset-[-1px] outline-zinc-400 overflow-hidden hover:bg-gray-50 transition-colors disabled:opacity-50"
-          >
-            <div className="left-[32.50px] top-[9px] absolute justify-start text-zinc-400 text-base font-normal font-['Inter'] leading-relaxed">
+          <DialogFooter className="mt-4 gap-2">
+            {/* Cancel Button */}
+            <Button
+              type="button"
+              onClick={onClose}
+              disabled={isLoading}
+              className=""
+              variant={"outline"}
+            >
               Cancel
-            </div>
-          </button>
+            </Button>
 
-          {/* Save Button */}
-          <button
-            type="submit"
-            disabled={
-              isLoading || !formData.company.trim() || !formData.jobTitle.trim()
-            }
-            className="w-36 h-11 left-[573px] top-[642px] absolute bg-indigo-500 rounded-md outline outline-1 outline-offset-[-1px] outline-black/0 overflow-hidden hover:bg-indigo-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <div className="left-[50.50px] top-[9px] absolute justify-start text-white text-base font-normal font-['Inter'] leading-relaxed">
+            {/* Save Button */}
+            <Button
+              type="submit"
+              disabled={
+                isLoading
+                // ||
+                // !formData.company.trim() ||
+                // !formData.jobTitle.trim()
+              }
+              className="bg-[#636AE8] hover:bg-[#4e57c1]"
+            >
               {isLoading ? "Saving..." : "Save"}
-            </div>
-          </button>
+            </Button>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
