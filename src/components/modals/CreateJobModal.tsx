@@ -2,7 +2,10 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { type Job } from "@/app/jobs/jobStore";
-import { useCompanySearch, type CompanyResult } from "@/hooks/useCompanySearch";
+import {
+  useCompanySearch,
+  type CompanySearchResult,
+} from "@/hooks/useCompanySearch";
 import Image from "next/image";
 import { Input } from "../ui/input";
 import {
@@ -59,9 +62,8 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
   });
 
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedCompany, setSelectedCompany] = useState<CompanyResult | null>(
-    null
-  );
+  const [selectedCompany, setSelectedCompany] =
+    useState<CompanySearchResult | null>(null);
   const [showCompanyDropdown, setShowCompanyDropdown] = useState(false);
   const [companyInputFocused, setCompanyInputFocused] = useState(false);
 
@@ -89,7 +91,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
         clearResults();
         setShowCompanyDropdown(false);
       }
-    }, 300);
+    }, 500);
 
     return () => clearTimeout(timeoutId);
   }, [formData.company, companyInputFocused, searchCompanies, clearResults]);
@@ -136,7 +138,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
     }
   };
 
-  const handleCompanySelect = (company: CompanyResult) => {
+  const handleCompanySelect = (company: CompanySearchResult) => {
     setFormData((prev) => ({ ...prev, company: company.name }));
     setSelectedCompany(company);
     setShowCompanyDropdown(false);
@@ -159,11 +161,12 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
         name: formData.jobTitle,
         company: formData.company,
         column: targetColumn,
-        image:
-          selectedCompany?.logoUrl ||
-          `https://cdn.brandfetch.io/${formData.company
-            .toLowerCase()
-            .replace(/\s+/g, "")}.com?c=1idy7WQ5YtpRvbd1DQy`,
+        image: selectedCompany?.icon,
+        // ||
+        // selectedCompany?.logoUrl ||
+        // `https://cdn.brandfetch.io/${formData.company
+        //   .toLowerCase()
+        //   .replace(/\s+/g, "")}.com?c=1idy7WQ5YtpRvbd1DQy`,
       };
 
       await onSubmit(jobData);
@@ -179,7 +182,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       {/* Header */}
-      <DialogContent className="px-0 min-w-xl">
+      <DialogContent className="px-0 min-w-xl ">
         <DialogHeader className="flex size-full items-start justify-between px-4">
           <DialogTitle className="text-xl font-semibold">
             Add Job Application
@@ -187,48 +190,70 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
         </DialogHeader>
 
         <Separator />
-        <form className="px-4 flex flex-col gap-2" onSubmit={handleSubmit}>
+        <form className="px-4 flex flex-col gap-2 " onSubmit={handleSubmit}>
           {/* Company Field with Search Dropdown */}
-          <div className="">
+          <div className="relative">
             <Label className="text-md font-medium ">Company</Label>
-            <div className="">
-              <Input
-                ref={companyInputRef}
-                type="text"
-                value={formData.company}
-                onChange={(e) => handleInputChange("company", e.target.value)}
-                onFocus={() => {
-                  setCompanyInputFocused(true);
-                  if (formData.company.length >= 2) {
-                    setShowCompanyDropdown(true);
-                  }
-                }}
-                placeholder="Company"
-                className="bg-gray-100"
-                required
-              />
-              {searchLoading && (
-                <div className=" right-3 top-1/2 transform -translate-y-1/2">
-                  <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
-                </div>
-              )}
+            <div className="relative">
+              <div className="relative flex items-center">
+                <Input
+                  ref={companyInputRef}
+                  type="text"
+                  value={formData.company}
+                  onChange={(e) => handleInputChange("company", e.target.value)}
+                  onFocus={() => {
+                    setCompanyInputFocused(true);
+                    if (formData.company.length >= 2) {
+                      setShowCompanyDropdown(true);
+                    }
+                  }}
+                  placeholder="Company"
+                  className={`bg-gray-100 ${selectedCompany ? "pr-10" : ""}`}
+                  required
+                />
+                {searchLoading && !selectedCompany && (
+                  <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                    <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
+                  </div>
+                )}
+                {selectedCompany && selectedCompany.icon && (
+                  <div className="absolute right-2 w-7 h-7 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden">
+                    <Image
+                      src={selectedCompany.icon}
+                      alt={selectedCompany.name}
+                      className="w-full h-full object-contain"
+                      width={24}
+                      height={24}
+                      onError={(e) => {
+                        const img = e.target as HTMLImageElement;
+                        img.style.display = "none";
+                        const parent = img.parentElement;
+                        if (parent) {
+                          parent.innerHTML = `<span class="text-xs font-semibold text-gray-600">${selectedCompany.name
+                            .slice(0, 2)
+                            .toUpperCase()}</span>`;
+                        }
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
 
-              {/* Company Search Dropdown */}
               {showCompanyDropdown && results.length > 0 && (
                 <div
                   ref={dropdownRef}
-                  className="bg-white border border-gray-200 rounded-md shadow-lg z-[200] max-h-64 overflow-y-auto"
+                  className="absolute w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-[2000] max-h-64 overflow-y-auto"
                 >
-                  {results.map((company, index) => (
+                  {results.map((company) => (
                     <div
-                      key={`${company.domain}-${index}`}
+                      key={`${company.brandId}`}
                       className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer transition-colors"
                       onClick={() => handleCompanySelect(company)}
                     >
                       <div className="w-8 h-8 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden flex-shrink-0">
                         <Image
-                          src={company.logoUrl}
-                          alt={`${company.name} logo`}
+                          src={company.icon}
+                          alt={`${company.name}`}
                           className="w-full h-full object-contain"
                           width={32}
                           height={32}
@@ -305,7 +330,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
                 <SelectTrigger className="w-full h-full bg-gray-100 ">
                   <SelectValue placeholder="Select a Resume" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent position="popper" className="z-[2000]">
                   <SelectGroup>
                     <SelectLabel>Resume</SelectLabel>
                     <SelectItem value="resume-1">

@@ -1,34 +1,125 @@
-import { useState, useEffect } from 'react';
+import { useState } from "react";
 
-export interface CompanyResult {
+export interface CompanySearchResult {
+  brandId: string;
   name: string;
   domain: string;
-  logoUrl: string;
-  description?: string;
+  icon: string;
+  _score: number;
 }
 
 export const useCompanySearch = () => {
-  const [results, setResults] = useState<CompanyResult[]>([]);
+  const [results, setResults] = useState<CompanySearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Fallback company data when API fails or for development
-  const fallbackCompanies: CompanyResult[] = [
-    { name: "Google", domain: "google.com", logoUrl: "https://cdn.brandfetch.io/google.com?c=1idy7WQ5YtpRvbd1DQy" },
-    { name: "Microsoft", domain: "microsoft.com", logoUrl: "https://cdn.brandfetch.io/microsoft.com?c=1idy7WQ5YtpRvbd1DQy" },
-    { name: "Apple", domain: "apple.com", logoUrl: "https://cdn.brandfetch.io/apple.com?c=1idy7WQ5YtpRvbd1DQy" },
-    { name: "Amazon", domain: "amazon.com", logoUrl: "https://cdn.brandfetch.io/amazon.com?c=1idy7WQ5YtpRvbd1DQy" },
-    { name: "Meta", domain: "meta.com", logoUrl: "https://cdn.brandfetch.io/meta.com?c=1idy7WQ5YtpRvbd1DQy" },
-    { name: "Netflix", domain: "netflix.com", logoUrl: "https://cdn.brandfetch.io/netflix.com?c=1idy7WQ5YtpRvbd1DQy" },
-    { name: "Tesla", domain: "tesla.com", logoUrl: "https://cdn.brandfetch.io/tesla.com?c=1idy7WQ5YtpRvbd1DQy" },
-    { name: "Uber", domain: "uber.com", logoUrl: "https://cdn.brandfetch.io/uber.com?c=1idy7WQ5YtpRvbd1DQy" },
-    { name: "Airbnb", domain: "airbnb.com", logoUrl: "https://cdn.brandfetch.io/airbnb.com?c=1idy7WQ5YtpRvbd1DQy" },
-    { name: "Shopify", domain: "shopify.com", logoUrl: "https://cdn.brandfetch.io/shopify.com?c=1idy7WQ5YtpRvbd1DQy" },
-    { name: "Spotify", domain: "spotify.com", logoUrl: "https://cdn.brandfetch.io/spotify.com?c=1idy7WQ5YtpRvbd1DQy" },
-    { name: "Adobe", domain: "adobe.com", logoUrl: "https://cdn.brandfetch.io/adobe.com?c=1idy7WQ5YtpRvbd1DQy" },
-    { name: "Salesforce", domain: "salesforce.com", logoUrl: "https://cdn.brandfetch.io/salesforce.com?c=1idy7WQ5YtpRvbd1DQy" },
-    { name: "OpenAI", domain: "openai.com", logoUrl: "https://cdn.brandfetch.io/openai.com?c=1idy7WQ5YtpRvbd1DQy" },
-    { name: "Stripe", domain: "stripe.com", logoUrl: "https://cdn.brandfetch.io/stripe.com?c=1idy7WQ5YtpRvbd1DQy" }
+  const fallbackCompanies: CompanySearchResult[] = [
+    {
+      brandId: "google",
+      name: "Google",
+      domain: "google.com",
+      icon: "https://cdn.brandfetch.io/google.com?c=1idy7WQ5YtpRvbd1DQy",
+      _score: 1,
+    },
+    {
+      brandId: "microsoft",
+      name: "Microsoft",
+      domain: "microsoft.com",
+      icon: "https://cdn.brandfetch.io/microsoft.com?c=1idy7WQ5YtpRvbd1DQy",
+      _score: 1,
+    },
+    {
+      brandId: "apple",
+      name: "Apple",
+      domain: "apple.com",
+      icon: "https://cdn.brandfetch.io/apple.com?c=1idy7WQ5YtpRvbd1DQy",
+      _score: 1,
+    },
+    {
+      brandId: "amazon",
+      name: "Amazon",
+      domain: "amazon.com",
+      icon: "https://cdn.brandfetch.io/amazon.com?c=1idy7WQ5YtpRvbd1DQy",
+      _score: 1,
+    },
+    {
+      brandId: "meta",
+      name: "Meta",
+      domain: "meta.com",
+      icon: "https://cdn.brandfetch.io/meta.com?c=1idy7WQ5YtpRvbd1DQy",
+      _score: 1,
+    },
+    {
+      brandId: "netflix",
+      name: "Netflix",
+      domain: "netflix.com",
+      icon: "https://cdn.brandfetch.io/netflix.com?c=1idy7WQ5YtpRvbd1DQy",
+      _score: 1,
+    },
+    {
+      brandId: "tesla",
+      name: "Tesla",
+      domain: "tesla.com",
+      icon: "https://cdn.brandfetch.io/tesla.com?c=1idy7WQ5YtpRvbd1DQy",
+      _score: 1,
+    },
+    {
+      brandId: "uber",
+      name: "Uber",
+      domain: "uber.com",
+      icon: "https://cdn.brandfetch.io/uber.com?c=1idy7WQ5YtpRvbd1DQy",
+      _score: 1,
+    },
+    {
+      brandId: "airbnb",
+      name: "Airbnb",
+      domain: "airbnb.com",
+      icon: "https://cdn.brandfetch.io/airbnb.com?c=1idy7WQ5YtpRvbd1DQy",
+      _score: 1,
+    },
+    {
+      brandId: "shopify",
+      name: "Shopify",
+      domain: "shopify.com",
+      icon: "https://cdn.brandfetch.io/shopify.com?c=1idy7WQ5YtpRvbd1DQy",
+      _score: 1,
+    },
+    {
+      brandId: "spotify",
+      name: "Spotify",
+      domain: "spotify.com",
+      icon: "https://cdn.brandfetch.io/spotify.com?c=1idy7WQ5YtpRvbd1DQy",
+      _score: 1,
+    },
+    {
+      brandId: "adobe",
+      name: "Adobe",
+      domain: "adobe.com",
+      icon: "https://cdn.brandfetch.io/adobe.com?c=1idy7WQ5YtpRvbd1DQy",
+      _score: 1,
+    },
+    {
+      brandId: "salesforce",
+      name: "Salesforce",
+      domain: "salesforce.com",
+      icon: "https://cdn.brandfetch.io/salesforce.com?c=1idy7WQ5YtpRvbd1DQy",
+      _score: 1,
+    },
+    {
+      brandId: "openai",
+      name: "OpenAI",
+      domain: "openai.com",
+      icon: "https://cdn.brandfetch.io/openai.com?c=1idy7WQ5YtpRvbd1DQy",
+      _score: 1,
+    },
+    {
+      brandId: "stripe",
+      name: "Stripe",
+      domain: "stripe.com",
+      icon: "https://cdn.brandfetch.io/stripe.com?c=1idy7WQ5YtpRvbd1DQy",
+      _score: 1,
+    },
   ];
 
   const searchCompanies = async (query: string) => {
@@ -41,72 +132,64 @@ export const useCompanySearch = () => {
     setError(null);
 
     try {
-      // First try with fallback companies (filtered by query)
-      const filteredFallbacks = fallbackCompanies.filter(company =>
-        company.name.toLowerCase().includes(query.toLowerCase())
-      );
+      // Fetch from BrandFetch API
+      const results = await fetchFromBrandFetch(query);
 
-      // Try BrandFetch API (you'll need to replace YOUR_API_KEY with actual key)
-      const brandfetchResults = await fetchFromBrandFetch(query);
-      
-      // Combine results, prioritizing BrandFetch if available
-      const combinedResults = brandfetchResults.length > 0 
-        ? [...brandfetchResults, ...filteredFallbacks.slice(0, 3)]
-        : filteredFallbacks;
+      // If BrandFetch fails, use fallback data
+      if (results.length === 0) {
+        const fallbackResults = fallbackCompanies.filter((company) =>
+          company.name.toLowerCase().includes(query.toLowerCase())
+        );
+        setResults(fallbackResults);
+        setLoading(false);
+        return;
+      }
 
-      // Remove duplicates and limit results
-      const uniqueResults = combinedResults
-        .filter((result, index, self) => 
-          index === self.findIndex(r => r.domain === result.domain)
-        )
-        .slice(0, 8);
-
-      setResults(uniqueResults);
+      setResults(results);
     } catch (err) {
-      console.error('Company search error:', err);
-      setError('Failed to search companies');
-      
-      // Fallback to local results only
-      const filteredFallbacks = fallbackCompanies.filter(company =>
-        company.name.toLowerCase().includes(query.toLowerCase())
-      );
-      setResults(filteredFallbacks);
+      console.error("Company search error:", err);
+      setError("Failed to search companies");
+
+      setResults(results);
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchFromBrandFetch = async (query: string): Promise<CompanyResult[]> => {
+  const fetchFromBrandFetch = async (
+    query: string
+  ): Promise<CompanySearchResult[]> => {
     try {
-      // Note: You'll need to sign up for BrandFetch API and get an API key
-      // For now, we'll use a mock implementation
-      
-      // Uncomment and modify this when you have a BrandFetch API key:
-      /*
-      const response = await fetch(`https://api.brandfetch.io/v2/search/${encodeURIComponent(query)}`, {
-        headers: {
-          'Authorization': 'Bearer YOUR_API_KEY_HERE',
-        }
-      });
+      // add the BRANDFETCH_CLIENT_ID in the .env file by siningup for brandfetch api
+      // signup: https://developers.brandfetch.com/register
+      // public client id at https://developers.brandfetch.com/dashboard/brand-search-api
 
-      if (!response.ok) throw new Error('BrandFetch API failed');
+      const response = await fetch(
+        `https://api.brandfetch.io/v2/search/${encodeURIComponent(query)}?c=${
+          process.env.BRANDFETCH_CLIENT_ID
+        }`
+      );
+
+      if (!response.ok) throw new Error("BrandFetch API failed");
 
       const data = await response.json();
-      return data.map((item: any) => ({
-        name: item.name,
-        domain: item.domain,
-        logoUrl: item.icon || item.logo,
-        description: item.description
-      }));
-      */
+      console.log("BrandFetch API data:", data);
+      const results: CompanySearchResult[] = data.map(
+        (item: CompanySearchResult) => ({
+          brandId: item.brandId,
+          name: item.name,
+          domain: item.domain,
+          icon: item.icon,
+          _score: item._score,
+        })
+      );
+      console.log("BrandFetch results:", results);
+      return results;
 
-      // Mock delay to simulate API call
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
       // Return empty array to use fallback data
       return [];
     } catch (error) {
-      console.warn('BrandFetch API unavailable, using fallback data');
+      console.error("BrandFetch API error:", error);
       return [];
     }
   };
@@ -116,6 +199,6 @@ export const useCompanySearch = () => {
     loading,
     error,
     searchCompanies,
-    clearResults: () => setResults([])
+    clearResults: () => setResults([]),
   };
 };
