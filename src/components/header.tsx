@@ -6,10 +6,13 @@ import { Button } from "./ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { Input } from "./ui/input";
 import CreateJobModal from "@/components/modals/CreateJobModal";
-import { createJob } from "@/app/jobs/actions";
 import { type Job } from "@/app/jobs/jobStore";
 
-export default function Header() {
+export default function Header({
+  onCreateJob,
+}: {
+  onCreateJob: (job: Partial<Job>, column: string) => Promise<void>;
+}) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [targetColumn, setTargetColumn] = useState("col-1");
 
@@ -22,7 +25,7 @@ export default function Header() {
 
   const handleCreateJob = async (jobData: Partial<Job>) => {
     try {
-      await createJob({ ...jobData, column: targetColumn });
+      await onCreateJob(jobData, targetColumn);
       setIsModalOpen(false);
       // Optionally trigger a refresh or callback to parent if needed
     } catch (error) {

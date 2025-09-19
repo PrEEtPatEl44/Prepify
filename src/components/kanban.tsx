@@ -11,12 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Ellipsis, Plus } from "lucide-react";
 import { Archivo } from "next/font/google";
 import { type Column, type Job } from "@/app/jobs/jobStore";
-import {
-  createJob,
-  getAllColumns,
-  getAllJobs,
-  deleteJob,
-} from "@/app/jobs/actions";
+import { createJob, deleteJob } from "@/app/jobs/actions";
 import CreateJobModal from "@/components/modals/CreateJobModal";
 import CreateListModal from "@/components/modals/CreateListModal";
 import DeleteJobModal from "@/components/modals/DeleteJobModal";
@@ -26,9 +21,17 @@ const archivo = Archivo({
   subsets: ["latin"],
 });
 
-const Example = () => {
-  const [columns, setColumns] = useState<Column[]>([]);
-  const [jobs, setJobs] = useState<Job[]>([]);
+const Example = ({
+  jobs,
+  setJobs,
+  columns,
+  setColumns,
+}: {
+  jobs: Job[];
+  setJobs: React.Dispatch<React.SetStateAction<Job[]>>;
+  columns: Column[];
+  setColumns: React.Dispatch<React.SetStateAction<Column[]>>;
+}) => {
   const [isJobModalOpen, setIsJobModalOpen] = useState(false);
   const [targetColumn, setTargetColumn] = useState<string>("col-1");
   const [isListModalOpen, setIsListModalOpen] = useState(false);
@@ -51,19 +54,6 @@ const Example = () => {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const columnsData = await getAllColumns();
-      const jobsData = await getAllJobs();
-      const filteredColumns = columnsData.filter(
-        (c) => c.name !== "CREATE_NEW"
-      );
-      setColumns(filteredColumns);
-      setJobs(jobsData);
-    };
-    fetchData();
   }, []);
 
   // Job Modal Handlers
