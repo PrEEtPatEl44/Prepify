@@ -29,7 +29,7 @@ export async function getAllJobs(): Promise<Job[]> {
  */
 export async function createJob(jobData: Partial<Job>): Promise<Job> {
   // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 500));
+  // await new Promise((resolve) => setTimeout(resolve, 500));
 
   // Generate unique ID
   const id = `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
