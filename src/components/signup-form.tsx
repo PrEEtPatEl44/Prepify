@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useState } from "react";
-import { signup, signupWithGoogle } from "@/lib/auth-actions";
+import { signup, signupWithGoogle } from "@/lib/services/authService";
 import { Separator } from "./ui/separator";
 import { FaGoogle } from "react-icons/fa";
 import { redirect } from "next/navigation";
