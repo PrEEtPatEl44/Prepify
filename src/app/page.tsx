@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CloudUpload, BookOpen, Mic, ChevronRight } from "lucide-react";
 export default function Home() {
-  const cardData = [
+  const actionButtons = [
     {
       icon: <CloudUpload size={40} />,
       title: "Upload Your Resume",
@@ -33,14 +33,14 @@ export default function Home() {
 
       {/* Action buttons */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-5xl">
-        {cardData.map((card) => (
-          <Card key={card.title} className="hover:shadow-lg transition py-4">
+        {actionButtons.map((button) => (
+          <Card key={button.title} className="hover:shadow-lg transition py-4">
             <CardContent className="flex justify-between items-center p-4">
               <div className="bg-[#CED0F8] text-[#161D96] p-4 rounded-md ">
-                {card.icon}
+                {button.icon}
               </div>
               <span className="w-full text-center sm:text-left font-semibold text-base sm:text-lg lg:text-xl group-hover:text-[#161D96] duration-300 px-2">
-                {card.title}
+                {button.title}
               </span>
               <ChevronRight size={40} className="text-[#161D96] " />
             </CardContent>
