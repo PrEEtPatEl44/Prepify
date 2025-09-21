@@ -1,9 +1,14 @@
 // Main API Route for Job Applications
 // File: src/app/api/applications/route.ts
 
-import { NextRequest, NextResponse } from 'next/server';
-import { jobService } from '@/lib/jobService';
-import { CreateJobRequest, GetJobsResponse, CreateJobResponse, ApiError } from '@/types/api';
+import { NextRequest, NextResponse } from "next/server";
+import { jobService } from "@/lib/services/jobService";
+import {
+  CreateJobRequest,
+  GetJobsResponse,
+  CreateJobResponse,
+  ApiError,
+} from "@/types/api";
 
 /**
  * GET /api/applications
@@ -11,12 +16,12 @@ import { CreateJobRequest, GetJobsResponse, CreateJobResponse, ApiError } from '
  */
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
-    console.log('GET /api/applications - Fetching all jobs');
+    console.log("GET /api/applications - Fetching all jobs");
 
     // Extract query parameters for potential filtering/searching
     const { searchParams } = new URL(request.url);
-    const column = searchParams.get('column');
-    const search = searchParams.get('search');
+    const column = searchParams.get("column");
+    const search = searchParams.get("search");
 
     let jobs;
 
@@ -38,21 +43,21 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       success: true,
       data: {
         jobs,
-        total: jobs.length
+        total: jobs.length,
       },
-      message: 'Jobs retrieved successfully'
+      message: "Jobs retrieved successfully",
     };
 
     return NextResponse.json(response, { status: 200 });
-
   } catch (error) {
-    console.error('GET /api/applications error:', error);
-    
+    console.error("GET /api/applications error:", error);
+
     const errorResponse: ApiError = {
       success: false,
-      error: 'Internal Server Error',
-      message: error instanceof Error ? error.message : 'Failed to retrieve jobs',
-      statusCode: 500
+      error: "Internal Server Error",
+      message:
+        error instanceof Error ? error.message : "Failed to retrieve jobs",
+      statusCode: 500,
     };
 
     return NextResponse.json(errorResponse, { status: 500 });
@@ -65,32 +70,32 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
-    console.log('POST /api/applications - Creating new job');
+    console.log("POST /api/applications - Creating new job");
 
     // Parse request body
     const body: CreateJobRequest = await request.json();
-    console.log('Request body:', body);
+    console.log("Request body:", body);
 
     // Basic validation
     if (!body.name || !body.company) {
       const errorResponse: ApiError = {
         success: false,
-        error: 'Validation Error',
-        message: 'Name and company are required fields',
-        statusCode: 400
+        error: "Validation Error",
+        message: "Name and company are required fields",
+        statusCode: 400,
       };
 
       return NextResponse.json(errorResponse, { status: 400 });
     }
 
     // Validate column if provided
-    const validColumns = ['col-1', 'col-2', 'col-3', 'col-4'];
+    const validColumns = ["col-1", "col-2", "col-3", "col-4"];
     if (body.column && !validColumns.includes(body.column)) {
       const errorResponse: ApiError = {
         success: false,
-        error: 'Validation Error',
-        message: `Invalid column. Must be one of: ${validColumns.join(', ')}`,
-        statusCode: 400
+        error: "Validation Error",
+        message: `Invalid column. Must be one of: ${validColumns.join(", ")}`,
+        statusCode: 400,
       };
 
       return NextResponse.json(errorResponse, { status: 400 });
@@ -98,28 +103,27 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Create the job
     const newJob = await jobService.createJob(body);
-    console.log('Created job:', newJob);
+    console.log("Created job:", newJob);
 
     const response: CreateJobResponse = {
       success: true,
       data: {
-        job: newJob
+        job: newJob,
       },
-      message: 'Job application created successfully'
+      message: "Job application created successfully",
     };
 
     return NextResponse.json(response, { status: 201 });
-
   } catch (error) {
-    console.error('POST /api/applications error:', error);
+    console.error("POST /api/applications error:", error);
 
     // Handle validation errors
-    if (error instanceof Error && error.message.includes('required')) {
+    if (error instanceof Error && error.message.includes("required")) {
       const errorResponse: ApiError = {
         success: false,
-        error: 'Validation Error',
+        error: "Validation Error",
         message: error.message,
-        statusCode: 400
+        statusCode: 400,
       };
 
       return NextResponse.json(errorResponse, { status: 400 });
@@ -128,9 +132,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Handle other errors
     const errorResponse: ApiError = {
       success: false,
-      error: 'Internal Server Error',
-      message: error instanceof Error ? error.message : 'Failed to create job',
-      statusCode: 500
+      error: "Internal Server Error",
+      message: error instanceof Error ? error.message : "Failed to create job",
+      statusCode: 500,
     };
 
     return NextResponse.json(errorResponse, { status: 500 });
