@@ -1,0 +1,49 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+
+
+model Column {
+  id   String @id @default(uuid()) @db.Uuid
+  name String
+  
+  // Relationships
+  jobs Job[]
+  
+  @@map("columns")
+}
+
+model Job {
+  id              String    @id @default(uuid()) @db.Uuid
+  title           String
+  description     String
+  applicationLink String    @map("application_link")
+  companyIconUrl  String    @map("company_icon_url")
+  companyName     String    @map("company_name")
+  coverLetterId   String?   @map("cover_letter_id") @db.Uuid
+  resumeId        String?   @map("resume_id") @db.Uuid
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  
+  // Foreign keys
+  columnId String @map("column_id") @db.Uuid
+  
+  // Relationships
+  column Column @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  
+  @@map("jobs")
+}

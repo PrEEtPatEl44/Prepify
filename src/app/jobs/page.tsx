@@ -4,7 +4,7 @@ import Header from "@/components/header";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 // TODO: Remove this and use the apiClient directly
-import { getAllColumns } from "./actions";
+import { getAllColumns } from "@/lib/clients/apiClient";
 import { getAllJobs, createJob } from "@/lib/clients/apiClient";
 import { type Column, type Job } from "@/types/jobs";
 
@@ -70,7 +70,7 @@ const Page = () => {
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       <div className="mt-6 px-1 max-w-[95%]">
-        <Header onCreateJob={handleCreateJob} />
+        <Header columns={columns} onCreateJob={handleCreateJob} />
       </div>
       <div className="flex-1 overflow-hidden">
         <Example

@@ -78,6 +78,7 @@ export const calendarProps: Props = {
   hideTotalCount: true,
   blockSize: 15,
   blockMargin: 5,
+  blockRadius: 4,
   fontSize: 14,
   labels: {
     legend: {

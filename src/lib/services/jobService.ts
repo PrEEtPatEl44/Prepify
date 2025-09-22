@@ -2,8 +2,14 @@
 // File: src/lib/jobService.ts
 
 import { exampleJobs } from "@/app/jobs/jobStore";
-import { Job } from "@/types/jobs";
-import { CreateJobRequest, UpdateJobRequest } from "@/types/api";
+import { type Job, type Column } from "@/types/jobs";
+import {
+  CreateJobRequest,
+  UpdateJobRequest,
+  CreateColumnRequest,
+} from "@/types/api";
+import prisma from "../prisma";
+import { v4 as uuidv4 } from "uuid";
 
 // In-memory storage for development (will be replaced with database later)
 class JobService {
@@ -13,9 +19,20 @@ class JobService {
    * Get all job applications
    */
   async getAllJobs(): Promise<Job[]> {
-    // Simulate database delay
+    // Use Prisma client to fetch all jobs from the database
+    const jobs = await prisma.job.findMany();
+    console.log(`Fetched ${jobs.length} jobs from the database using Prisma`);
+    return jobs;
+  }
+
+  /**
+   * Get all columns
+   */
+  async getAllColumns(): Promise<Column[]> {
     await this.simulateDelay(100);
-    return [...this.jobs]; // Return a copy to prevent external mutations
+    const columns = await prisma.column.findMany();
+    console.log(`Fetched ${columns.length} columns from the database`);
+    return columns;
   }
 
   /**
@@ -46,7 +63,7 @@ class JobService {
       id,
       title: jobData.title,
       companyName: jobData.companyName,
-      columnId: jobData.columnId || "col-1",
+      columnId: jobData.columnId || "550e8400-e29b-41d4-a716-446655440000",
       companyIconUrl:
         jobData.companyIconUrl ||
         this.generateFallbackImage(jobData.companyName),
@@ -62,6 +79,28 @@ class JobService {
     this.jobs.push(newJob);
 
     return { ...newJob };
+  }
+
+  async createColumn(columnData: CreateColumnRequest): Promise<Column> {
+    // Validate required fields
+    if (!columnData.name) {
+      throw new Error("Column name is required");
+    }
+    // Create new column object
+    const newColumn: Column = {
+      id: uuidv4(),
+      name: columnData.name,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    await prisma.column.create({
+      data: {
+        id: newColumn.id,
+        name: newColumn.name,
+      },
+    });
+    return { ...newColumn };
   }
 
   /**
@@ -97,14 +136,18 @@ class JobService {
   async deleteJob(id: string): Promise<boolean> {
     await this.simulateDelay(100);
 
-    const jobIndex = this.jobs.findIndex((job) => job.id === id);
+    try {
+      const deletedJob = await prisma.job.delete({
+        where: {
+          id: id,
+        },
+      });
 
-    if (jobIndex === -1) {
+      return !!deletedJob;
+    } catch (error) {
+      console.error(`Failed to delete job with ID ${id}:`, error);
       return false;
     }
-
-    this.jobs.splice(jobIndex, 1);
-    return true;
   }
 
   /**

@@ -50,7 +50,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
   isOpen,
   onClose,
   onSubmit,
-  targetColumn = "col-1",
+  targetColumn = "550e8400-e29b-41d4-a716-446655440000",
 }) => {
   const [formData, setFormData] = useState<FormData>({
     company: "",

@@ -6,18 +6,22 @@ import { Button } from "./ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { Input } from "./ui/input";
 import CreateJobModal from "@/components/modals/CreateJobModal";
-import { type Job } from "@/app/jobs/jobStore";
+import { Column, type Job } from "@/types/jobs";
 
 export default function Header({
   onCreateJob,
+  columns,
 }: {
   onCreateJob: (job: Partial<Job>, column: string) => Promise<void>;
+  columns: Column[];
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [targetColumn, setTargetColumn] = useState("col-1");
+  const [targetColumn, setTargetColumn] = useState(
+    columns.length > 0 ? columns[0].id : ""
+  );
 
   const handleOpenModal = () => {
-    setTargetColumn("col-1"); // default column
+    setTargetColumn(columns.length > 0 ? columns[0].id : "");
     setIsModalOpen(true);
   };
 

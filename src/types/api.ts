@@ -1,7 +1,7 @@
 // API Types for Job Applications
 // File: src/types/api.ts
 
-import { Job } from "@/types/jobs";
+import { type Job, type Column } from "@/types/jobs";
 
 // Standard API Response wrapper
 export interface ApiResponse<T = unknown> {
@@ -23,6 +23,10 @@ export interface CreateJobRequest {
   resumeId?: string;
 }
 
+export interface CreateColumnRequest {
+  name: string;
+}
+
 export interface UpdateJobRequest extends Partial<CreateJobRequest> {
   id?: never; // Prevent ID from being updated in request body
 }
@@ -35,9 +39,21 @@ export interface GetJobsResponse extends ApiResponse {
   };
 }
 
+export interface GetColumnsResponse extends ApiResponse {
+  data: {
+    columns: Column[];
+  };
+}
+
 export interface CreateJobResponse extends ApiResponse {
   data: {
     job: Job;
+  };
+}
+
+export interface CreateColumnResponse extends ApiResponse {
+  data: {
+    column: Column;
   };
 }
 

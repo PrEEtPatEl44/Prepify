@@ -1,7 +1,7 @@
 // API Client for Frontend
 // File: src/lib/apiClient.ts
 
-import { Job } from "@/types/jobs";
+import { type Job, type Column } from "@/types/jobs";
 import {
   CreateJobRequest,
   UpdateJobRequest,
@@ -9,7 +9,10 @@ import {
   CreateJobResponse,
   UpdateJobResponse,
   DeleteJobResponse,
+  GetColumnsResponse,
+  CreateColumnRequest,
   ApiError,
+  CreateColumnResponse,
 } from "@/types/api";
 
 class ApiClient {
@@ -64,6 +67,16 @@ class ApiClient {
   }
 
   /**
+   * Get all columns
+   */
+  async getAllColumns(): Promise<Column[]> {
+    const response = await this.fetchApi<GetColumnsResponse>(
+      "/applications/columns"
+    );
+    return response.data.columns;
+  }
+
+  /**
    * Get job applications filtered by column
    */
   async getJobsByColumn(columnId: string): Promise<Job[]> {
@@ -103,6 +116,20 @@ class ApiClient {
       body: JSON.stringify(jobData),
     });
     return response.data.job;
+  }
+
+  /**
+   * Create a new column
+   */
+  async createColumn(columnData: CreateColumnRequest): Promise<Column> {
+    const response = await this.fetchApi<CreateColumnResponse>(
+      "/applications/columns",
+      {
+        method: "POST",
+        body: JSON.stringify(columnData),
+      }
+    );
+    return response.data.column;
   }
 
   /**
@@ -156,3 +183,6 @@ export const updateJob = (id: string, updateData: UpdateJobRequest) =>
 export const deleteJob = (id: string) => apiClient.deleteJob(id);
 export const moveJob = (id: string, newColumn: string) =>
   apiClient.moveJob(id, newColumn);
+export const getAllColumns = () => apiClient.getAllColumns();
+export const createColumn = (columnData: CreateColumnRequest) =>
+  apiClient.createColumn(columnData);

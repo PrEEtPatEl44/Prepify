@@ -8,8 +8,8 @@ interface Job {
   applicationLink: string;
   companyIconUrl: string;
   companyName: string;
-  coverLetterId?: string;
-  resumeId?: string;
+  coverLetterId?: string | null;
+  resumeId?: string | null;
 }
 
 interface Column {

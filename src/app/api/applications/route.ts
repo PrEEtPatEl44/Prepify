@@ -89,17 +89,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Validate column if provided
-    const validColumns = ["col-1", "col-2", "col-3", "col-4"];
-    if (body.columnId && !validColumns.includes(body.columnId)) {
-      const errorResponse: ApiError = {
-        success: false,
-        error: "Validation Error",
-        message: `Invalid column. Must be one of: ${validColumns.join(", ")}`,
-        statusCode: 400,
-      };
+    // const validColumns = [
+    //   "550e8400-e29b-41d4-a716-446655440000",
+    //   "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+    //   "cccccccc-cccc-cccc-cccc-cccccccccccc",
+    //   "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+    // ];
+    // if (body.columnId && !validColumns.includes(body.columnId)) {
+    //   const errorResponse: ApiError = {
+    //     success: false,
+    //     error: "Validation Error",
+    //     message: `Invalid column. Must be one of: ${validColumns.join(", ")}`,
+    //     statusCode: 400,
+    //   };
 
-      return NextResponse.json(errorResponse, { status: 400 });
-    }
+    //   return NextResponse.json(errorResponse, { status: 400 });
+    // }
 
     // Create the job
     const newJob = await jobService.createJob(body);
