@@ -1,8 +1,9 @@
 // Job Data Service Layer
 // File: src/lib/jobService.ts
 
-import { Job, exampleJobs } from '@/app/jobs/jobStore';
-import { CreateJobRequest, UpdateJobRequest } from '@/types/api';
+import { exampleJobs } from "@/app/jobs/jobStore";
+import { Job } from "@/types/jobs";
+import { CreateJobRequest, UpdateJobRequest } from "@/types/api";
 
 // In-memory storage for development (will be replaced with database later)
 class JobService {
@@ -22,7 +23,7 @@ class JobService {
    */
   async getJobById(id: string): Promise<Job | null> {
     await this.simulateDelay(50);
-    const job = this.jobs.find(job => job.id === id);
+    const job = this.jobs.find((job) => job.id === id);
     return job ? { ...job } : null; // Return a copy
   }
 
@@ -33,8 +34,8 @@ class JobService {
     await this.simulateDelay(200);
 
     // Validate required fields
-    if (!jobData.name || !jobData.company) {
-      throw new Error('Name and company are required fields');
+    if (!jobData.title || !jobData.companyName) {
+      throw new Error("Title and company name are required fields");
     }
 
     // Generate unique ID
@@ -43,25 +44,18 @@ class JobService {
     // Create new job object
     const newJob: Job = {
       id,
-      name: jobData.name,
-      company: jobData.company,
-      column: jobData.column || 'col-1',
-      image: jobData.image || this.generateFallbackImage(jobData.company),
-      // Include optional fields
-      jobDescription: jobData.jobDescription,
-      link: jobData.link,
-      location: jobData.location,
-      employmentType: jobData.employmentType,
-      salaryRange: jobData.salaryRange,
+      title: jobData.title,
+      companyName: jobData.companyName,
+      columnId: jobData.columnId || "col-1",
+      companyIconUrl:
+        jobData.companyIconUrl ||
+        this.generateFallbackImage(jobData.companyName),
+      description: jobData.description,
+      applicationLink: jobData.applicationLink,
       resumeId: jobData.resumeId,
       coverLetterId: jobData.coverLetterId,
-      // Include any additional unknown fields
-      ...Object.fromEntries(
-        Object.entries(jobData).filter(([key]) => 
-          !['name', 'company', 'column', 'image', 'jobDescription', 'link', 
-            'location', 'employmentType', 'salaryRange', 'resumeId', 'coverLetterId'].includes(key)
-        )
-      )
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
 
     // Add to storage
@@ -73,11 +67,14 @@ class JobService {
   /**
    * Update an existing job application
    */
-  async updateJob(id: string, updateData: UpdateJobRequest): Promise<Job | null> {
+  async updateJob(
+    id: string,
+    updateData: UpdateJobRequest
+  ): Promise<Job | null> {
     await this.simulateDelay(150);
 
-    const jobIndex = this.jobs.findIndex(job => job.id === id);
-    
+    const jobIndex = this.jobs.findIndex((job) => job.id === id);
+
     if (jobIndex === -1) {
       return null;
     }
@@ -100,8 +97,8 @@ class JobService {
   async deleteJob(id: string): Promise<boolean> {
     await this.simulateDelay(100);
 
-    const jobIndex = this.jobs.findIndex(job => job.id === id);
-    
+    const jobIndex = this.jobs.findIndex((job) => job.id === id);
+
     if (jobIndex === -1) {
       return false;
     }
@@ -114,7 +111,7 @@ class JobService {
    * Move a job to a different column
    */
   async moveJob(id: string, newColumn: string): Promise<Job | null> {
-    return this.updateJob(id, { column: newColumn });
+    return this.updateJob(id, { columnId: newColumn });
   }
 
   /**
@@ -122,7 +119,7 @@ class JobService {
    */
   async getJobsByColumn(columnId: string): Promise<Job[]> {
     await this.simulateDelay(50);
-    return this.jobs.filter(job => job.column === columnId);
+    return this.jobs.filter((job) => job.columnId === columnId);
   }
 
   /**
@@ -130,15 +127,16 @@ class JobService {
    */
   async searchJobs(query: string): Promise<Job[]> {
     await this.simulateDelay(100);
-    
+
     if (!query.trim()) {
       return this.getAllJobs();
     }
 
     const searchTerm = query.toLowerCase();
-    return this.jobs.filter(job => 
-      job.name.toLowerCase().includes(searchTerm) ||
-      job.company.toLowerCase().includes(searchTerm)
+    return this.jobs.filter(
+      (job) =>
+        job.title.toLowerCase().includes(searchTerm) ||
+        job.companyName.toLowerCase().includes(searchTerm)
     );
   }
 
@@ -153,7 +151,7 @@ class JobService {
    * Generate fallback image URL for company
    */
   private generateFallbackImage(companyName: string): string {
-    const cleanCompanyName = companyName.toLowerCase().replace(/\s+/g, '');
+    const cleanCompanyName = companyName.toLowerCase().replace(/\s+/g, "");
     return `https://cdn.brandfetch.io/${cleanCompanyName}.com?c=1idy7WQ5YtpRvbd1DQy`;
   }
 
@@ -161,7 +159,7 @@ class JobService {
    * Simulate database operation delay
    */
   private async simulateDelay(ms: number): Promise<void> {
-    await new Promise(resolve => setTimeout(resolve, ms));
+    await new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**

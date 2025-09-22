@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 // TODO: Remove this and use the apiClient directly
 import { getAllColumns } from "./actions";
 import { getAllJobs, createJob } from "@/lib/clients/apiClient";
-import { type Column, type Job } from "./jobStore";
+import { type Column, type Job } from "@/types/jobs";
 
 const Example = dynamic(() => import("@/components/kanban"), { ssr: false });
 
@@ -18,7 +18,8 @@ const Page = () => {
     const fetchData = async () => {
       const columnsData = await getAllColumns();
       const jobsData = await getAllJobs();
-      setColumns(columnsData.filter((c) => c.name !== "CREATE_NEW"));
+      console.log("Fetched jobs:", jobsData);
+      setColumns(columnsData);
       setJobs(jobsData);
     };
     fetchData();
@@ -36,20 +37,28 @@ const Page = () => {
     targetColumn: string
   ) => {
     console.log("Creating job via API:", jobData);
+    if (
+      !jobData.title ||
+      !jobData.companyName ||
+      !jobData.companyIconUrl ||
+      !jobData.description ||
+      !jobData.applicationLink ||
+      !jobData.resumeId ||
+      !jobData.coverLetterId
+    ) {
+      throw new Error("All fields are required");
+    }
 
     // Convert jobData to match CreateJobRequest interface with proper type casting
     const requestData = {
-      name: jobData.name || "",
-      company: jobData.company || "",
-      column: targetColumn,
-      image: jobData.image as string | undefined,
-      jobDescription: jobData.jobDescription as string | undefined,
-      link: jobData.link as string | undefined,
-      location: jobData.location as string | undefined,
-      employmentType: jobData.employmentType as string | undefined,
-      salaryRange: jobData.salaryRange as string | undefined,
-      resumeId: jobData.resumeId as string | undefined,
-      coverLetterId: jobData.coverLetterId as string | undefined,
+      title: jobData.title,
+      companyName: jobData.companyName,
+      columnId: targetColumn,
+      companyIconUrl: jobData.companyIconUrl,
+      description: jobData.description,
+      applicationLink: jobData.applicationLink,
+      resumeId: jobData.resumeId,
+      coverLetterId: jobData.coverLetterId,
     };
 
     const newJob = await createJob(requestData);
