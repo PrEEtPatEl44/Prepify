@@ -1,8 +1,10 @@
 "use client";
 
-import Image from "next/image";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { CloudUpload, BookOpen, Mic, ChevronRight } from "lucide-react";
+import Calender from "@/components/GithubActivityCalender";
+import StatsCard from "@/components/StatsCard";
+
 export default function Home() {
   const actionButtons = [
     {
@@ -22,7 +24,7 @@ export default function Home() {
     },
   ];
   return (
-    <div className="flex flex-col gap-6 p-6 w-full">
+    <div className="flex flex-col gap-8 mt-10 p-6 w-full">
       {/* Welcome Section */}
       <div>
         <h1 className="text-3xl font-bold">Welcome, Amanda</h1>
@@ -55,78 +57,24 @@ export default function Home() {
       </div>
 
       {/* Activity Grid (GitHub-like) */}
-      {/* <div>
-        <h2 className="text-lg font-semibold mb-3">
+      <div>
+        <h2 className="text-xl font-bold mb-3">
           Applications Created / Interviews Completed
         </h2>
-      </div> */}
+        <div className="shadow-xl bg-white max-w-fit rounded-md pt-3 px-6">
+          <Calender />
+        </div>
+      </div>
 
       {/* Progress Overview */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Progress Overview</CardTitle>
-        </CardHeader>
-        <CardContent className="flex justify-around items-center">
-          {/* Resume Score */}
-          <div className="flex flex-col items-center">
-            <div className="relative w-20 h-20">
-              <svg className="w-20 h-20">
-                <circle
-                  className="text-gray-200"
-                  strokeWidth="8"
-                  stroke="currentColor"
-                  fill="transparent"
-                  r="32"
-                  cx="40"
-                  cy="40"
-                />
-                <circle
-                  className="text-blue-600"
-                  strokeWidth="8"
-                  strokeDasharray="201"
-                  strokeDashoffset="40"
-                  strokeLinecap="round"
-                  stroke="currentColor"
-                  fill="transparent"
-                  r="32"
-                  cx="40"
-                  cy="40"
-                />
-              </svg>
-              <span className="absolute inset-0 flex items-center justify-center text-lg font-bold">
-                80%
-              </span>
-            </div>
-            <p className="mt-2 text-sm">Resume Score</p>
-          </div>
-
-          {/* Interviews Completed */}
-          <div className="flex flex-col items-center">
-            <span className="text-2xl font-bold">3</span>
-            <p className="text-sm">Interviews Completed</p>
-          </div>
-
-          {/* Total Applications */}
-          <div className="flex flex-col items-center">
-            <span className="text-2xl font-bold">78</span>
-            <p className="text-sm">Total Applications</p>
-          </div>
-        </CardContent>
-      </Card>
 
       <div className="max-w-lg">
-        <span className="font-medium text-2xl font-archivo">
-          Progress Overview
-        </span>
-        <Card>
-          <CardContent>
-            <div className="flex flex-col w-full justify-items-center"></div>
-          </CardContent>
-        </Card>
+        <h2 className="text-xl font-bold mb-3">Progress Overview</h2>
+        <StatsCard />
       </div>
 
       {/* Upcoming Mock Interview */}
-      <Card className="bg-indigo-50 border-indigo-200">
+      {/* <Card className="bg-indigo-50 border-indigo-200">
         <CardContent className="flex items-center gap-3 p-4">
           <Image
             src="/icons/calendar.svg"
@@ -138,7 +86,7 @@ export default function Home() {
             You have a mock interview scheduled tomorrow at 10 AM
           </p>
         </CardContent>
-      </Card>
+      </Card> */}
     </div>
   );
 }
