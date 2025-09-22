@@ -77,11 +77,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     console.log("Request body:", body);
 
     // Basic validation
-    if (!body.name || !body.company) {
+    if (!body.title || !body.companyName) {
       const errorResponse: ApiError = {
         success: false,
         error: "Validation Error",
-        message: "Name and company are required fields",
+        message: "Title and company name are required fields",
         statusCode: 400,
       };
 
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Validate column if provided
     const validColumns = ["col-1", "col-2", "col-3", "col-4"];
-    if (body.column && !validColumns.includes(body.column)) {
+    if (body.columnId && !validColumns.includes(body.columnId)) {
       const errorResponse: ApiError = {
         success: false,
         error: "Validation Error",

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { type Job } from "@/app/jobs/jobStore";
+import { type Job } from "@/types/jobs";
 import {
   useCompanySearch,
   type CompanySearchResult,
@@ -154,14 +154,18 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
     }
 
     setIsLoading(true);
-
     try {
       const jobData: Partial<Job> = {
         id: `task-${Date.now()}`,
-        name: formData.jobTitle,
-        company: formData.company,
-        column: targetColumn,
-        image: selectedCompany?.icon,
+        title: formData.jobTitle,
+        companyName: formData.company,
+        columnId: targetColumn,
+        companyIconUrl: selectedCompany?.icon,
+        description: formData.jobDescription,
+        applicationLink: formData.link,
+        resumeId: formData.selectResume,
+        coverLetterId: formData.selectCoverletter,
+        // Fallbacks in case company search did not yield a result
         // ||
         // selectedCompany?.logoUrl ||
         // `https://cdn.brandfetch.io/${formData.company

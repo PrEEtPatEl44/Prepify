@@ -1,7 +1,7 @@
 // API Types for Job Applications
 // File: src/types/api.ts
 
-import { Job } from '@/app/jobs/jobStore';
+import { Job } from "@/types/jobs";
 
 // Standard API Response wrapper
 export interface ApiResponse<T = unknown> {
@@ -13,18 +13,14 @@ export interface ApiResponse<T = unknown> {
 
 // Request bodies for API endpoints
 export interface CreateJobRequest {
-  name: string;
-  company: string;
-  column?: string;
-  image?: string;
-  jobDescription?: string;
-  link?: string;
-  location?: string;
-  employmentType?: string;
-  salaryRange?: string;
-  resumeId?: string;
+  title: string;
+  description: string;
+  columnId: string;
+  applicationLink: string;
+  companyIconUrl: string;
+  companyName: string;
   coverLetterId?: string;
-  [key: string]: unknown;
+  resumeId?: string;
 }
 
 export interface UpdateJobRequest extends Partial<CreateJobRequest> {
