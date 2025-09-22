@@ -136,7 +136,7 @@ class ApiClient {
    * Move a job to a different column
    */
   async moveJob(id: string, newColumn: string): Promise<Job> {
-    return this.updateJob(id, { column: newColumn });
+    return this.updateJob(id, { columnId: newColumn });
   }
 }
 
