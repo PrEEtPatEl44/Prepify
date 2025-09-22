@@ -11,7 +11,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Ellipsis, Plus } from "lucide-react";
 import { Archivo } from "next/font/google";
 import { type Column, type Job } from "@/app/jobs/jobStore";
-import { createJob, deleteJob } from "@/app/jobs/actions";
+// UPDATED: Replace server actions with API client
+import { createJob, deleteJob } from "@/lib/clients/apiClient";
 import CreateJobModal from "@/components/modals/CreateJobModal";
 import CreateListModal from "@/components/modals/CreateListModal";
 import DeleteJobModal from "@/components/modals/DeleteJobModal";
@@ -43,6 +44,10 @@ const Example = ({
   const [openMenuJobId, setOpenMenuJobId] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
+  // UPDATED: Add loading states for better UX
+  const [isCreating, setIsCreating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   // Close dropdown on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -62,13 +67,45 @@ const Example = ({
     setIsJobModalOpen(true);
   };
   const handleCloseJobModal = () => setIsJobModalOpen(false);
+
+  // UPDATED: Enhanced error handling and loading states with proper type casting
   const handleCreateJob = async (jobData: Partial<Job>) => {
+    if (isCreating) return; // Prevent double submission
+
+    setIsCreating(true);
     try {
-      const newJob = await createJob({ ...jobData, column: targetColumn });
+      console.log("Creating job via API:", jobData);
+
+      // Convert jobData to match CreateJobRequest interface with proper type casting
+      const requestData = {
+        name: jobData.name || "",
+        company: jobData.company || "",
+        column: targetColumn,
+        image: jobData.image as string | undefined,
+        jobDescription: jobData.jobDescription as string | undefined,
+        link: jobData.link as string | undefined,
+        location: jobData.location as string | undefined,
+        employmentType: jobData.employmentType as string | undefined,
+        salaryRange: jobData.salaryRange as string | undefined,
+        resumeId: jobData.resumeId as string | undefined,
+        coverLetterId: jobData.coverLetterId as string | undefined,
+      };
+
+      const newJob = await createJob(requestData);
+      console.log("Job created successfully:", newJob);
+
       setJobs((prevJobs) => [...prevJobs, newJob]);
       setIsJobModalOpen(false);
     } catch (error) {
       console.error("Failed to create job:", error);
+      // You could add a toast notification here
+      alert(
+        `Failed to create job: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -88,28 +125,44 @@ const Example = ({
 
   // Delete Modal Handlers
   const handleOpenDeleteModal = (job: Job) => {
-    console.log("Opening delete modal for job:", job.id, job.name); // Enhanced debug log
-    console.log("Current isDeleteModalOpen state:", isDeleteModalOpen); // Check current state
+    console.log("Opening delete modal for job:", job.id, job.name);
     setSelectedJob(job);
     setIsDeleteModalOpen(true);
     setOpenMenuJobId(null); // close dropdown
-    console.log("After setState - isDeleteModalOpen should be true"); // Confirm setState called
   };
+
   const handleCloseDeleteModal = () => {
-    console.log("Closing delete modal"); // Debug log
+    console.log("Closing delete modal");
     setSelectedJob(null);
     setIsDeleteModalOpen(false);
   };
+
+  // UPDATED: Enhanced error handling and loading states
   const handleConfirmDelete = async () => {
-    if (!selectedJob) return;
-    console.log("Confirming delete for job:", selectedJob.id); // Debug log
+    if (!selectedJob || isDeleting) return;
+
+    setIsDeleting(true);
+    console.log("Confirming delete for job:", selectedJob.id);
+
     try {
+      console.log("Deleting job via API:", selectedJob.id);
+
       await deleteJob(selectedJob.id);
+      console.log("Job deleted successfully");
+
       setJobs((prev) => prev.filter((j) => j.id !== selectedJob.id));
       setIsDeleteModalOpen(false);
       setSelectedJob(null);
-    } catch (err) {
-      console.error("Delete failed:", err);
+    } catch (error) {
+      console.error("Delete failed:", error);
+      // You could add a toast notification here
+      alert(
+        `Failed to delete job: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -152,10 +205,22 @@ const Example = ({
                     {column.name}
                   </span>
                   <div
-                    className="bg-[#636AE8] hover:bg-[#5A5FD3] cursor-pointer hover:text-accent-foreground rounded-full p-2"
-                    onClick={() => handleOpenJobModal(column.id)}
+                    className={`cursor-pointer hover:text-accent-foreground rounded-full p-2 transition-colors ${
+                      isCreating
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-[#636AE8] hover:bg-[#5A5FD3]"
+                    }`}
+                    onClick={
+                      !isCreating
+                        ? () => handleOpenJobModal(column.id)
+                        : undefined
+                    }
                   >
-                    <Plus strokeWidth={5} className="h-3 w-3 text-white" />
+                    {isCreating ? (
+                      <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Plus strokeWidth={5} className="h-3 w-3 text-white" />
+                    )}
                   </div>
                 </div>
               </KanbanHeader>
@@ -210,7 +275,7 @@ const Example = ({
                                 jobData.id,
                                 "Current open menu:",
                                 openMenuJobId
-                              ); // Debug log
+                              );
                               setOpenMenuJobId(
                                 openMenuJobId === jobData.id ? null : jobData.id
                               );
@@ -243,21 +308,14 @@ const Example = ({
                                     jobData.id,
                                     jobData.name
                                   );
-                                  console.log("Job data:", jobData); // Log full job data
                                   const url =
                                     (jobData.link as string) ||
                                     (jobData.url as string) ||
                                     (jobData.jobLink as string);
-                                  console.log("Found URL:", url); // Log the URL
                                   if (url && url.trim()) {
                                     console.log("Opening URL:", url);
                                     window.open(url, "_blank");
                                   } else {
-                                    console.log(
-                                      "No URL available for this job - checking all possible fields"
-                                    );
-                                    console.log("jobData.link:", jobData.link);
-                                    console.log("jobData.url:", jobData.url);
                                     alert(
                                       "No URL available for this job application"
                                     );
@@ -268,7 +326,12 @@ const Example = ({
                                 Go to link
                               </button>
                               <button
-                                className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                                className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                                  isDeleting
+                                    ? "text-gray-400 cursor-not-allowed"
+                                    : "text-red-600 hover:bg-red-50"
+                                }`}
+                                disabled={isDeleting}
                                 onMouseDown={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
@@ -276,19 +339,17 @@ const Example = ({
                                 onClick={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
-                                  console.log(
-                                    "Delete clicked for job:",
-                                    jobData.id,
-                                    jobData.name
-                                  );
-                                  console.log(
-                                    "About to call handleOpenDeleteModal with:",
-                                    jobData
-                                  );
-                                  handleOpenDeleteModal(jobData);
+                                  if (!isDeleting) {
+                                    console.log(
+                                      "Delete clicked for job:",
+                                      jobData.id,
+                                      jobData.name
+                                    );
+                                    handleOpenDeleteModal(jobData);
+                                  }
                                 }}
                               >
-                                Delete
+                                {isDeleting ? "Deleting..." : "Delete"}
                               </button>
                             </div>
                           )}
@@ -316,7 +377,7 @@ const Example = ({
         onSubmit={handleCreateList}
       />
 
-      {/* Use your DeleteJobModal component */}
+      {/* UPDATED: Show loading state in delete modal */}
       <DeleteJobModal
         isOpen={isDeleteModalOpen}
         onClose={handleCloseDeleteModal}
