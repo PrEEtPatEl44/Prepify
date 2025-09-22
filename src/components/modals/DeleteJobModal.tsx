@@ -1,56 +1,54 @@
 "use client";
-import { X } from "lucide-react";
 
+import { Separator } from "@/components/ui/separator";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "../ui/alert-dialog";
 
 interface DeleteJobModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+  children: React.ReactNode;
   onConfirm: () => void;
 }
 
 export default function DeleteJobModal({
-  isOpen,
-  onClose,
+  children,
   onConfirm,
 }: DeleteJobModalProps) {
-  if (!isOpen) return null;
-
+  console.log("delet cofirm" + children);
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="relative w-[560px] h-[155px] bg-white rounded-2xl shadow-md p-6">
-        {/* Close button */}
-        <button
-          className="absolute top-4 right-4 w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-200"
-          onClick={onClose}
-        >
-          <X className="w-4 h-4 text-gray-700" />
-        </button>
-
-        {/* Title */}
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Delete message</h2>
-
-        {/* Description */}
-        <p className="text-gray-600 text-sm mb-6">
-          Are you sure you want to delete this Application? This cannot be
-          undone.
-        </p>
-
-        {/* Actions */}
-        <div className="flex justify-end gap-3">
-          <button
-            className="w-[70px] h-9 bg-white border border-gray-400 rounded-md text-gray-500 font-medium hover:bg-gray-100"
-            onClick={onClose}
-          >
+    <AlertDialog>
+      <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
+      <AlertDialogContent className="px-0">
+        <AlertDialogHeader>
+          <AlertDialogTitle>
+            <span className="px-4">Delete Job Application </span>
+            <Separator className="bg-gray-300" />
+          </AlertDialogTitle>
+          <AlertDialogDescription className="px-4">
+            Are you sure you want to delete this Application? This cannot be
+            undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter className="px-4">
+          <AlertDialogCancel className="border-gray-200 border hover:bg-gray-300 ">
             Cancel
-          </button>
-          <button
-            className="w-[66px] h-9 bg-red-600 text-white rounded-md font-medium hover:bg-red-700"
+          </AlertDialogCancel>
+          <AlertDialogAction
             onClick={onConfirm}
+            className="bg-red-600 hover:bg-red-700 focus:bg-red-700"
           >
-            Delete
-          </button>
-        </div>
-      </div>
-    </div>
+            Continue
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

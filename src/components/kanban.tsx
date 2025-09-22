@@ -42,9 +42,7 @@ const Example = ({
   const [isJobModalOpen, setIsJobModalOpen] = useState(false);
   const [targetColumn, setTargetColumn] = useState<string>("col-1");
   const [isListModalOpen, setIsListModalOpen] = useState(false);
-
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   // UPDATED: Add loading states for better UX
   const [isCreating, setIsCreating] = useState(false);
@@ -112,19 +110,6 @@ const Example = ({
     setIsListModalOpen(false);
   };
 
-  // Delete Modal Handlers
-  const handleOpenDeleteModal = (job: Job) => {
-    console.log("Opening delete modal for job:", job.id, job.name);
-    setSelectedJob(job);
-    setIsDeleteModalOpen(true);
-  };
-
-  const handleCloseDeleteModal = () => {
-    console.log("Closing delete modal");
-    setSelectedJob(null);
-    setIsDeleteModalOpen(false);
-  };
-
   // UPDATED: Enhanced error handling and loading states
   const handleConfirmDelete = async () => {
     if (!selectedJob || isDeleting) return;
@@ -139,7 +124,6 @@ const Example = ({
       console.log("Job deleted successfully");
 
       setJobs((prev) => prev.filter((j) => j.id !== selectedJob.id));
-      setIsDeleteModalOpen(false);
       setSelectedJob(null);
     } catch (error) {
       console.error("Delete failed:", error);
@@ -283,25 +267,26 @@ const Example = ({
                               >
                                 Go to link
                               </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className={
-                                  isDeleting
-                                    ? "text-gray-400 cursor-not-allowed"
-                                    : "text-red-600 hover:bg-red-50 focus:bg-red-50 cursor-pointer"
-                                }
-                                disabled={isDeleting}
-                                onSelect={() => {
-                                  if (!isDeleting) {
-                                    console.log(
-                                      "Opening delete modal for job:",
-                                      jobData.id
-                                    );
-                                    handleOpenDeleteModal(jobData);
-                                  }
+                              <DeleteJobModal
+                                onConfirm={() => {
+                                  handleConfirmDelete();
                                 }}
                               >
-                                {isDeleting ? "Deleting..." : "Delete"}
-                              </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onSelect={(e) => {
+                                    setSelectedJob(jobData);
+                                    e.preventDefault();
+                                  }}
+                                  className={
+                                    isDeleting
+                                      ? "text-gray-400 cursor-not-allowed"
+                                      : "text-red-600 hover:bg-red-50 focus:bg-red-50 cursor-pointer"
+                                  }
+                                  disabled={isDeleting}
+                                >
+                                  {isDeleting ? "Deleting..." : "Delete"}
+                                </DropdownMenuItem>
+                              </DeleteJobModal>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>
@@ -326,13 +311,6 @@ const Example = ({
         isOpen={isListModalOpen}
         onClose={handleCloseListModal}
         onSubmit={handleCreateList}
-      />
-
-      {/* UPDATED: Show loading state in delete modal */}
-      <DeleteJobModal
-        isOpen={isDeleteModalOpen}
-        onClose={handleCloseDeleteModal}
-        onConfirm={handleConfirmDelete}
       />
     </>
   );
