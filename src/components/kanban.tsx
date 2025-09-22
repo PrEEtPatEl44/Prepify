@@ -6,16 +6,22 @@ import {
   KanbanHeader,
   KanbanProvider,
 } from "@/components/ui/shadcn-io/kanban";
-import { useEffect, useState, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Ellipsis, Plus } from "lucide-react";
 import { Archivo } from "next/font/google";
+import { useState } from "react";
 import { type Column, type Job } from "@/app/jobs/jobStore";
 // UPDATED: Replace server actions with API client
 import { createJob, deleteJob } from "@/lib/clients/apiClient";
 import CreateJobModal from "@/components/modals/CreateJobModal";
 import CreateListModal from "@/components/modals/CreateListModal";
 import DeleteJobModal from "@/components/modals/DeleteJobModal";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 
 const archivo = Archivo({
   variable: "--font-archivo",
@@ -40,26 +46,9 @@ const Example = ({
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  // state for dropdown menu
-  const [openMenuJobId, setOpenMenuJobId] = useState<string | null>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-
   // UPDATED: Add loading states for better UX
   const [isCreating, setIsCreating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-
-  // Close dropdown on outside click
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setOpenMenuJobId(null);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
 
   // Job Modal Handlers
   const handleOpenJobModal = (columnId: string) => {
@@ -128,7 +117,6 @@ const Example = ({
     console.log("Opening delete modal for job:", job.id, job.name);
     setSelectedJob(job);
     setIsDeleteModalOpen(true);
-    setOpenMenuJobId(null); // close dropdown
   };
 
   const handleCloseDeleteModal = () => {
@@ -258,101 +246,64 @@ const Example = ({
                           </div>
                         </div>
 
-                        {/* Dropdown menu trigger */}
+                        {/* Dropdown */}
                         <div
                           className="relative"
-                          ref={
-                            openMenuJobId === jobData.id ? menuRef : undefined
-                          }
+                          style={{ touchAction: "none" }}
+                          onMouseDown={(e) => {
+                            e.stopPropagation();
+                          }}
                         >
-                          <div
-                            className="cursor-pointer hover:bg-accent hover:text-accent-foreground rounded-full p-2 z-10"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              console.log(
-                                "Clicked three dots for job:",
-                                jobData.id,
-                                "Current open menu:",
-                                openMenuJobId
-                              );
-                              setOpenMenuJobId(
-                                openMenuJobId === jobData.id ? null : jobData.id
-                              );
-                            }}
-                            onPointerDown={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                            }}
-                          >
-                            <Ellipsis className="h-4 w-4" />
-                          </div>
-
-                          {/* Dropdown menu */}
-                          {openMenuJobId === jobData.id && (
-                            <div
-                              className="absolute right-0 mt-1 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-[100] py-1"
-                              onClick={(e) => e.stopPropagation()}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger
+                              className="cursor-pointer"
+                              asChild
                             >
-                              <button
-                                className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 transition-colors"
+                              <div
+                                className="text-gray-500 p-1.5 rounded-md transition-all  hover:text-gray-700 hover:bg-gray-200"
                                 onMouseDown={(e) => {
-                                  e.preventDefault();
                                   e.stopPropagation();
                                 }}
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  console.log(
-                                    "Go to link clicked for job:",
-                                    jobData.id,
-                                    jobData.name
-                                  );
-                                  const url =
-                                    (jobData.link as string) ||
-                                    (jobData.url as string) ||
-                                    (jobData.jobLink as string);
-                                  if (url && url.trim()) {
-                                    console.log("Opening URL:", url);
-                                    window.open(url, "_blank");
-                                  } else {
-                                    alert(
-                                      "No URL available for this job application"
-                                    );
-                                  }
-                                  setOpenMenuJobId(null);
+                              >
+                                <Ellipsis className="h-4 w-4" />
+                              </div>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                              align="end"
+                              className="w-40"
+                              side="bottom"
+                              sideOffset={4}
+                              onCloseAutoFocus={(e) => e.preventDefault()}
+                            >
+                              <DropdownMenuItem
+                                className="cursor-pointer"
+                                onSelect={() => {
+                                  console.log("Goint to link " + jobData.link);
                                 }}
                               >
                                 Go to link
-                              </button>
-                              <button
-                                className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className={
                                   isDeleting
                                     ? "text-gray-400 cursor-not-allowed"
-                                    : "text-red-600 hover:bg-red-50"
-                                }`}
+                                    : "text-red-600 hover:bg-red-50 focus:bg-red-50 cursor-pointer"
+                                }
                                 disabled={isDeleting}
-                                onMouseDown={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                }}
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
+                                onSelect={() => {
                                   if (!isDeleting) {
                                     console.log(
-                                      "Delete clicked for job:",
-                                      jobData.id,
-                                      jobData.name
+                                      "Opening delete modal for job:",
+                                      jobData.id
                                     );
                                     handleOpenDeleteModal(jobData);
                                   }
                                 }}
                               >
                                 {isDeleting ? "Deleting..." : "Delete"}
-                              </button>
-                            </div>
-                          )}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
                     </KanbanCard>
