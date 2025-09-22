@@ -34,26 +34,32 @@ export default function Home() {
       {/* Action buttons */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-5xl">
         {actionButtons.map((button) => (
-          <Card key={button.title} className="hover:shadow-lg transition py-4">
-            <CardContent className="flex justify-between items-center p-4">
-              <div className="bg-[#CED0F8] text-[#161D96] p-4 rounded-md ">
+          <Card
+            key={button.title}
+            className="shadow-lg transition-all duration-300 py-4 !border-none hover:shadow-xl hover:translate-y-[-2px]"
+          >
+            <CardContent className="flex justify-between items-center p-4 group">
+              <div className="bg-[#CED0F8] text-[#161D96] p-4 rounded-md transition-all duration-300">
                 {button.icon}
               </div>
-              <span className="w-full text-center sm:text-left font-semibold text-base sm:text-lg lg:text-xl group-hover:text-[#161D96] duration-300 px-2">
+              <span className="w-full text-center sm:text-left font-semibold text-base sm:text-lg lg:text-xl transition-colors duration-300 px-2 group-hover:text-[#161D96]">
                 {button.title}
               </span>
-              <ChevronRight size={40} className="text-[#161D96] " />
+              <ChevronRight
+                size={40}
+                className="text-[#161D96] transition-transform duration-300 group-hover:translate-x-1"
+              />
             </CardContent>
           </Card>
         ))}
       </div>
 
       {/* Activity Grid (GitHub-like) */}
-      <div>
+      {/* <div>
         <h2 className="text-lg font-semibold mb-3">
           Applications Created / Interviews Completed
         </h2>
-      </div>
+      </div> */}
 
       {/* Progress Overview */}
       <Card>
@@ -107,6 +113,17 @@ export default function Home() {
           </div>
         </CardContent>
       </Card>
+
+      <div className="max-w-lg">
+        <span className="font-medium text-2xl font-archivo">
+          Progress Overview
+        </span>
+        <Card>
+          <CardContent>
+            <div className="flex flex-col w-full justify-items-center"></div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Upcoming Mock Interview */}
       <Card className="bg-indigo-50 border-indigo-200">
