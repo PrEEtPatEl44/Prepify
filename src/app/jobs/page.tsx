@@ -3,9 +3,7 @@ import React from "react";
 import Header from "@/components/header";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
-// TODO: Remove this and use the apiClient directly
-import { getAllColumns } from "@/lib/clients/apiClient";
-import { getAllJobs, createJob } from "@/lib/clients/apiClient";
+import { getAllJobs, createJob, getAllColumns } from "@/lib/clients";
 import { type Column, type Job } from "@/types/jobs";
 
 const Example = dynamic(() => import("@/components/kanban"), { ssr: false });

@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Ellipsis, Plus } from "lucide-react";
 import { useState } from "react";
 import { type Column, type Job } from "@/types/jobs";
-import { createJob, deleteJob, createColumn } from "@/lib/clients/apiClient";
+import { createJob, deleteJob, createColumn } from "@/lib/clients";
 import CreateJobModal from "@/components/modals/CreateJobModal";
 import CreateListModal from "@/components/modals/CreateListModal";
 import DeleteJobModal from "@/components/modals/DeleteJobModal";
