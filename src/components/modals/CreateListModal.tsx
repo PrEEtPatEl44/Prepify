@@ -2,6 +2,18 @@
 import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogFooter,
+  DialogHeader,
+} from "../ui/dialog";
+
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
 interface CreateListModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -22,42 +34,34 @@ export default function CreateListModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="relative w-[560px] bg-white rounded-xl shadow-md p-6">
-        {/* Close button */}
-        <button
-          className="absolute top-4 right-4 w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-200"
-          onClick={onClose}
-        >
-          ✕
-        </button>
-
-        <h2 className="text-xl font-bold text-gray-900 mb-6">
-          Create a New List
-        </h2>
-
-        <div className="mb-6">
-          <label className="block text-gray-700 font-semibold mb-2">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle className="text-xl font-bold">
+            Create a New List
+          </DialogTitle>
+        </DialogHeader>
+        <div>
+          <Label htmlFor="list-name" className="pb-3">
             New List Name
-          </label>
-          <input
+          </Label>
+          <Input
+            name="list-name"
+            id="list-name"
             type="text"
             value={listName}
             onChange={(e) => setListName(e.target.value)}
-            className="w-full h-12 px-4 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder="New List"
+            placeholder="Enter list name"
+            className="font-medium"
           />
         </div>
 
-        <div className="flex justify-end gap-3">
-          <button
-            className="w-24 h-10 bg-white border border-gray-400 rounded-md text-gray-600 font-medium hover:bg-gray-100"
-            onClick={onClose}
-          >
+        <DialogFooter className="flex justify-end gap-3">
+          <Button variant={"outline"} onClick={onClose}>
             Cancel
-          </button>
-          <button
-            className="w-24 h-10 bg-indigo-600 text-white rounded-md font-medium hover:bg-indigo-700 flex items-center justify-center gap-1"
+          </Button>
+          <Button
+            className="bg-[#636AE8] hover:bg-[#4e57c9] focus:ring-2 focus:ring-[#4e57c9] focus:ring-offset-2 text-white"
             onClick={() => {
               if (!listName.trim()) return;
               onSubmit(listName.trim());
@@ -65,9 +69,9 @@ export default function CreateListModal({
           >
             <Plus className="h-4 w-4" />
             Create
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
