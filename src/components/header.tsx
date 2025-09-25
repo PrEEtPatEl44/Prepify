@@ -6,18 +6,27 @@ import { Button } from "./ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { Input } from "./ui/input";
 import CreateJobModal from "@/components/modals/CreateJobModal";
-import { type Job } from "@/app/jobs/jobStore";
+import { type Job, type Column } from "@/types/jobs";
 
 export default function Header({
   onCreateJob,
+  columns,
 }: {
   onCreateJob: (job: Partial<Job>, column: string) => Promise<void>;
+  columns: Column[];
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [targetColumn, setTargetColumn] = useState("col-1");
+  console.log("Header columns:", columns);
+  const [targetColumn, setTargetColumn] = useState(columns[0]?.id);
 
   const handleOpenModal = () => {
-    setTargetColumn("col-1"); // default column
+    if (columns.length <= 0) {
+      console.error("No columns available to assign the job.");
+      alert("Please create a column before adding a job.");
+      return;
+    }
+
+    setTargetColumn(columns[0]?.id); // default col umn
     setIsModalOpen(true);
   };
 

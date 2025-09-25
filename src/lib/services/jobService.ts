@@ -4,8 +4,12 @@
 // File: src/lib/services/jobService.ts
 
 import { createClient } from "@/utils/supabase/server";
-import { Job } from "@/types/jobs";
-import { CreateJobRequest, UpdateJobRequest } from "@/types/api";
+import { Column, Job } from "@/types/jobs";
+import {
+  CreateJobRequest,
+  UpdateJobRequest,
+  CreateColumnRequest,
+} from "@/types/api";
 
 export class DatabaseJobService {
   constructor() {
@@ -24,15 +28,15 @@ export class DatabaseJobService {
    */
   private mapStatusToColumn(status: string): string {
     const statusMap: { [key: string]: string } = {
-      'WISHLIST': 'col-1',
-      'APPLIED': 'col-2', 
-      'PHONE_SCREEN': 'col-3',
-      'TECHNICAL_INTERVIEW': 'col-3',
-      'FINAL_INTERVIEW': 'col-3',
-      'OFFER': 'col-4',
-      'REJECTED': 'col-4'
+      WISHLIST: "col-1",
+      APPLIED: "col-2",
+      PHONE_SCREEN: "col-3",
+      TECHNICAL_INTERVIEW: "col-3",
+      FINAL_INTERVIEW: "col-3",
+      OFFER: "col-4",
+      REJECTED: "col-4",
     };
-    return statusMap[status] || 'col-1';
+    return statusMap[status] || "col-1";
   }
 
   /**
@@ -40,12 +44,12 @@ export class DatabaseJobService {
    */
   private mapColumnToStatus(columnId: string | undefined): string {
     const columnMap: { [key: string]: string } = {
-      'col-1': 'WISHLIST',
-      'col-2': 'APPLIED',
-      'col-3': 'PHONE_SCREEN', // Default interview status
-      'col-4': 'REJECTED' // You might want to handle OFFER separately
+      "col-1": "WISHLIST",
+      "col-2": "APPLIED",
+      "col-3": "PHONE_SCREEN", // Default interview status
+      "col-4": "REJECTED", // You might want to handle OFFER separately
     };
-    return columnMap[columnId || 'col-1'] || 'WISHLIST';
+    return columnMap[columnId || "col-1"] || "WISHLIST";
   }
 
   /**
@@ -56,7 +60,7 @@ export class DatabaseJobService {
       id: row.id,
       title: row.job_title,
       companyName: row.company_name,
-      columnId: this.mapStatusToColumn(row.application_status),
+      columnId: row.column_id,
       companyIconUrl: row.company_logo_url,
       description: row.job_description || "",
       applicationLink: row.job_url || "",
@@ -72,39 +76,40 @@ export class DatabaseJobService {
    */
   private transformJobToDbRow(job: Partial<Job>, userId?: string) {
     const dbRow: any = {};
-    
+
     if (job.title !== undefined) dbRow.job_title = job.title;
     if (job.companyName !== undefined) dbRow.company_name = job.companyName;
     if (job.columnId !== undefined) {
-      dbRow.application_status = this.mapColumnToStatus(job.columnId);
+      dbRow.column_id = job.columnId;
       // Set date_applied when moving to 'applied' status
-      if (job.columnId === 'col-2') {
-        dbRow.date_applied = new Date().toISOString().split('T')[0];
-      }
+      // if (job.columnId === "col-2") {
+      //   dbRow.date_applied = new Date().toISOString().split("T")[0];
+      // }
     }
-    if (job.companyIconUrl !== undefined) dbRow.company_logo_url = job.companyIconUrl;
+    if (job.companyIconUrl !== undefined)
+      dbRow.company_logo_url = job.companyIconUrl;
     if (job.description !== undefined) dbRow.job_description = job.description;
     if (job.applicationLink !== undefined) dbRow.job_url = job.applicationLink;
-    
+
     // Handle UUID fields - only include if they're valid UUIDs or null
     if (job.resumeId !== undefined) {
       if (job.resumeId && this.isValidUUID(job.resumeId)) {
         dbRow.resume_id = job.resumeId;
-      } else if (job.resumeId === null || job.resumeId === '') {
+      } else if (job.resumeId === null || job.resumeId === "") {
         dbRow.resume_id = null;
       }
       // If it's not a valid UUID and not null/empty, don't include it
     }
-    
+
     if (job.coverLetterId !== undefined) {
       if (job.coverLetterId && this.isValidUUID(job.coverLetterId)) {
         dbRow.cover_letter_id = job.coverLetterId;
-      } else if (job.coverLetterId === null || job.coverLetterId === '') {
+      } else if (job.coverLetterId === null || job.coverLetterId === "") {
         dbRow.cover_letter_id = null;
       }
       // If it's not a valid UUID and not null/empty, don't include it
     }
-    
+
     if (userId) dbRow.user_id = userId;
 
     return dbRow;
@@ -114,7 +119,8 @@ export class DatabaseJobService {
    * Validate UUID format
    */
   private isValidUUID(uuid: string): boolean {
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     return uuidRegex.test(uuid);
   }
 
@@ -124,10 +130,12 @@ export class DatabaseJobService {
   private async getCurrentUserId(): Promise<string | null> {
     try {
       const supabase = await this.getSupabaseClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       return user?.id || null;
     } catch (error) {
-      console.error('Error getting current user:', error);
+      console.error("Error getting current user:", error);
       return null;
     }
   }
@@ -141,14 +149,14 @@ export class DatabaseJobService {
       const userId = await this.getCurrentUserId();
 
       if (!userId) {
-        throw new Error('User not authenticated');
+        throw new Error("User not authenticated");
       }
 
       const { data, error } = await supabase
-        .from('job_applications')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
+        .from("job_applications")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
 
       if (error) {
         throw new Error(`Database error: ${error.message}`);
@@ -157,7 +165,32 @@ export class DatabaseJobService {
       // Fix the context binding issue by using arrow function or bind
       return (data || []).map((row) => this.transformDbRowToJob(row));
     } catch (error) {
-      console.error('Error in getAllJobs:', error);
+      console.error("Error in getAllJobs:", error);
+      throw error;
+    }
+  }
+
+  async getAllColumns(): Promise<Column[]> {
+    try {
+      const supabase = await this.getSupabaseClient();
+      const userId = await this.getCurrentUserId();
+
+      if (!userId) {
+        throw new Error("User not authenticated");
+      }
+
+      const { data, error } = await supabase
+        .from("columns")
+        .select("*")
+        .eq("user_id", userId);
+
+      if (error) {
+        throw new Error(`Database error: ${error.message}`);
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error("Error in getAllColumns:", error);
       throw error;
     }
   }
@@ -171,18 +204,18 @@ export class DatabaseJobService {
       const userId = await this.getCurrentUserId();
 
       if (!userId) {
-        throw new Error('User not authenticated');
+        throw new Error("User not authenticated");
       }
 
       const { data, error } = await supabase
-        .from('job_applications')
-        .select('*')
-        .eq('id', id)
-        .eq('user_id', userId)
+        .from("job_applications")
+        .select("*")
+        .eq("id", id)
+        .eq("user_id", userId)
         .single();
 
       if (error) {
-        if (error.code === 'PGRST116') {
+        if (error.code === "PGRST116") {
           return null; // No rows found
         }
         throw new Error(`Database error: ${error.message}`);
@@ -190,7 +223,7 @@ export class DatabaseJobService {
 
       return data ? this.transformDbRowToJob(data) : null;
     } catch (error) {
-      console.error('Error in getJobById:', error);
+      console.error("Error in getJobById:", error);
       throw error;
     }
   }
@@ -209,22 +242,27 @@ export class DatabaseJobService {
       const userId = await this.getCurrentUserId();
 
       if (!userId) {
-        throw new Error('User not authenticated');
+        throw new Error("User not authenticated");
       }
-      
-      const dbRow = this.transformJobToDbRow({
-        title: jobData.title,
-        companyName: jobData.companyName,
-        columnId: jobData.columnId || "col-1",
-        companyIconUrl: jobData.companyIconUrl,
-        description: jobData.description || "",
-        applicationLink: jobData.applicationLink || "",
-        resumeId: jobData.resumeId,
-        coverLetterId: jobData.coverLetterId,
-      }, userId);
+
+      const dbRow = this.transformJobToDbRow(
+        {
+          title: jobData.title,
+          companyName: jobData.companyName,
+          columnId: jobData.columnId || "col-1",
+          companyIconUrl: jobData.companyIconUrl,
+          description: jobData.description || "",
+          applicationLink: jobData.applicationLink || "",
+          resumeId: jobData.resumeId,
+          coverLetterId: jobData.coverLetterId,
+        },
+        userId
+      );
+
+      console.log("Inserting job with data:", dbRow);
 
       const { data, error } = await supabase
-        .from('job_applications')
+        .from("job_applications")
         .insert([dbRow])
         .select()
         .single();
@@ -235,7 +273,37 @@ export class DatabaseJobService {
 
       return this.transformDbRowToJob(data);
     } catch (error) {
-      console.error('Error in createJob:', error);
+      console.error("Error in createJob:", error);
+      throw error;
+    }
+  }
+
+  async createColumn(columnData: CreateColumnRequest): Promise<Column> {
+    try {
+      if (!columnData.name) {
+        throw new Error("Column name is required");
+      }
+
+      const supabase = await this.getSupabaseClient();
+      const userId = await this.getCurrentUserId();
+
+      if (!userId) {
+        throw new Error("User not authenticated");
+      }
+
+      const { data, error } = await supabase
+        .from("columns")
+        .insert([{ user_id: userId, name: columnData.name }])
+        .select()
+        .single();
+
+      if (error) {
+        throw new Error(`Database error: ${error.message}`);
+      }
+
+      return data;
+    } catch (error) {
+      console.error("Error in createColumn:", error);
       throw error;
     }
   }
@@ -243,27 +311,30 @@ export class DatabaseJobService {
   /**
    * Update an existing job application
    */
-  async updateJob(id: string, updateData: UpdateJobRequest): Promise<Job | null> {
+  async updateJob(
+    id: string,
+    updateData: UpdateJobRequest
+  ): Promise<Job | null> {
     try {
       const supabase = await this.getSupabaseClient();
       const userId = await this.getCurrentUserId();
 
       if (!userId) {
-        throw new Error('User not authenticated');
+        throw new Error("User not authenticated");
       }
-      
+
       const dbRow = this.transformJobToDbRow(updateData);
 
       const { data, error } = await supabase
-        .from('job_applications')
+        .from("job_applications")
         .update(dbRow)
-        .eq('id', id)
-        .eq('user_id', userId)
+        .eq("id", id)
+        .eq("user_id", userId)
         .select()
         .single();
 
       if (error) {
-        if (error.code === 'PGRST116') {
+        if (error.code === "PGRST116") {
           return null; // No rows found
         }
         throw new Error(`Database error: ${error.message}`);
@@ -271,7 +342,7 @@ export class DatabaseJobService {
 
       return data ? this.transformDbRowToJob(data) : null;
     } catch (error) {
-      console.error('Error in updateJob:', error);
+      console.error("Error in updateJob:", error);
       throw error;
     }
   }
@@ -290,14 +361,14 @@ export class DatabaseJobService {
       const userId = await this.getCurrentUserId();
 
       if (!userId) {
-        throw new Error('User not authenticated');
+        throw new Error("User not authenticated");
       }
-      
+
       const { error } = await supabase
-        .from('job_applications')
+        .from("job_applications")
         .delete()
-        .eq('id', id)
-        .eq('user_id', userId);
+        .eq("id", id)
+        .eq("user_id", userId);
 
       if (error) {
         throw new Error(`Database error: ${error.message}`);
@@ -305,7 +376,7 @@ export class DatabaseJobService {
 
       return true;
     } catch (error) {
-      console.error('Error in deleteJob:', error);
+      console.error("Error in deleteJob:", error);
       throw error;
     }
   }
@@ -319,17 +390,17 @@ export class DatabaseJobService {
       const userId = await this.getCurrentUserId();
 
       if (!userId) {
-        throw new Error('User not authenticated');
+        throw new Error("User not authenticated");
       }
 
       const status = this.mapColumnToStatus(columnId);
-      
+
       const { data, error } = await supabase
-        .from('job_applications')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('application_status', status)
-        .order('created_at', { ascending: false });
+        .from("job_applications")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("application_status", status)
+        .order("created_at", { ascending: false });
 
       if (error) {
         throw new Error(`Database error: ${error.message}`);
@@ -337,7 +408,7 @@ export class DatabaseJobService {
 
       return (data || []).map((row) => this.transformDbRowToJob(row));
     } catch (error) {
-      console.error('Error in getJobsByColumn:', error);
+      console.error("Error in getJobsByColumn:", error);
       throw error;
     }
   }
@@ -355,17 +426,17 @@ export class DatabaseJobService {
       const userId = await this.getCurrentUserId();
 
       if (!userId) {
-        throw new Error('User not authenticated');
+        throw new Error("User not authenticated");
       }
 
       const searchTerm = `%${query.toLowerCase()}%`;
-      
+
       const { data, error } = await supabase
-        .from('job_applications')
-        .select('*')
-        .eq('user_id', userId)
+        .from("job_applications")
+        .select("*")
+        .eq("user_id", userId)
         .or(`job_title.ilike.${searchTerm},company_name.ilike.${searchTerm}`)
-        .order('created_at', { ascending: false });
+        .order("created_at", { ascending: false });
 
       if (error) {
         throw new Error(`Database error: ${error.message}`);
@@ -373,7 +444,7 @@ export class DatabaseJobService {
 
       return (data || []).map((row) => this.transformDbRowToJob(row));
     } catch (error) {
-      console.error('Error in searchJobs:', error);
+      console.error("Error in searchJobs:", error);
       throw error;
     }
   }
@@ -394,13 +465,13 @@ export class DatabaseJobService {
       const userId = await this.getCurrentUserId();
 
       if (!userId) {
-        throw new Error('User not authenticated');
+        throw new Error("User not authenticated");
       }
 
       const { count, error } = await supabase
-        .from('job_applications')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId);
+        .from("job_applications")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId);
 
       if (error) {
         throw new Error(`Database error: ${error.message}`);
@@ -408,7 +479,7 @@ export class DatabaseJobService {
 
       return count || 0;
     } catch (error) {
-      console.error('Error in getJobsCount:', error);
+      console.error("Error in getJobsCount:", error);
       throw error;
     }
   }
@@ -416,5 +487,3 @@ export class DatabaseJobService {
 
 // Export singleton instance
 export const jobService = new DatabaseJobService();
-
-
