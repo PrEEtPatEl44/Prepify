@@ -23,34 +23,8 @@ export class DatabaseJobService {
     return await createClient();
   }
 
-  /**
-   * Map application status to column ID
-   */
-  private mapStatusToColumn(status: string): string {
-    const statusMap: { [key: string]: string } = {
-      WISHLIST: "col-1",
-      APPLIED: "col-2",
-      PHONE_SCREEN: "col-3",
-      TECHNICAL_INTERVIEW: "col-3",
-      FINAL_INTERVIEW: "col-3",
-      OFFER: "col-4",
-      REJECTED: "col-4",
-    };
-    return statusMap[status] || "col-1";
-  }
-
-  /**
-   * Map column ID to application status
-   */
-  private mapColumnToStatus(columnId: string | undefined): string {
-    const columnMap: { [key: string]: string } = {
-      "col-1": "WISHLIST",
-      "col-2": "APPLIED",
-      "col-3": "PHONE_SCREEN", // Default interview status
-      "col-4": "REJECTED", // You might want to handle OFFER separately
-    };
-    return columnMap[columnId || "col-1"] || "WISHLIST";
-  }
+  ///TRANSFORMERS ARE ONLY USED TO MAP THE NAMES BETWEEN DB AND API
+  /// ONCE PRISMA IS SETUP, THESE CAN BE REMOVED
 
   /**
    * Transform database row to Job type
@@ -79,13 +53,7 @@ export class DatabaseJobService {
 
     if (job.title !== undefined) dbRow.job_title = job.title;
     if (job.companyName !== undefined) dbRow.company_name = job.companyName;
-    if (job.columnId !== undefined) {
-      dbRow.column_id = job.columnId;
-      // Set date_applied when moving to 'applied' status
-      // if (job.columnId === "col-2") {
-      //   dbRow.date_applied = new Date().toISOString().split("T")[0];
-      // }
-    }
+    if (job.columnId !== undefined) dbRow.column_id = job.columnId;
     if (job.companyIconUrl !== undefined)
       dbRow.company_logo_url = job.companyIconUrl;
     if (job.description !== undefined) dbRow.job_description = job.description;
@@ -166,31 +134,6 @@ export class DatabaseJobService {
       return (data || []).map((row) => this.transformDbRowToJob(row));
     } catch (error) {
       console.error("Error in getAllJobs:", error);
-      throw error;
-    }
-  }
-
-  async getAllColumns(): Promise<Column[]> {
-    try {
-      const supabase = await this.getSupabaseClient();
-      const userId = await this.getCurrentUserId();
-
-      if (!userId) {
-        throw new Error("User not authenticated");
-      }
-
-      const { data, error } = await supabase
-        .from("columns")
-        .select("*")
-        .eq("user_id", userId);
-
-      if (error) {
-        throw new Error(`Database error: ${error.message}`);
-      }
-
-      return data || [];
-    } catch (error) {
-      console.error("Error in getAllColumns:", error);
       throw error;
     }
   }
@@ -278,36 +221,6 @@ export class DatabaseJobService {
     }
   }
 
-  async createColumn(columnData: CreateColumnRequest): Promise<Column> {
-    try {
-      if (!columnData.name) {
-        throw new Error("Column name is required");
-      }
-
-      const supabase = await this.getSupabaseClient();
-      const userId = await this.getCurrentUserId();
-
-      if (!userId) {
-        throw new Error("User not authenticated");
-      }
-
-      const { data, error } = await supabase
-        .from("columns")
-        .insert([{ user_id: userId, name: columnData.name }])
-        .select()
-        .single();
-
-      if (error) {
-        throw new Error(`Database error: ${error.message}`);
-      }
-
-      return data;
-    } catch (error) {
-      console.error("Error in createColumn:", error);
-      throw error;
-    }
-  }
-
   /**
    * Update an existing job application
    */
@@ -382,38 +295,6 @@ export class DatabaseJobService {
   }
 
   /**
-   * Get jobs filtered by column
-   */
-  async getJobsByColumn(columnId: string): Promise<Job[]> {
-    try {
-      const supabase = await this.getSupabaseClient();
-      const userId = await this.getCurrentUserId();
-
-      if (!userId) {
-        throw new Error("User not authenticated");
-      }
-
-      const status = this.mapColumnToStatus(columnId);
-
-      const { data, error } = await supabase
-        .from("job_applications")
-        .select("*")
-        .eq("user_id", userId)
-        .eq("application_status", status)
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        throw new Error(`Database error: ${error.message}`);
-      }
-
-      return (data || []).map((row) => this.transformDbRowToJob(row));
-    } catch (error) {
-      console.error("Error in getJobsByColumn:", error);
-      throw error;
-    }
-  }
-
-  /**
    * Search jobs by company name or job title
    */
   async searchJobs(query: string): Promise<Job[]> {
@@ -480,6 +361,67 @@ export class DatabaseJobService {
       return count || 0;
     } catch (error) {
       console.error("Error in getJobsCount:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create a new column
+   */
+  async createColumn(columnData: CreateColumnRequest): Promise<Column> {
+    try {
+      if (!columnData.name) {
+        throw new Error("Column name is required");
+      }
+
+      const supabase = await this.getSupabaseClient();
+      const userId = await this.getCurrentUserId();
+
+      if (!userId) {
+        throw new Error("User not authenticated");
+      }
+
+      const { data, error } = await supabase
+        .from("columns")
+        .insert([{ user_id: userId, name: columnData.name }])
+        .select()
+        .single();
+
+      if (error) {
+        throw new Error(`Database error: ${error.message}`);
+      }
+
+      return data;
+    } catch (error) {
+      console.error("Error in createColumn:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all columns for current user
+   */
+  async getAllColumns(): Promise<Column[]> {
+    try {
+      const supabase = await this.getSupabaseClient();
+      const userId = await this.getCurrentUserId();
+
+      if (!userId) {
+        throw new Error("User not authenticated");
+      }
+
+      const { data, error } = await supabase
+        .from("columns")
+        .select("*")
+        .eq("user_id", userId);
+
+      if (error) {
+        throw new Error(`Database error: ${error.message}`);
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error("Error in getAllColumns:", error);
       throw error;
     }
   }
