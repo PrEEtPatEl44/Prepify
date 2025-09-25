@@ -1,110 +1,381 @@
-// Job Data Service Layer
-// File: src/lib/jobService.ts
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { exampleJobs } from "@/app/jobs/jobStore";
+// Database Job Service Layer - For existing job_applications table
+// File: src/lib/services/jobService.ts
+
+import { createClient } from "@/utils/supabase/server";
 import { Job } from "@/types/jobs";
 import { CreateJobRequest, UpdateJobRequest } from "@/types/api";
 
-// In-memory storage for development (will be replaced with database later)
-class JobService {
-  private jobs: Job[] = [...exampleJobs];
+export class DatabaseJobService {
+  constructor() {
+    // Don't initialize supabase client here - do it in methods instead
+  }
 
   /**
-   * Get all job applications
+   * Initialize supabase client (call this in methods that need it)
+   */
+  private async getSupabaseClient() {
+    return await createClient();
+  }
+
+  /**
+   * Map application status to column ID
+   */
+  private mapStatusToColumn(status: string): string {
+    const statusMap: { [key: string]: string } = {
+      'WISHLIST': 'col-1',
+      'APPLIED': 'col-2', 
+      'PHONE_SCREEN': 'col-3',
+      'TECHNICAL_INTERVIEW': 'col-3',
+      'FINAL_INTERVIEW': 'col-3',
+      'OFFER': 'col-4',
+      'REJECTED': 'col-4'
+    };
+    return statusMap[status] || 'col-1';
+  }
+
+  /**
+   * Map column ID to application status
+   */
+  private mapColumnToStatus(columnId: string | undefined): string {
+    const columnMap: { [key: string]: string } = {
+      'col-1': 'WISHLIST',
+      'col-2': 'APPLIED',
+      'col-3': 'PHONE_SCREEN', // Default interview status
+      'col-4': 'REJECTED' // You might want to handle OFFER separately
+    };
+    return columnMap[columnId || 'col-1'] || 'WISHLIST';
+  }
+
+  /**
+   * Transform database row to Job type
+   */
+  private transformDbRowToJob(row: any): Job {
+    return {
+      id: row.id,
+      title: row.job_title,
+      companyName: row.company_name,
+      columnId: this.mapStatusToColumn(row.application_status),
+      companyIconUrl: row.company_logo_url,
+      description: row.job_description || "",
+      applicationLink: row.job_url || "",
+      resumeId: row.resume_id,
+      coverLetterId: row.cover_letter_id,
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.created_at),
+    };
+  }
+
+  /**
+   * Transform Job type to database row
+   */
+  private transformJobToDbRow(job: Partial<Job>, userId?: string) {
+    const dbRow: any = {};
+    
+    if (job.title !== undefined) dbRow.job_title = job.title;
+    if (job.companyName !== undefined) dbRow.company_name = job.companyName;
+    if (job.columnId !== undefined) {
+      dbRow.application_status = this.mapColumnToStatus(job.columnId);
+      // Set date_applied when moving to 'applied' status
+      if (job.columnId === 'col-2') {
+        dbRow.date_applied = new Date().toISOString().split('T')[0];
+      }
+    }
+    if (job.companyIconUrl !== undefined) dbRow.company_logo_url = job.companyIconUrl;
+    if (job.description !== undefined) dbRow.job_description = job.description;
+    if (job.applicationLink !== undefined) dbRow.job_url = job.applicationLink;
+    
+    // Handle UUID fields - only include if they're valid UUIDs or null
+    if (job.resumeId !== undefined) {
+      if (job.resumeId && this.isValidUUID(job.resumeId)) {
+        dbRow.resume_id = job.resumeId;
+      } else if (job.resumeId === null || job.resumeId === '') {
+        dbRow.resume_id = null;
+      }
+      // If it's not a valid UUID and not null/empty, don't include it
+    }
+    
+    if (job.coverLetterId !== undefined) {
+      if (job.coverLetterId && this.isValidUUID(job.coverLetterId)) {
+        dbRow.cover_letter_id = job.coverLetterId;
+      } else if (job.coverLetterId === null || job.coverLetterId === '') {
+        dbRow.cover_letter_id = null;
+      }
+      // If it's not a valid UUID and not null/empty, don't include it
+    }
+    
+    if (userId) dbRow.user_id = userId;
+
+    return dbRow;
+  }
+
+  /**
+   * Validate UUID format
+   */
+  private isValidUUID(uuid: string): boolean {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(uuid);
+  }
+
+  /**
+   * Get current user ID from Supabase auth
+   */
+  private async getCurrentUserId(): Promise<string | null> {
+    try {
+      const supabase = await this.getSupabaseClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      return user?.id || null;
+    } catch (error) {
+      console.error('Error getting current user:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get all job applications for current user
    */
   async getAllJobs(): Promise<Job[]> {
-    // Simulate database delay
-    await this.simulateDelay(100);
-    return [...this.jobs]; // Return a copy to prevent external mutations
+    try {
+      const supabase = await this.getSupabaseClient();
+      const userId = await this.getCurrentUserId();
+
+      if (!userId) {
+        throw new Error('User not authenticated');
+      }
+
+      const { data, error } = await supabase
+        .from('job_applications')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw new Error(`Database error: ${error.message}`);
+      }
+
+      // Fix the context binding issue by using arrow function or bind
+      return (data || []).map((row) => this.transformDbRowToJob(row));
+    } catch (error) {
+      console.error('Error in getAllJobs:', error);
+      throw error;
+    }
   }
 
   /**
    * Get a specific job by ID
    */
   async getJobById(id: string): Promise<Job | null> {
-    await this.simulateDelay(50);
-    const job = this.jobs.find((job) => job.id === id);
-    return job ? { ...job } : null; // Return a copy
+    try {
+      const supabase = await this.getSupabaseClient();
+      const userId = await this.getCurrentUserId();
+
+      if (!userId) {
+        throw new Error('User not authenticated');
+      }
+
+      const { data, error } = await supabase
+        .from('job_applications')
+        .select('*')
+        .eq('id', id)
+        .eq('user_id', userId)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          return null; // No rows found
+        }
+        throw new Error(`Database error: ${error.message}`);
+      }
+
+      return data ? this.transformDbRowToJob(data) : null;
+    } catch (error) {
+      console.error('Error in getJobById:', error);
+      throw error;
+    }
   }
 
   /**
    * Create a new job application
    */
   async createJob(jobData: CreateJobRequest): Promise<Job> {
-    await this.simulateDelay(200);
+    try {
+      // Validate required fields
+      if (!jobData.title || !jobData.companyName) {
+        throw new Error("Title and company name are required fields");
+      }
 
-    // Validate required fields
-    if (!jobData.title || !jobData.companyName) {
-      throw new Error("Title and company name are required fields");
+      const supabase = await this.getSupabaseClient();
+      const userId = await this.getCurrentUserId();
+
+      if (!userId) {
+        throw new Error('User not authenticated');
+      }
+      
+      const dbRow = this.transformJobToDbRow({
+        title: jobData.title,
+        companyName: jobData.companyName,
+        columnId: jobData.columnId || "col-1",
+        companyIconUrl: jobData.companyIconUrl,
+        description: jobData.description || "",
+        applicationLink: jobData.applicationLink || "",
+        resumeId: jobData.resumeId,
+        coverLetterId: jobData.coverLetterId,
+      }, userId);
+
+      const { data, error } = await supabase
+        .from('job_applications')
+        .insert([dbRow])
+        .select()
+        .single();
+
+      if (error) {
+        throw new Error(`Database error: ${error.message}`);
+      }
+
+      return this.transformDbRowToJob(data);
+    } catch (error) {
+      console.error('Error in createJob:', error);
+      throw error;
     }
-
-    // Generate unique ID
-    const id = `job-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
-    // Create new job object
-    const newJob: Job = {
-      id,
-      title: jobData.title,
-      companyName: jobData.companyName,
-      columnId: jobData.columnId || "col-1",
-      companyIconUrl:
-        jobData.companyIconUrl ||
-        this.generateFallbackImage(jobData.companyName),
-      description: jobData.description,
-      applicationLink: jobData.applicationLink,
-      resumeId: jobData.resumeId,
-      coverLetterId: jobData.coverLetterId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    // Add to storage
-    this.jobs.push(newJob);
-
-    return { ...newJob };
   }
 
   /**
    * Update an existing job application
    */
-  async updateJob(
-    id: string,
-    updateData: UpdateJobRequest
-  ): Promise<Job | null> {
-    await this.simulateDelay(150);
+  async updateJob(id: string, updateData: UpdateJobRequest): Promise<Job | null> {
+    try {
+      const supabase = await this.getSupabaseClient();
+      const userId = await this.getCurrentUserId();
 
-    const jobIndex = this.jobs.findIndex((job) => job.id === id);
+      if (!userId) {
+        throw new Error('User not authenticated');
+      }
+      
+      const dbRow = this.transformJobToDbRow(updateData);
 
-    if (jobIndex === -1) {
-      return null;
+      const { data, error } = await supabase
+        .from('job_applications')
+        .update(dbRow)
+        .eq('id', id)
+        .eq('user_id', userId)
+        .select()
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          return null; // No rows found
+        }
+        throw new Error(`Database error: ${error.message}`);
+      }
+
+      return data ? this.transformDbRowToJob(data) : null;
+    } catch (error) {
+      console.error('Error in updateJob:', error);
+      throw error;
     }
-
-    // Update the job with new data
-    const updatedJob = {
-      ...this.jobs[jobIndex],
-      ...updateData,
-      id: this.jobs[jobIndex].id, // Ensure ID cannot be changed
-    };
-
-    this.jobs[jobIndex] = updatedJob;
-
-    return { ...updatedJob };
   }
 
   /**
    * Delete a job application
    */
   async deleteJob(id: string): Promise<boolean> {
-    await this.simulateDelay(100);
+    try {
+      // Validate UUID format
+      if (!this.isValidUUID(id)) {
+        throw new Error(`Invalid UUID format: ${id}`);
+      }
 
-    const jobIndex = this.jobs.findIndex((job) => job.id === id);
+      const supabase = await this.getSupabaseClient();
+      const userId = await this.getCurrentUserId();
 
-    if (jobIndex === -1) {
-      return false;
+      if (!userId) {
+        throw new Error('User not authenticated');
+      }
+      
+      const { error } = await supabase
+        .from('job_applications')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', userId);
+
+      if (error) {
+        throw new Error(`Database error: ${error.message}`);
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error in deleteJob:', error);
+      throw error;
     }
+  }
 
-    this.jobs.splice(jobIndex, 1);
-    return true;
+  /**
+   * Get jobs filtered by column
+   */
+  async getJobsByColumn(columnId: string): Promise<Job[]> {
+    try {
+      const supabase = await this.getSupabaseClient();
+      const userId = await this.getCurrentUserId();
+
+      if (!userId) {
+        throw new Error('User not authenticated');
+      }
+
+      const status = this.mapColumnToStatus(columnId);
+      
+      const { data, error } = await supabase
+        .from('job_applications')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('application_status', status)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw new Error(`Database error: ${error.message}`);
+      }
+
+      return (data || []).map((row) => this.transformDbRowToJob(row));
+    } catch (error) {
+      console.error('Error in getJobsByColumn:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Search jobs by company name or job title
+   */
+  async searchJobs(query: string): Promise<Job[]> {
+    try {
+      if (!query.trim()) {
+        return this.getAllJobs();
+      }
+
+      const supabase = await this.getSupabaseClient();
+      const userId = await this.getCurrentUserId();
+
+      if (!userId) {
+        throw new Error('User not authenticated');
+      }
+
+      const searchTerm = `%${query.toLowerCase()}%`;
+      
+      const { data, error } = await supabase
+        .from('job_applications')
+        .select('*')
+        .eq('user_id', userId)
+        .or(`job_title.ilike.${searchTerm},company_name.ilike.${searchTerm}`)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw new Error(`Database error: ${error.message}`);
+      }
+
+      return (data || []).map((row) => this.transformDbRowToJob(row));
+    } catch (error) {
+      console.error('Error in searchJobs:', error);
+      throw error;
+    }
   }
 
   /**
@@ -115,67 +386,35 @@ class JobService {
   }
 
   /**
-   * Get jobs filtered by column
-   */
-  async getJobsByColumn(columnId: string): Promise<Job[]> {
-    await this.simulateDelay(50);
-    return this.jobs.filter((job) => job.columnId === columnId);
-  }
-
-  /**
-   * Search jobs by company name or job title
-   */
-  async searchJobs(query: string): Promise<Job[]> {
-    await this.simulateDelay(100);
-
-    if (!query.trim()) {
-      return this.getAllJobs();
-    }
-
-    const searchTerm = query.toLowerCase();
-    return this.jobs.filter(
-      (job) =>
-        job.title.toLowerCase().includes(searchTerm) ||
-        job.companyName.toLowerCase().includes(searchTerm)
-    );
-  }
-
-  /**
-   * Get total count of jobs
+   * Get total count of jobs for current user
    */
   async getJobsCount(): Promise<number> {
-    return this.jobs.length;
-  }
+    try {
+      const supabase = await this.getSupabaseClient();
+      const userId = await this.getCurrentUserId();
 
-  /**
-   * Generate fallback image URL for company
-   */
-  private generateFallbackImage(companyName: string): string {
-    const cleanCompanyName = companyName.toLowerCase().replace(/\s+/g, "");
-    return `https://cdn.brandfetch.io/${cleanCompanyName}.com?c=1idy7WQ5YtpRvbd1DQy`;
-  }
+      if (!userId) {
+        throw new Error('User not authenticated');
+      }
 
-  /**
-   * Simulate database operation delay
-   */
-  private async simulateDelay(ms: number): Promise<void> {
-    await new Promise((resolve) => setTimeout(resolve, ms));
-  }
+      const { count, error } = await supabase
+        .from('job_applications')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId);
 
-  /**
-   * Reset jobs to initial state (useful for testing)
-   */
-  async resetJobs(): Promise<void> {
-    this.jobs = [...exampleJobs];
-  }
+      if (error) {
+        throw new Error(`Database error: ${error.message}`);
+      }
 
-  /**
-   * Get current jobs array length (for debugging)
-   */
-  getJobsLength(): number {
-    return this.jobs.length;
+      return count || 0;
+    } catch (error) {
+      console.error('Error in getJobsCount:', error);
+      throw error;
+    }
   }
 }
 
 // Export singleton instance
-export const jobService = new JobService();
+export const jobService = new DatabaseJobService();
+
+
