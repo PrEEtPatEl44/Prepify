@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Ellipsis, Plus } from "lucide-react";
 import { useState } from "react";
 import { type Column, type Job } from "@/types/jobs";
-import { createJob, deleteJob, createColumn } from "@/lib/clients";
+import { createJob, deleteJob, createColumn, moveJob } from "@/lib/clients";
 import CreateJobModal from "@/components/modals/CreateJobModal";
 import CreateListModal from "@/components/modals/CreateListModal";
 import DeleteJobModal from "@/components/modals/DeleteJobModal";
@@ -56,6 +56,8 @@ const Example = ({
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [pickedItem, setPickedItem] = useState<JobKanbanItem | null>();
+  const [prevJobs, setPrevJobs] = useState<Job[] | null>(null);
 
   // Job Modal Handlers
   const handleOpenJobModal = (columnId: string) => {
@@ -148,6 +150,37 @@ const Example = ({
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleDragStart = (e: any) => {
+    const item = kanbanItems.find((item) => item.id === e.active.id);
+    setPickedItem(item);
+    setPrevJobs(jobs);
+    console.log("Drag started!!!!!!!!:", item);
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleDragEnd = (e: any) => {
+    const item = kanbanItems.find((item) => item.id === e.active.id);
+    if (item && pickedItem && item.column !== pickedItem.column) {
+      try {
+        moveJob(item.id, item.column);
+      } catch (error) {
+        console.error("Move failed:", error);
+        alert(
+          `Failed to move job: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`
+        );
+        if (prevJobs) {
+          setJobs(prevJobs);
+        }
+      }
+      console.log(
+        `Drag ended and item moved from ${pickedItem.column} to new column: ${item.column}`
+      );
+    }
+  };
+
   const allColumns = [
     ...columns,
     { id: "create-new-list", name: "Create New List" },
@@ -160,6 +193,8 @@ const Example = ({
         columns={kanbanColumns}
         data={kanbanItems}
         onDataChange={handleKanbanDataChange}
+        onDragStart={(e) => handleDragStart(e)}
+        onDragEnd={(e) => handleDragEnd(e)}
       >
         {(column) =>
           column.id === "create-new-list" ? (

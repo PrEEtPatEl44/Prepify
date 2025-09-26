@@ -19,16 +19,6 @@ export class JobsApiClient extends BaseApiClient {
   }
 
   /**
-   * Get job applications filtered by column
-   */
-  async getJobsByColumn(columnId: string): Promise<Job[]> {
-    const response = await this.fetchApi<GetJobsResponse>(
-      `/applications?column=${columnId}`
-    );
-    return response.data.jobs;
-  }
-
-  /**
    * Search job applications
    */
   async searchJobs(query: string): Promise<Job[]> {

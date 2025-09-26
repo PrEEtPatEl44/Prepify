@@ -1,5 +1,3 @@
-
-
 // Individual Job API Route - Updated for dynamic columns
 // File: src/app/api/applications/[id]/route.ts
 
@@ -11,17 +9,6 @@ import {
   DeleteJobResponse,
   ApiError,
 } from "@/types/api";
-
-/**
- * Validate column ID format
- */
-function isValidColumnId(columnId: string): boolean {
-  // Allow original 4 columns + dynamic columns that start with "col-"
-  const originalColumns = ["col-1", "col-2", "col-3", "col-4"];
-  const isDynamicColumn = columnId.startsWith("col-") && columnId.length > 5;
-  
-  return originalColumns.includes(columnId) || isDynamicColumn;
-}
 
 /**
  * GET /api/applications/[id]
@@ -113,7 +100,7 @@ export async function PUT(
     console.log("Update data:", body);
 
     // Validate column if provided
-    if (body.columnId && !isValidColumnId(body.columnId)) {
+    if (!body.columnId) {
       const errorResponse: ApiError = {
         success: false,
         error: "Validation Error",
@@ -149,7 +136,9 @@ export async function PUT(
       return NextResponse.json(errorResponse, { status: 404 });
     }
 
-    console.log(`Updated job: ${updatedJob.title} at ${updatedJob.companyName}`);
+    console.log(
+      `Updated job: ${updatedJob.title} at ${updatedJob.companyName}`
+    );
 
     const response: UpdateJobResponse = {
       success: true,

@@ -21,8 +21,6 @@ export const columnsService = apiClient.columns;
 
 // Backward compatibility - individual function exports
 export const getAllJobs = () => apiClient.jobs.getAllJobs();
-export const getJobsByColumn = (columnId: string) =>
-  apiClient.jobs.getJobsByColumn(columnId);
 export const searchJobs = (query: string) => apiClient.jobs.searchJobs(query);
 export const getJobById = (id: string) => apiClient.jobs.getJobById(id);
 export const createJob = (jobData: CreateJobRequest) =>
