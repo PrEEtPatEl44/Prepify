@@ -24,17 +24,18 @@ import { Separator } from "../ui/separator";
 
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 
 interface CreateJobModalProps {
-  isOpen: boolean;
-  onClose: () => void;
   onSubmit: (jobData: Partial<Job>) => void;
   targetColumn?: string;
+  children: React.ReactNode;
 }
 
 interface FormData {
@@ -47,10 +48,9 @@ interface FormData {
 }
 
 const CreateJobModal: React.FC<CreateJobModalProps> = ({
-  isOpen,
-  onClose,
   onSubmit,
-  targetColumn = "col-1",
+  targetColumn,
+  children,
 }) => {
   const [formData, setFormData] = useState<FormData>({
     company: "",
@@ -66,6 +66,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
     useState<CompanySearchResult | null>(null);
   const [showCompanyDropdown, setShowCompanyDropdown] = useState(false);
   const [companyInputFocused, setCompanyInputFocused] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const companyInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -174,6 +175,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
       };
 
       await onSubmit(jobData);
+      setIsOpen(false);
     } catch (error) {
       console.error("Failed to create job application:", error);
     } finally {
@@ -181,11 +183,10 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       {/* Header */}
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="px-0 min-w-xl ">
         <DialogHeader className="flex size-full items-start justify-between px-4">
           <DialogTitle className="text-xl font-semibold">
@@ -396,15 +397,13 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
           </div>
           <DialogFooter className="mt-4 gap-2">
             {/* Cancel Button */}
-            <Button
+            <DialogClose
               type="button"
-              onClick={onClose}
               disabled={isLoading}
-              className=""
-              variant={"outline"}
+              className="hover:bg-gray-200 rounded-md border border-gray-200 px-2"
             >
               Cancel
-            </Button>
+            </DialogClose>
 
             {/* Save Button */}
             <Button

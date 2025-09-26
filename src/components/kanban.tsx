@@ -50,8 +50,6 @@ const Example = ({
 
     setJobs(updatedJobs as Job[]);
   };
-  const [isJobModalOpen, setIsJobModalOpen] = useState(false);
-  const [targetColumn, setTargetColumn] = useState<string>("");
   const [isListModalOpen, setIsListModalOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -60,12 +58,6 @@ const Example = ({
   const [prevJobs, setPrevJobs] = useState<Job[] | null>(null);
 
   // Job Modal Handlers
-  const handleOpenJobModal = (columnId: string) => {
-    setTargetColumn(columnId);
-    setIsJobModalOpen(true);
-  };
-  const handleCloseJobModal = () => setIsJobModalOpen(false);
-
   const handleCreateJob = async (jobData: Partial<Job>) => {
     if (isCreating) return;
     console.log(jobData);
@@ -79,7 +71,8 @@ const Example = ({
         !jobData.description ||
         !jobData.applicationLink ||
         !jobData.resumeId ||
-        !jobData.coverLetterId
+        !jobData.coverLetterId ||
+        !jobData.columnId
       ) {
         throw new Error("All fields are required");
       }
@@ -87,7 +80,7 @@ const Example = ({
       const requestData = {
         title: jobData.title,
         companyName: jobData.companyName,
-        columnId: targetColumn,
+        columnId: jobData.columnId,
         companyIconUrl: jobData.companyIconUrl,
         description: jobData.description,
         applicationLink: jobData.applicationLink,
@@ -101,7 +94,6 @@ const Example = ({
       console.log("Job created successfully:", newJob);
 
       setJobs((prevJobs) => [...prevJobs, newJob]);
-      setIsJobModalOpen(false);
     } catch (error) {
       console.error("Failed to create job:", error);
       alert(
@@ -226,24 +218,17 @@ const Example = ({
                   <span className={`text-md font-archivo font-semibold`}>
                     {column.name}
                   </span>
-                  <div
-                    className={`cursor-pointer hover:text-accent-foreground rounded-full p-2 transition-colors ${
-                      isCreating
-                        ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-[#636AE8] hover:bg-[#5A5FD3]"
-                    }`}
-                    onClick={
-                      !isCreating
-                        ? () => handleOpenJobModal(column.id)
-                        : undefined
-                    }
+
+                  <CreateJobModal
+                    onSubmit={handleCreateJob}
+                    targetColumn={column.id}
                   >
-                    {isCreating ? (
-                      <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    ) : (
+                    <div
+                      className={`cursor-pointer hover:text-accent-foreground rounded-full p-2 transition-colors bg-[#636AE8] hover:bg-[#5A5FD3]`}
+                    >
                       <Plus strokeWidth={5} className="h-3 w-3 text-white" />
-                    )}
-                  </div>
+                    </div>
+                  </CreateJobModal>
                 </div>
               </KanbanHeader>
               <KanbanCards id={column.id}>
@@ -353,12 +338,6 @@ const Example = ({
         }
       </KanbanProvider>
 
-      <CreateJobModal
-        isOpen={isJobModalOpen}
-        onClose={handleCloseJobModal}
-        onSubmit={handleCreateJob}
-        targetColumn={targetColumn}
-      />
       <CreateListModal
         isOpen={isListModalOpen}
         onClose={handleCloseListModal}

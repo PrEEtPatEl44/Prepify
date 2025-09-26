@@ -35,10 +35,7 @@ const Page = () => {
 
   // Handler to create a new job and update state at parent level as state
   // was not updating in header component due to missing jobs
-  const handleCreateJob = async (
-    jobData: Partial<Job>,
-    targetColumn: string
-  ) => {
+  const handleCreateJob = async (jobData: Partial<Job>) => {
     console.log("Creating job via API:", jobData);
     if (
       !jobData.title ||
@@ -47,7 +44,8 @@ const Page = () => {
       !jobData.description ||
       !jobData.applicationLink ||
       !jobData.resumeId ||
-      !jobData.coverLetterId
+      !jobData.coverLetterId ||
+      !jobData.columnId
     ) {
       throw new Error("All fields are required");
     }
@@ -56,7 +54,7 @@ const Page = () => {
     const requestData = {
       title: jobData.title,
       companyName: jobData.companyName,
-      columnId: targetColumn,
+      columnId: jobData.columnId,
       companyIconUrl: jobData.companyIconUrl,
       description: jobData.description,
       applicationLink: jobData.applicationLink,
