@@ -4,6 +4,8 @@ import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { Input } from "./ui/input";
 import CreateJobModal from "@/components/modals/CreateJobModal";
 import { type Job, type Column } from "@/types/jobs";
+import UserDropdown from "@/components/user-dropdown";
+import { useUser } from "@/hooks/useUser";
 
 export default function Header({
   onCreateJob,
@@ -12,6 +14,8 @@ export default function Header({
   onCreateJob: (job: Partial<Job>) => Promise<void>;
   columns: Column[];
 }) {
+  const { profile } = useUser();
+
   const handleCreateJob = async (jobData: Partial<Job>) => {
     try {
       await onCreateJob(jobData);
@@ -40,10 +44,14 @@ export default function Header({
           />
 
           {/* Avatar */}
-          <Avatar className="h-8 w-8 rounded-lg">
-            <AvatarImage src={undefined} alt={"testname"} />
-            <AvatarFallback className="rounded-full">CN</AvatarFallback>
-          </Avatar>
+          <UserDropdown sideForMobile="bottom" sideForDesktop="bottom">
+            <Avatar className="h-8 w-8 rounded-full cursor-pointer">
+              <AvatarImage src={profile?.avatar} alt={profile?.name} />
+              <AvatarFallback className="rounded-full">
+                {profile?.name.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          </UserDropdown>
         </div>
       </div>
     </>
