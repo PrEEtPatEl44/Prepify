@@ -159,11 +159,11 @@ const Example = ({
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleDragEnd = (e: any) => {
+  const handleDragEnd = async (e: any) => {
     const item = kanbanItems.find((item) => item.id === e.active.id);
     if (item && pickedItem && item.column !== pickedItem.column) {
       try {
-        moveJob(item.id, item.column);
+        await moveJob(item.id, item.column);
       } catch (error) {
         console.error("Move failed:", error);
         alert(
