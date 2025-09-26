@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Ellipsis } from "lucide-react";
 import { useState } from "react";
 import { type Column, type Job } from "@/types/jobs";
-import { createJob, deleteJob, createColumn, moveJob } from "@/lib/clients";
+import { deleteJob, createColumn, moveJob } from "@/lib/clients";
 import CreateJobModal from "@/components/modals/CreateJobModal";
 import CreateListModal from "@/components/modals/CreateListModal";
 import DeleteJobModal from "@/components/modals/DeleteJobModal";
@@ -32,11 +32,13 @@ const Example = ({
   setJobs,
   columns,
   setColumns,
+  handleCreateJob,
 }: {
   jobs: Job[];
   setJobs: React.Dispatch<React.SetStateAction<Job[]>>;
   columns: Column[];
   setColumns: React.Dispatch<React.SetStateAction<Column[]>>;
+  handleCreateJob: (jobData: Partial<Job>) => Promise<void>;
 }) => {
   // UPDATED: Handle kanban data changes and transform back to Job format
   const handleKanbanDataChange = (updatedKanbanItems: JobKanbanItem[]) => {
@@ -51,59 +53,9 @@ const Example = ({
     setJobs(updatedJobs as Job[]);
   };
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
-  const [isCreating, setIsCreating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [pickedItem, setPickedItem] = useState<JobKanbanItem | null>();
   const [prevJobs, setPrevJobs] = useState<Job[] | null>(null);
-
-  // Job Modal Handlers
-  const handleCreateJob = async (jobData: Partial<Job>) => {
-    if (isCreating) return;
-    console.log(jobData);
-    setIsCreating(true);
-    try {
-      console.log("Creating job via API:", jobData);
-      if (
-        !jobData.title ||
-        !jobData.companyName ||
-        !jobData.companyIconUrl ||
-        !jobData.description ||
-        !jobData.applicationLink ||
-        !jobData.resumeId ||
-        !jobData.coverLetterId ||
-        !jobData.columnId
-      ) {
-        throw new Error("All fields are required");
-      }
-
-      const requestData = {
-        title: jobData.title,
-        companyName: jobData.companyName,
-        columnId: jobData.columnId,
-        companyIconUrl: jobData.companyIconUrl,
-        description: jobData.description,
-        applicationLink: jobData.applicationLink,
-        resumeId: jobData.resumeId,
-        coverLetterId: jobData.coverLetterId,
-      };
-
-      const newJob = await createJob({
-        ...requestData,
-      });
-      console.log("Job created successfully:", newJob);
-
-      setJobs((prevJobs) => [...prevJobs, newJob]);
-    } catch (error) {
-      console.error("Failed to create job:", error);
-      alert(
-        `Failed to create job: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
-    } finally {
-      setIsCreating(false);
-    }
-  };
 
   const handleCreateList = async (listName: string) => {
     if (!listName) return;

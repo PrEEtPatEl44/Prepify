@@ -28,44 +28,54 @@ const Page = () => {
     fetchData();
   }, []);
 
-  // TODO: Will need to update this as is being repeated in kanban.tsx as well
-  // we could probabply change the CreateJobModal to use asChild for trigger
-  // and instead of manual usestate hooks from parent component
-  // and then centralize the create job logic here
-
   // Handler to create a new job and update state at parent level as state
   // was not updating in header component due to missing jobs
   const handleCreateJob = async (jobData: Partial<Job>) => {
-    console.log("Creating job via API:", jobData);
-    if (
-      !jobData.title ||
-      !jobData.companyName ||
-      !jobData.companyIconUrl ||
-      !jobData.description ||
-      !jobData.applicationLink ||
-      !jobData.resumeId ||
-      !jobData.coverLetterId ||
-      !jobData.columnId
-    ) {
-      throw new Error("All fields are required");
+    console.log(jobData);
+
+    try {
+      console.log("Creating job via API:", jobData);
+      if (
+        !jobData.title ||
+        !jobData.companyName ||
+        !jobData.companyIconUrl ||
+        !jobData.description ||
+        !jobData.applicationLink ||
+        !jobData.resumeId ||
+        !jobData.coverLetterId ||
+        !jobData.columnId
+      ) {
+        throw new Error("All fields are required");
+      }
+
+      const requestData = {
+        title: jobData.title,
+        companyName: jobData.companyName,
+        columnId: jobData.columnId,
+        companyIconUrl: jobData.companyIconUrl,
+        description: jobData.description,
+        applicationLink: jobData.applicationLink,
+        resumeId: jobData.resumeId,
+        coverLetterId: jobData.coverLetterId,
+      };
+
+      const newJob = await createJob({
+        ...requestData,
+      });
+      console.log("Job created successfully:", newJob);
+
+      setJobs((prevJobs) => [...prevJobs, newJob]);
+    } catch (error) {
+      console.error("Failed to create job:", error);
+      alert(
+        `Failed to create job: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    } finally {
+      // Any cleanup if necessary
+      console.log("Create job process completed");
     }
-
-    // Convert jobData to match CreateJobRequest interface with proper type casting
-    const requestData = {
-      title: jobData.title,
-      companyName: jobData.companyName,
-      columnId: jobData.columnId,
-      companyIconUrl: jobData.companyIconUrl,
-      description: jobData.description,
-      applicationLink: jobData.applicationLink,
-      resumeId: jobData.resumeId,
-      coverLetterId: jobData.coverLetterId,
-    };
-
-    const newJob = await createJob(requestData);
-    console.log("Job created successfully:", newJob);
-
-    setJobs((prevJobs) => [...prevJobs, newJob]);
   };
 
   if (isLoading) {
@@ -94,6 +104,7 @@ const Page = () => {
           setJobs={setJobs}
           columns={columns}
           setColumns={setColumns}
+          handleCreateJob={handleCreateJob}
         />
       </div>
     </div>
