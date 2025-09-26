@@ -27,7 +27,7 @@ import {
   type JobKanbanItem,
 } from "@/adapters/jobAdapters";
 
-const Example = ({
+const Kanban = ({
   jobs,
   setJobs,
   columns,
@@ -52,8 +52,7 @@ const Example = ({
 
     setJobs(updatedJobs as Job[]);
   };
-  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+
   const [pickedItem, setPickedItem] = useState<JobKanbanItem | null>();
   const [prevJobs, setPrevJobs] = useState<Job[] | null>(null);
 
@@ -63,10 +62,7 @@ const Example = ({
     setColumns((prev) => [...prev, newColumn]);
   };
 
-  const handleConfirmDelete = async () => {
-    if (!selectedJob || isDeleting) return;
-
-    setIsDeleting(true);
+  const handleConfirmDelete = async (selectedJob: Job) => {
     console.log("Confirming delete for job:", selectedJob.id);
 
     try {
@@ -76,16 +72,10 @@ const Example = ({
       console.log("Job deleted successfully");
 
       setJobs((prev) => prev.filter((j) => j.id !== selectedJob.id));
-      setSelectedJob(null);
     } catch (error) {
-      console.error("Delete failed:", error);
-      alert(
-        `Failed to delete job: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
+      throw error || new Error("Failed to delete job");
     } finally {
-      setIsDeleting(false);
+      console.log("Delete operation finished");
     }
   };
 
@@ -238,26 +228,12 @@ const Example = ({
                               </DropdownMenuItem>
                               <DeleteJobModal
                                 onConfirm={() => {
-                                  handleConfirmDelete();
+                                  handleConfirmDelete(
+                                    transformKanbanItemsToJobs(jobData) as Job
+                                  );
                                 }}
-                              >
-                                <DropdownMenuItem
-                                  onSelect={(e) => {
-                                    setSelectedJob(
-                                      transformKanbanItemsToJobs(jobData) as Job
-                                    );
-                                    e.preventDefault();
-                                  }}
-                                  className={
-                                    isDeleting
-                                      ? "text-gray-400 cursor-not-allowed"
-                                      : "text-red-600 hover:bg-red-50 focus:bg-red-50 cursor-pointer"
-                                  }
-                                  disabled={isDeleting}
-                                >
-                                  {isDeleting ? "Deleting..." : "Delete"}
-                                </DropdownMenuItem>
-                              </DeleteJobModal>
+                                job={transformKanbanItemsToJobs(jobData) as Job}
+                              />
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>
@@ -274,4 +250,4 @@ const Example = ({
   );
 };
 
-export default Example;
+export default Kanban;

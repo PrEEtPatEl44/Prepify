@@ -7,7 +7,7 @@ import { getAllJobs, createJob, getAllColumns } from "@/lib/clients";
 import { type Column, type Job } from "@/types/jobs";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const Example = dynamic(() => import("@/components/kanban"), { ssr: false });
+const Kanban = dynamic(() => import("@/components/kanban"), { ssr: false });
 
 const Page = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -99,7 +99,7 @@ const Page = () => {
         <Header columns={columns} onCreateJob={handleCreateJob} />
       </div>
       <div className="flex-1 overflow-hidden">
-        <Example
+        <Kanban
           jobs={jobs}
           setJobs={setJobs}
           columns={columns}

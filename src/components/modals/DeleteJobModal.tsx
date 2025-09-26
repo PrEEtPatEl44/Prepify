@@ -2,53 +2,87 @@
 
 import { Separator } from "@/components/ui/separator";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "../ui/alert-dialog";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { useState } from "react";
+import { Job } from "@/types/jobs";
+import { DialogClose } from "@radix-ui/react-dialog";
+import { Button } from "@/components/ui/button";
 
 interface DeleteJobModalProps {
-  children: React.ReactNode;
-  onConfirm: () => void;
+  onConfirm: (job: Job) => void;
+  job: Job;
 }
 
 export default function DeleteJobModal({
-  children,
   onConfirm,
+  job,
 }: DeleteJobModalProps) {
-  console.log("delet cofirm" + children);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
-      <AlertDialogContent className="px-0">
-        <AlertDialogHeader>
-          <AlertDialogTitle>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <DropdownMenuItem
+          className={
+            isDeleting
+              ? "text-gray-400 cursor-not-allowed"
+              : "text-red-600 hover:bg-red-50 focus:bg-red-50 cursor-pointer"
+          }
+          disabled={isDeleting}
+          onSelect={(e) => {
+            // Prevent the dropdown from closing
+            e.preventDefault();
+          }}
+        >
+          {isDeleting ? "Deleting..." : "Delete"}
+        </DropdownMenuItem>
+      </DialogTrigger>
+      <DialogContent className="px-0">
+        <DialogHeader>
+          <DialogTitle>
             <span className="px-4">Delete Job Application </span>
-            <Separator className="bg-gray-300" />
-          </AlertDialogTitle>
-          <AlertDialogDescription className="px-4">
-            Are you sure you want to delete this Application? This cannot be
-            undone.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter className="px-4">
-          <AlertDialogCancel className="border-gray-200 border hover:bg-gray-300 ">
+          </DialogTitle>
+        </DialogHeader>
+        <Separator className="bg-gray-300" />
+        <DialogDescription className="px-4">
+          Are you sure you want to delete this Application with job title{" "}
+          {job.title}? This cannot be undone.
+        </DialogDescription>
+        <DialogFooter className="px-4">
+          <DialogClose className="border-gray-200 border px-3 rounded-md hover:bg-gray-200 ">
             Cancel
-          </AlertDialogCancel>
-          <AlertDialogAction
-            onClick={onConfirm}
+          </DialogClose>
+          <Button
+            onClick={async () => {
+              setIsDeleting(true);
+              try {
+                await onConfirm(job);
+              } catch (error) {
+                console.error("Failed to delete job:", error);
+                alert(
+                  `Failed to delete job: ${
+                    error instanceof Error ? error.message : "Unknown error"
+                  }`
+                );
+              } finally {
+                setIsOpen(false);
+                setIsDeleting(false);
+              }
+            }}
             className="bg-red-600 hover:bg-red-700 focus:bg-red-700"
           >
             Continue
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
