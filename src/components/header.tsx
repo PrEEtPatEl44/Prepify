@@ -1,7 +1,5 @@
 "use client";
 
-import { Plus } from "lucide-react";
-import { Button } from "./ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { Input } from "./ui/input";
 import CreateJobModal from "@/components/modals/CreateJobModal";
@@ -38,15 +36,8 @@ export default function Header({
           <CreateJobModal
             onSubmit={handleCreateJob}
             targetColumn={columns[0]?.id} // Default to first column if available
-          >
-            <Button className="bg-[#636AE8] hover:bg-[#5A5FD3]">
-              <Plus />
-              <span className="text-sm font-inter hidden sm:inline">
-                Create Application
-              </span>
-              <span className="text-sm font-inter sm:hidden">Create</span>
-            </Button>
-          </CreateJobModal>
+            isHeader={true}
+          />
 
           {/* Avatar */}
           <Avatar className="h-8 w-8 rounded-lg">

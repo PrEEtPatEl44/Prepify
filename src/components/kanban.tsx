@@ -8,7 +8,7 @@ import {
   KanbanProvider,
 } from "@/components/ui/shadcn-io/kanban";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Ellipsis, Plus } from "lucide-react";
+import { Ellipsis } from "lucide-react";
 import { useState } from "react";
 import { type Column, type Job } from "@/types/jobs";
 import { createJob, deleteJob, createColumn, moveJob } from "@/lib/clients";
@@ -50,7 +50,6 @@ const Example = ({
 
     setJobs(updatedJobs as Job[]);
   };
-  const [isListModalOpen, setIsListModalOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -106,14 +105,10 @@ const Example = ({
     }
   };
 
-  // List Modal Handlers
-  const handleOpenListModal = () => setIsListModalOpen(true);
-  const handleCloseListModal = () => setIsListModalOpen(false);
   const handleCreateList = async (listName: string) => {
     if (!listName) return;
     const newColumn: Column = await createColumn({ name: listName });
     setColumns((prev) => [...prev, newColumn]);
-    setIsListModalOpen(false);
   };
 
   const handleConfirmDelete = async () => {
@@ -196,15 +191,7 @@ const Example = ({
               className="bg-gray-100 p-2 shadow-lg"
             >
               <KanbanHeader className="border-0">
-                <div
-                  className="flex items-center justify-center bg-gray-100 cursor-pointer rounded-lg p-2"
-                  onClick={handleOpenListModal}
-                >
-                  <Plus className="h-5 w-5 text-gray-500" />
-                  <span className="ml-2 text-gray-500 font-medium">
-                    {column.name}
-                  </span>
-                </div>
+                <CreateListModal onSubmit={handleCreateList} />
               </KanbanHeader>
             </KanbanBoard>
           ) : (
@@ -222,13 +209,7 @@ const Example = ({
                   <CreateJobModal
                     onSubmit={handleCreateJob}
                     targetColumn={column.id}
-                  >
-                    <div
-                      className={`cursor-pointer hover:text-accent-foreground rounded-full p-2 transition-colors bg-[#636AE8] hover:bg-[#5A5FD3]`}
-                    >
-                      <Plus strokeWidth={5} className="h-3 w-3 text-white" />
-                    </div>
-                  </CreateJobModal>
+                  />
                 </div>
               </KanbanHeader>
               <KanbanCards id={column.id}>
@@ -337,12 +318,6 @@ const Example = ({
           )
         }
       </KanbanProvider>
-
-      <CreateListModal
-        isOpen={isListModalOpen}
-        onClose={handleCloseListModal}
-        onSubmit={handleCreateList}
-      />
     </>
   );
 };

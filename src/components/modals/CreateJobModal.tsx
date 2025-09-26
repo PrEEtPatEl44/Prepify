@@ -31,11 +31,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Plus } from "lucide-react";
 
 interface CreateJobModalProps {
   onSubmit: (jobData: Partial<Job>) => void;
   targetColumn?: string;
-  children: React.ReactNode;
+  isHeader?: boolean;
 }
 
 interface FormData {
@@ -50,7 +51,7 @@ interface FormData {
 const CreateJobModal: React.FC<CreateJobModalProps> = ({
   onSubmit,
   targetColumn,
-  children,
+  isHeader = false,
 }) => {
   const [formData, setFormData] = useState<FormData>({
     company: "",
@@ -186,7 +187,23 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       {/* Header */}
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogTrigger asChild>
+        {isHeader ? (
+          <Button className="bg-[#636AE8] hover:bg-[#5A5FD3]">
+            <Plus />
+            <span className="text-sm font-inter hidden sm:inline">
+              Create Application
+            </span>
+            <span className="text-sm font-inter sm:hidden">Create</span>
+          </Button>
+        ) : (
+          <div
+            className={`cursor-pointer hover:text-accent-foreground rounded-full p-2 transition-colors bg-[#636AE8] hover:bg-[#5A5FD3]`}
+          >
+            <Plus strokeWidth={5} className="h-3 w-3 text-white" />
+          </div>
+        )}
+      </DialogTrigger>
       <DialogContent className="px-0 min-w-xl ">
         <DialogHeader className="flex size-full items-start justify-between px-4">
           <DialogTitle className="text-xl font-semibold">
@@ -315,6 +332,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
               rows={8}
               placeholder="Job Description"
               className="bg-gray-100 !resize-none [field-sizing-content] h-full"
+              required
             />
           </div>
 
@@ -331,6 +349,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
                 onValueChange={(value) =>
                   handleInputChange("selectResume", value)
                 }
+                required
               >
                 <SelectTrigger className="w-full h-full bg-gray-100 ">
                   <SelectValue placeholder="Select a Resume" />
@@ -363,6 +382,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
                   console.log(value);
                   handleInputChange("selectCoverletter", value);
                 }}
+                required
               >
                 <SelectTrigger className="w-full h-full bg-gray-100 ">
                   <SelectValue placeholder="Select a Coverletter" />
@@ -393,6 +413,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
               onChange={(e) => handleInputChange("link", e.target.value)}
               placeholder="Link"
               className="bg-gray-100"
+              required
             />
           </div>
           <DialogFooter className="mt-4 gap-2">
