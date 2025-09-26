@@ -1,4 +1,4 @@
-// Individual Job API Route
+// Individual Job API Route - Updated for dynamic columns
 // File: src/app/api/applications/[id]/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
@@ -46,7 +46,7 @@ export async function GET(
       return NextResponse.json(errorResponse, { status: 404 });
     }
 
-    console.log(`Found job: ${job.name} at ${job.company}`);
+    console.log(`Found job: ${job.title} at ${job.companyName}`);
 
     const response = {
       success: true,
@@ -100,12 +100,11 @@ export async function PUT(
     console.log("Update data:", body);
 
     // Validate column if provided
-    const validColumns = ["col-1", "col-2", "col-3", "col-4"];
-    if (body.column && !validColumns.includes(body.column)) {
+    if (!body.columnId) {
       const errorResponse: ApiError = {
         success: false,
         error: "Validation Error",
-        message: `Invalid column. Must be one of: ${validColumns.join(", ")}`,
+        message: `Invalid column format: ${body.columnId}`,
         statusCode: 400,
       };
 
@@ -113,7 +112,7 @@ export async function PUT(
     }
 
     // Prevent empty name or company
-    if (body.name === "" || body.company === "") {
+    if (body.title === "" || body.companyName === "") {
       const errorResponse: ApiError = {
         success: false,
         error: "Validation Error",
@@ -137,7 +136,9 @@ export async function PUT(
       return NextResponse.json(errorResponse, { status: 404 });
     }
 
-    console.log(`Updated job: ${updatedJob.name} at ${updatedJob.company}`);
+    console.log(
+      `Updated job: ${updatedJob.title} at ${updatedJob.companyName}`
+    );
 
     const response: UpdateJobResponse = {
       success: true,

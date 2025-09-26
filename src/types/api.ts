@@ -1,7 +1,7 @@
 // API Types for Job Applications
 // File: src/types/api.ts
 
-import { Job } from "@/types/jobs";
+import { Job, Column } from "@/types/jobs";
 
 // Standard API Response wrapper
 export interface ApiResponse<T = unknown> {
@@ -50,6 +50,23 @@ export interface UpdateJobResponse extends ApiResponse {
 export interface DeleteJobResponse extends ApiResponse {
   data: {
     deletedId: string;
+  };
+}
+
+//Column related types
+export interface CreateColumnRequest {
+  name: string;
+}
+
+export interface CreateColumnResponse extends ApiResponse {
+  data: {
+    column: Column;
+  };
+}
+
+export interface GetColumnsResponse extends ApiResponse {
+  data: {
+    columns: Column[];
   };
 }
 

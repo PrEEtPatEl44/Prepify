@@ -20,16 +20,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Extract query parameters for potential filtering/searching
     const { searchParams } = new URL(request.url);
-    const column = searchParams.get("column");
     const search = searchParams.get("search");
 
     let jobs;
 
-    if (column) {
-      // Filter by column if specified
-      jobs = await jobService.getJobsByColumn(column);
-      console.log(`Found ${jobs.length} jobs in column: ${column}`);
-    } else if (search) {
+    if (search) {
       // Search functionality
       jobs = await jobService.searchJobs(search);
       console.log(`Found ${jobs.length} jobs matching search: ${search}`);
@@ -89,17 +84,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Validate column if provided
-    const validColumns = ["col-1", "col-2", "col-3", "col-4"];
-    if (body.columnId && !validColumns.includes(body.columnId)) {
-      const errorResponse: ApiError = {
-        success: false,
-        error: "Validation Error",
-        message: `Invalid column. Must be one of: ${validColumns.join(", ")}`,
-        statusCode: 400,
-      };
+    // const validColumns = ["col-1", "col-2", "col-3", "col-4"];
+    // if (body.columnId && !validColumns.includes(body.columnId)) {
+    //   const errorResponse: ApiError = {
+    //     success: false,
+    //     error: "Validation Error",
+    //     message: `Invalid column. Must be one of: ${validColumns.join(", ")}`,
+    //     statusCode: 400,
+    //   };
 
-      return NextResponse.json(errorResponse, { status: 400 });
-    }
+    //   return NextResponse.json(errorResponse, { status: 400 });
+    // }
 
     // Create the job
     const newJob = await jobService.createJob(body);
