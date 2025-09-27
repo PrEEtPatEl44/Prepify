@@ -1,36 +1,40 @@
+"use client";
 import React from "react";
-import Image from "next/image";
-const page = () => {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/logo.svg"
-          alt=" logo"
-          width={100}
-          height={38}
-          priority
-        />
-        <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
-          Docs Page
-        </h1>
+import { useState } from "react";
+import DocsHeader from "@/components/documents-header";
+import { Button } from "@/components/ui/button";
+const Page = () => {
+  const [documentType, setDocumentType] = useState<"resumes" | "coverLetters">(
+    "resumes"
+  );
 
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/docs/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-      </main>
+  return (
+    <div className="h-screen flex flex-col overflow-hidden  w-full max-w-[75%]">
+      <div className="mt-6 px-1 ">
+        <DocsHeader
+          documentType={documentType}
+          setDocumentType={setDocumentType}
+        />
+      </div>
+      <div className="flex flex-1 overflow-hidden px-4 min-w-full">
+        <div className="flex flex-col items-center justify-center flex-1">
+          <h2 className="text-2xl font-semibold mb-2">No Documents Yet</h2>
+          <p className="text-gray-600 mb-6 text-center">
+            Start by creating a new resume or cover letter to manage your job
+            applications more effectively.
+          </p>
+          <div className="flex gap-4">
+            <Button className="bg-[#636AE8] hover:bg-[#4F46E5]">
+              Create Resume
+            </Button>
+            <Button className="bg-[#636AE8] hover:bg-[#4F46E5]">
+              Create Cover Letter
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
 
-export default page;
+export default Page;
