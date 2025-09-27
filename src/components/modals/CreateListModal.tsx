@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Plus } from "lucide-react";
 
 import {
@@ -8,40 +8,49 @@ import {
   DialogTitle,
   DialogFooter,
   DialogHeader,
-} from "../ui/dialog";
+  DialogClose,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 interface CreateListModalProps {
-  isOpen: boolean;
-  onClose: () => void;
   onSubmit: (listName: string) => void;
 }
 
-export default function CreateListModal({
-  isOpen,
-  onClose,
-  onSubmit,
-}: CreateListModalProps) {
+export default function CreateListModal({ onSubmit }: CreateListModalProps) {
   const [listName, setListName] = useState("");
 
-  useEffect(() => {
-    if (!isOpen) setListName("");
-  }, [isOpen]);
+  // useEffect(() => {
+  //   if (!isOpen) setListName("");
+  // }, [isOpen]);
 
-  if (!isOpen) return null;
+  // if (!isOpen) return null;
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setLoading] = useState(false);
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold">
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <div className="flex items-center justify-center bg-gray-100 cursor-pointer rounded-lg p-2">
+          <Plus className="h-5 w-5 text-gray-500" />
+          <span className="ml-2 text-gray-500 font-medium">
+            Create New List
+          </span>
+        </div>
+      </DialogTrigger>
+      <DialogContent className="px-0">
+        <DialogHeader className="px-4">
+          <DialogTitle className="text-xl font-medium">
             Create a New List
           </DialogTitle>
         </DialogHeader>
-        <div>
+        <Separator />
+        <div className="px-4">
           <Label htmlFor="list-name" className="pb-3">
             New List Name
           </Label>
@@ -56,19 +65,38 @@ export default function CreateListModal({
           />
         </div>
 
-        <DialogFooter className="flex justify-end gap-3">
-          <Button variant={"outline"} onClick={onClose}>
+        <DialogFooter className="px-4 flex justify-end gap-3">
+          <DialogClose className="hover:bg-gray-200 rounded-md px-3 border border-gray-300">
             Cancel
-          </Button>
+          </DialogClose>
           <Button
-            className="bg-[#636AE8] hover:bg-[#4e57c9] focus:ring-2 focus:ring-[#4e57c9] focus:ring-offset-2 text-white"
-            onClick={() => {
+            className={`bg-[#636AE8] hover:bg-[#4e57c9] focus:ring-2 focus:ring-[#4e57c9] focus:ring-offset-2 text-white ${
+              isLoading ? "disabled" : ""
+            }`}
+            disabled={isLoading}
+            type="submit"
+            onClick={async () => {
               if (!listName.trim()) return;
-              onSubmit(listName.trim());
+              setLoading(true);
+              try {
+                await onSubmit(listName.trim());
+                setIsOpen(false);
+                setListName("");
+              } catch (err) {
+                console.error("Failed to create list", err);
+              } finally {
+                setLoading(false);
+              }
             }}
           >
-            <Plus className="h-4 w-4" />
-            Create
+            {isLoading ? (
+              "Creating..."
+            ) : (
+              <>
+                <Plus className="h-4 w-4" />
+                Create
+              </>
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

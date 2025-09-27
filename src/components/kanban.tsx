@@ -8,10 +8,10 @@ import {
   KanbanProvider,
 } from "@/components/ui/shadcn-io/kanban";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Ellipsis, Plus } from "lucide-react";
+import { Ellipsis } from "lucide-react";
 import { useState } from "react";
 import { type Column, type Job } from "@/types/jobs";
-import { createJob, deleteJob, createColumn, moveJob } from "@/lib/clients";
+import { deleteJob, createColumn, moveJob } from "@/lib/clients";
 import CreateJobModal from "@/components/modals/CreateJobModal";
 import CreateListModal from "@/components/modals/CreateListModal";
 import DeleteJobModal from "@/components/modals/DeleteJobModal";
@@ -27,16 +27,18 @@ import {
   type JobKanbanItem,
 } from "@/adapters/jobAdapters";
 
-const Example = ({
+const Kanban = ({
   jobs,
   setJobs,
   columns,
   setColumns,
+  handleCreateJob,
 }: {
   jobs: Job[];
   setJobs: React.Dispatch<React.SetStateAction<Job[]>>;
   columns: Column[];
   setColumns: React.Dispatch<React.SetStateAction<Column[]>>;
+  handleCreateJob: (jobData: Partial<Job>) => Promise<void>;
 }) => {
   // UPDATED: Handle kanban data changes and transform back to Job format
   const handleKanbanDataChange = (updatedKanbanItems: JobKanbanItem[]) => {
@@ -50,84 +52,17 @@ const Example = ({
 
     setJobs(updatedJobs as Job[]);
   };
-  const [isJobModalOpen, setIsJobModalOpen] = useState(false);
-  const [targetColumn, setTargetColumn] = useState<string>("");
-  const [isListModalOpen, setIsListModalOpen] = useState(false);
-  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
-  const [isCreating, setIsCreating] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+
   const [pickedItem, setPickedItem] = useState<JobKanbanItem | null>();
   const [prevJobs, setPrevJobs] = useState<Job[] | null>(null);
 
-  // Job Modal Handlers
-  const handleOpenJobModal = (columnId: string) => {
-    setTargetColumn(columnId);
-    setIsJobModalOpen(true);
-  };
-  const handleCloseJobModal = () => setIsJobModalOpen(false);
-
-  const handleCreateJob = async (jobData: Partial<Job>) => {
-    if (isCreating) return;
-    console.log(jobData);
-    setIsCreating(true);
-    try {
-      console.log("Creating job via API:", jobData);
-      if (
-        !jobData.title ||
-        !jobData.companyName ||
-        !jobData.companyIconUrl ||
-        !jobData.description ||
-        !jobData.applicationLink ||
-        !jobData.resumeId ||
-        !jobData.coverLetterId
-      ) {
-        throw new Error("All fields are required");
-      }
-
-      const requestData = {
-        title: jobData.title,
-        companyName: jobData.companyName,
-        columnId: targetColumn,
-        companyIconUrl: jobData.companyIconUrl,
-        description: jobData.description,
-        applicationLink: jobData.applicationLink,
-        resumeId: jobData.resumeId,
-        coverLetterId: jobData.coverLetterId,
-      };
-
-      const newJob = await createJob({
-        ...requestData,
-      });
-      console.log("Job created successfully:", newJob);
-
-      setJobs((prevJobs) => [...prevJobs, newJob]);
-      setIsJobModalOpen(false);
-    } catch (error) {
-      console.error("Failed to create job:", error);
-      alert(
-        `Failed to create job: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
-    } finally {
-      setIsCreating(false);
-    }
-  };
-
-  // List Modal Handlers
-  const handleOpenListModal = () => setIsListModalOpen(true);
-  const handleCloseListModal = () => setIsListModalOpen(false);
   const handleCreateList = async (listName: string) => {
     if (!listName) return;
     const newColumn: Column = await createColumn({ name: listName });
     setColumns((prev) => [...prev, newColumn]);
-    setIsListModalOpen(false);
   };
 
-  const handleConfirmDelete = async () => {
-    if (!selectedJob || isDeleting) return;
-
-    setIsDeleting(true);
+  const handleConfirmDelete = async (selectedJob: Job) => {
     console.log("Confirming delete for job:", selectedJob.id);
 
     try {
@@ -137,16 +72,10 @@ const Example = ({
       console.log("Job deleted successfully");
 
       setJobs((prev) => prev.filter((j) => j.id !== selectedJob.id));
-      setSelectedJob(null);
     } catch (error) {
-      console.error("Delete failed:", error);
-      alert(
-        `Failed to delete job: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
+      throw error || new Error("Failed to delete job");
     } finally {
-      setIsDeleting(false);
+      console.log("Delete operation finished");
     }
   };
 
@@ -159,11 +88,11 @@ const Example = ({
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleDragEnd = (e: any) => {
+  const handleDragEnd = async (e: any) => {
     const item = kanbanItems.find((item) => item.id === e.active.id);
     if (item && pickedItem && item.column !== pickedItem.column) {
       try {
-        moveJob(item.id, item.column);
+        await moveJob(item.id, item.column);
       } catch (error) {
         console.error("Move failed:", error);
         alert(
@@ -204,15 +133,7 @@ const Example = ({
               className="bg-gray-100 p-2 shadow-lg"
             >
               <KanbanHeader className="border-0">
-                <div
-                  className="flex items-center justify-center bg-gray-100 cursor-pointer rounded-lg p-2"
-                  onClick={handleOpenListModal}
-                >
-                  <Plus className="h-5 w-5 text-gray-500" />
-                  <span className="ml-2 text-gray-500 font-medium">
-                    {column.name}
-                  </span>
-                </div>
+                <CreateListModal onSubmit={handleCreateList} />
               </KanbanHeader>
             </KanbanBoard>
           ) : (
@@ -226,24 +147,11 @@ const Example = ({
                   <span className={`text-md font-archivo font-semibold`}>
                     {column.name}
                   </span>
-                  <div
-                    className={`cursor-pointer hover:text-accent-foreground rounded-full p-2 transition-colors ${
-                      isCreating
-                        ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-[#636AE8] hover:bg-[#5A5FD3]"
-                    }`}
-                    onClick={
-                      !isCreating
-                        ? () => handleOpenJobModal(column.id)
-                        : undefined
-                    }
-                  >
-                    {isCreating ? (
-                      <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <Plus strokeWidth={5} className="h-3 w-3 text-white" />
-                    )}
-                  </div>
+
+                  <CreateJobModal
+                    onSubmit={handleCreateJob}
+                    targetColumn={column.id}
+                  />
                 </div>
               </KanbanHeader>
               <KanbanCards id={column.id}>
@@ -320,26 +228,12 @@ const Example = ({
                               </DropdownMenuItem>
                               <DeleteJobModal
                                 onConfirm={() => {
-                                  handleConfirmDelete();
+                                  handleConfirmDelete(
+                                    transformKanbanItemsToJobs(jobData) as Job
+                                  );
                                 }}
-                              >
-                                <DropdownMenuItem
-                                  onSelect={(e) => {
-                                    setSelectedJob(
-                                      transformKanbanItemsToJobs(jobData) as Job
-                                    );
-                                    e.preventDefault();
-                                  }}
-                                  className={
-                                    isDeleting
-                                      ? "text-gray-400 cursor-not-allowed"
-                                      : "text-red-600 hover:bg-red-50 focus:bg-red-50 cursor-pointer"
-                                  }
-                                  disabled={isDeleting}
-                                >
-                                  {isDeleting ? "Deleting..." : "Delete"}
-                                </DropdownMenuItem>
-                              </DeleteJobModal>
+                                job={transformKanbanItemsToJobs(jobData) as Job}
+                              />
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>
@@ -352,20 +246,8 @@ const Example = ({
           )
         }
       </KanbanProvider>
-
-      <CreateJobModal
-        isOpen={isJobModalOpen}
-        onClose={handleCloseJobModal}
-        onSubmit={handleCreateJob}
-        targetColumn={targetColumn}
-      />
-      <CreateListModal
-        isOpen={isListModalOpen}
-        onClose={handleCloseListModal}
-        onSubmit={handleCreateList}
-      />
     </>
   );
 };
 
-export default Example;
+export default Kanban;

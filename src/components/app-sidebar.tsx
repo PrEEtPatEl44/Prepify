@@ -5,7 +5,6 @@ import { BookOpen, Briefcase, Mic, House } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { NavUser } from "@/components/nav-user";
 import Link from "next/link";
-import { createClient } from "@/utils/supabase/client";
 import {
   Sidebar,
   SidebarContent,
@@ -22,11 +21,6 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
       title: "Home",
@@ -57,29 +51,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { state } = useSidebar();
 
   const isCollapsed = state === "collapsed";
-  interface User {
-    name: string;
-    email: string;
-    avatar: string;
-  }
-
-  const [user, setUser] = useState<User>({
-    name: "shadCN",
-    email: "test@mail.com",
-    avatar: "/shadcn.jpg",
-  });
-
-  useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getClaims().then(({ data }) => {
-      if (!data?.claims) return;
-      setUser({
-        name: data?.claims?.user_metadata.name,
-        email: data?.claims?.email,
-        avatar: data?.claims?.user_metadata.avatar_url,
-      });
-    });
-  }, []);
 
   // Update after client mount
   useEffect(() => {
@@ -146,7 +117,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={user} />
+        <NavUser />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

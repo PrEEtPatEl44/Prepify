@@ -1,41 +1,24 @@
 "use client";
 
-import { useState } from "react";
-import { Plus } from "lucide-react";
-import { Button } from "./ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { Input } from "./ui/input";
 import CreateJobModal from "@/components/modals/CreateJobModal";
 import { type Job, type Column } from "@/types/jobs";
+import UserDropdown from "@/components/user-dropdown";
+import { useUser } from "@/hooks/useUser";
 
 export default function Header({
   onCreateJob,
   columns,
 }: {
-  onCreateJob: (job: Partial<Job>, column: string) => Promise<void>;
+  onCreateJob: (job: Partial<Job>) => Promise<void>;
   columns: Column[];
 }) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  console.log("Header columns:", columns);
-  const [targetColumn, setTargetColumn] = useState(columns[0]?.id);
-
-  const handleOpenModal = () => {
-    if (columns.length <= 0) {
-      console.error("No columns available to assign the job.");
-      alert("Please create a column before adding a job.");
-      return;
-    }
-
-    setTargetColumn(columns[0]?.id); // default col umn
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => setIsModalOpen(false);
+  const { profile } = useUser();
 
   const handleCreateJob = async (jobData: Partial<Job>) => {
     try {
-      await onCreateJob(jobData, targetColumn);
-      setIsModalOpen(false);
+      await onCreateJob(jobData);
       // Optionally trigger a refresh or callback to parent if needed
     } catch (error) {
       console.error("Failed to create job:", error);
@@ -54,32 +37,23 @@ export default function Header({
 
         <div className="flex items-center gap-6 mr-4">
           {/* Create Application Button */}
-          <Button
-            className="bg-[#636AE8] hover:bg-[#5A5FD3]"
-            onClick={handleOpenModal}
-          >
-            <Plus />
-            <span className="text-sm font-inter hidden sm:inline">
-              Create Application
-            </span>
-            <span className="text-sm font-inter sm:hidden">Create</span>
-          </Button>
+          <CreateJobModal
+            onSubmit={handleCreateJob}
+            targetColumn={columns[0]?.id} // Default to first column if available
+            isHeader={true}
+          />
 
           {/* Avatar */}
-          <Avatar className="h-8 w-8 rounded-lg">
-            <AvatarImage src={undefined} alt={"testname"} />
-            <AvatarFallback className="rounded-full">CN</AvatarFallback>
-          </Avatar>
+          <UserDropdown sideForMobile="bottom" sideForDesktop="bottom">
+            <Avatar className="h-8 w-8 rounded-full cursor-pointer">
+              <AvatarImage src={profile?.avatar} alt={profile?.name} />
+              <AvatarFallback className="rounded-full">
+                {profile?.name.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          </UserDropdown>
         </div>
       </div>
-
-      {/* Create Job Modal */}
-      <CreateJobModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        onSubmit={handleCreateJob}
-        targetColumn={targetColumn}
-      />
     </>
   );
 }
