@@ -12,7 +12,11 @@ import {
 } from "lucide-react";
 import { CreateFileModal } from "./modals/CreateFileModal";
 
-const FileGrid = () => {
+interface FileGridProps {
+  documentType: "resumes" | "coverLetters";
+}
+
+const FileGrid = ({ documentType }: FileGridProps) => {
   const files = [
     {
       id: 1,
@@ -142,7 +146,7 @@ const FileGrid = () => {
   return (
     <div className="p-6  min-h-screen">
       <div className="grid mt-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-6">
-        <CreateFileModal>
+        <CreateFileModal documentType={documentType}>
           <Card className="max-w-[200px] group hover:shadow-md transition-all duration-200 cursor-pointer bg-white border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50/30">
             <CardContent className="p-0 size-full">
               <div className="p-3 size-full flex flex-col items-center justify-center hover:text-blue-500">

@@ -22,7 +22,7 @@ const Page = () => {
 
       {/* Scrollable content area */}
       <div className="flex-1 overflow-y-auto mt-1">
-        <FileGrid />
+        <FileGrid documentType={documentType} />
       </div>
     </div>
   );

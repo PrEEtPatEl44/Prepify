@@ -17,11 +17,16 @@ import { createClient } from "@/utils/supabase/client";
 import { useUser } from "@/hooks/useUser";
 
 interface CreateFileModalProps {
+  documentType: "resumes" | "coverLetters";
   children: React.ReactNode;
   onSubmit?: (data: { fileName: string; file: File; url?: string }) => void;
 }
 
-export function CreateFileModal({ children, onSubmit }: CreateFileModalProps) {
+export function CreateFileModal({
+  children,
+  onSubmit,
+  documentType,
+}: CreateFileModalProps) {
   const [open, setOpen] = useState(false);
   const [fileName, setFileName] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -105,7 +110,7 @@ export function CreateFileModal({ children, onSubmit }: CreateFileModalProps) {
       const timestamp = Date.now();
       const fileExtension = selectedFile.name.split(".").pop();
       const sanitizedFileName = fileName.trim().replace(/[^a-zA-Z0-9-_]/g, "_");
-      const storageFileName = `${user.id}/${timestamp}_${sanitizedFileName}.${fileExtension}`;
+      const storageFileName = `${user.id}/${documentType}/${timestamp}_${sanitizedFileName}.${fileExtension}`;
 
       // Upload file to Supabase Storage
       const { data, error } = await supabase.storage
