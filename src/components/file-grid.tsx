@@ -10,6 +10,7 @@ import {
   MoreVertical,
   Plus,
 } from "lucide-react";
+import { CreateFileModal } from "./modals/CreateFileModal";
 
 const FileGrid = () => {
   const files = [
@@ -140,31 +141,21 @@ const FileGrid = () => {
 
   return (
     <div className="p-6  min-h-screen">
-      <div className="grid mt-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-        <Card className="group hover:shadow-md transition-all duration-200 cursor-pointer bg-white border-2 border-dashed border-blue-300 hover:border-blue-400 hover:bg-blue-50/30">
-          <CardContent className="p-0">
-            {/* Upload Area */}
-            <div className="relative h-24 rounded-t-lg flex items-center justify-center bg-blue-50/50 group-hover:bg-blue-100/50 transition-colors">
-              <div className="flex flex-col items-center">
-                <div className="p-2 rounded-full bg-blue-100 group-hover:bg-blue-200 transition-colors">
-                  <Plus className="w-4 h-4 text-blue-600" />
-                </div>
+      <div className="grid mt-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-6">
+        <CreateFileModal>
+          <Card className="max-w-[200px] group hover:shadow-md transition-all duration-200 cursor-pointer bg-white border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50/30">
+            <CardContent className="p-0 size-full">
+              <div className="p-3 size-full flex flex-col items-center justify-center hover:text-blue-500">
+                <h3 className="text-sm font-medium mb-1">Upload New Resumes</h3>
+                <Plus />
               </div>
-            </div>
-
-            {/* Upload Info */}
-            <div className="p-3 text-center">
-              <h3 className="text-sm font-medium text-blue-700 mb-1">
-                Upload Files
-              </h3>
-              <p className="text-xs text-blue-500">Click to add new files</p>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </CreateFileModal>
         {files.map((file) => (
           <Card
             key={file.id}
-            className="group hover:shadow-md transition-shadow duration-200 cursor-pointer bg-white border border-gray-200 hover:border-gray-300"
+            className="group max-w-[200px] hover:shadow-md transition-shadow duration-200 cursor-pointer bg-white border border-gray-200 hover:border-gray-300"
           >
             <CardContent className="p-0">
               {/* Thumbnail Area */}
