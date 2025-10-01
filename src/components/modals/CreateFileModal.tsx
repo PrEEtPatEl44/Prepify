@@ -13,8 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { FileDropzone } from "@/components/dropzone";
 import { Separator } from "../ui/separator";
-import { createClient } from "@/utils/supabase/client";
-import { useUser } from "@/hooks/useUser";
+import { uploadFileAction } from "@/app/docs/actions";
 
 interface CreateFileModalProps {
   documentType: "resumes" | "coverLetters";
@@ -33,17 +32,18 @@ export function CreateFileModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { user } = useUser();
-  const supabase = createClient();
-
   // Reset form when modal opens/closes
   const handleOpenChange = (isOpen: boolean) => {
     setOpen(isOpen);
-    if (!isOpen) {
-      // Reset form when closing
-      setFileName("");
-      setSelectedFile(null);
-      setIsSubmitting(false);
+    resetForm();
+  };
+
+  const resetForm = () => {
+    setFileName("");
+    setSelectedFile(null);
+    setIsSubmitting(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
@@ -84,7 +84,7 @@ export function CreateFileModal({
     }
   };
 
-  // Handle form submission
+  // Handle form submission using server action
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -98,57 +98,34 @@ export function CreateFileModal({
       return;
     }
 
-    if (!user?.id) {
-      alert("User not authenticated. Please log in.");
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
-      // Create a unique filename with timestamp
-      const timestamp = Date.now();
-      const fileExtension = selectedFile.name.split(".").pop();
-      const sanitizedFileName = fileName.trim().replace(/[^a-zA-Z0-9-_]/g, "_");
-      const storageFileName = `${user.id}/${documentType}/${timestamp}_${sanitizedFileName}.${fileExtension}`;
+      // Create FormData for server action
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+      formData.append("fileName", fileName.trim());
 
-      // Upload file to Supabase Storage
-      const { data, error } = await supabase.storage
-        .from("documents")
-        .upload(storageFileName, selectedFile, {
-          cacheControl: "3600",
-          upsert: false,
-        });
+      // Call server action
+      const result = await uploadFileAction(formData, documentType);
 
-      if (error) {
-        throw error;
+      if (result.success && result.data) {
+        // Call onSubmit callback if provided
+        if (onSubmit) {
+          onSubmit({
+            fileName: result.data.fileName,
+            file: selectedFile,
+            url: result.data.fileUrl,
+          });
+        }
+
+        console.log("File uploaded successfully:", result.data);
+
+        // Close modal on success
+        setOpen(false);
+      } else {
+        throw new Error(result.error || "Upload failed");
       }
-
-      // Get signed URL for the uploaded file
-      const { data: urlData } = await supabase.storage
-        .from("documents")
-        .createSignedUrl(data.path, 60 * 60); // 1 hour expiry
-
-      const uploadedFileUrl = urlData?.signedUrl;
-
-      // Call onSubmit callback if provided
-      if (onSubmit) {
-        onSubmit({
-          fileName: fileName.trim(),
-          file: selectedFile,
-          url: uploadedFileUrl,
-        });
-      }
-
-      console.log("File uploaded successfully:", {
-        fileName: fileName.trim(),
-        file: selectedFile,
-        url: uploadedFileUrl,
-        path: data.path,
-      });
-
-      // Close modal on success
-      setOpen(false);
     } catch (error: unknown) {
       console.error("File upload error:", error);
       const errorMessage =
@@ -158,7 +135,6 @@ export function CreateFileModal({
       setIsSubmitting(false);
     }
   };
-
   // Format file size
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return "0 Bytes";

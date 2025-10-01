@@ -45,7 +45,7 @@ export function FileDropzone({
           id="fileUpload"
           ref={fileInputRef}
           className="hidden"
-          accept=".pdf,.doc,.docx,.txt"
+          accept=".pdf,.doc,.docx"
           onChange={(e) => handleFileSelect(e.target.files)}
         />
       </div>
