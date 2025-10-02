@@ -13,7 +13,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { FileDropzone } from "@/components/dropzone";
 import { Separator } from "../ui/separator";
-import { uploadFileAction } from "@/app/docs/actions";
+import { createClient } from "@/utils/supabase/client";
+import { insertDocumentRecord } from "@/app/docs/actions";
 
 interface CreateFileModalProps {
   documentType: "resumes" | "coverLetters";
@@ -84,7 +85,7 @@ export function CreateFileModal({
     }
   };
 
-  // Handle form submission using server action
+  // Handle form submission - upload to storage then insert to database
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -101,31 +102,79 @@ export function CreateFileModal({
     setIsSubmitting(true);
 
     try {
-      // Create FormData for server action
-      const formData = new FormData();
-      formData.append("file", selectedFile);
-      formData.append("fileName", fileName.trim());
+      // Step 1: Upload file to Supabase storage
+      const supabase = createClient();
 
-      // Call server action
-      const result = await uploadFileAction(formData, documentType);
+      // Get the current user
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
 
-      if (result.success && result.data) {
-        // Call onSubmit callback if provided
-        if (onSubmit) {
-          onSubmit({
-            fileName: result.data.fileName,
-            file: selectedFile,
-            url: result.data.fileUrl,
-          });
-        }
-
-        console.log("File uploaded successfully:", result.data);
-
-        // Close modal on success
-        setOpen(false);
-      } else {
-        throw new Error(result.error || "Upload failed");
+      if (authError || !user) {
+        throw new Error("User not authenticated. Please log in.");
       }
+
+      // Create a unique filename with timestamp
+      const timestamp = Date.now();
+      const fileExtension = selectedFile.name.split(".").pop();
+      const sanitizedFileName = fileName.trim().replace(/[^a-zA-Z0-9-_]/g, "_");
+      const storageFileName = `${user.id}/${documentType}/${timestamp}_${sanitizedFileName}.${fileExtension}`;
+
+      // Upload file to Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("documents")
+        .upload(storageFileName, selectedFile, {
+          cacheControl: "3600",
+          upsert: false,
+        });
+
+      if (uploadError) {
+        throw new Error(`Storage upload failed: ${uploadError.message}`);
+      }
+
+      // Get signed URL for the uploaded file
+      const { data: urlData } = await supabase.storage
+        .from("documents")
+        .createSignedUrl(uploadData.path, 60 * 60 * 24 * 7); // 7 days expiry
+
+      const uploadedFileUrl = urlData?.signedUrl;
+
+      if (!uploadedFileUrl) {
+        // Clean up uploaded file if URL generation fails
+        await supabase.storage.from("documents").remove([uploadData.path]);
+        throw new Error("Failed to generate file URL");
+      }
+
+      // Step 2: Insert record into database via server action
+      const insertResult = await insertDocumentRecord({
+        filePath: uploadData.path,
+        fileName: fileName.trim(),
+        fileSize: selectedFile.size,
+        mimeType: selectedFile.type,
+        documentType,
+      });
+
+      if (!insertResult.success) {
+        // Clean up uploaded file if database insert fails
+        await supabase.storage.from("documents").remove([uploadData.path]);
+        throw new Error(insertResult.error || "Failed to save document record");
+      }
+
+      console.log("Document record inserted with ID:", insertResult.data);
+      // Call onSubmit callback if provided
+      if (onSubmit) {
+        onSubmit({
+          fileName: fileName.trim(),
+          file: selectedFile,
+          url: uploadedFileUrl,
+        });
+      }
+
+      console.log("File uploaded and saved successfully");
+
+      // Close modal on success
+      setOpen(false);
     } catch (error: unknown) {
       console.error("File upload error:", error);
       const errorMessage =
