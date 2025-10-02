@@ -2,8 +2,8 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { CloudUpload, BookOpen, Mic, ChevronRight } from "lucide-react";
-import Calender from "@/components/GithubActivityCalender";
-import StatsCard from "@/components/StatsCard";
+import Calender from "@/components/github-activity-calender";
+import StatsCard from "@/components/stats-card";
 
 export default function Home() {
   const actionButtons = [

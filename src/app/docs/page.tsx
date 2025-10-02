@@ -1,36 +1,31 @@
+"use client";
 import React from "react";
-import Image from "next/image";
-const page = () => {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/logo.svg"
-          alt=" logo"
-          width={100}
-          height={38}
-          priority
-        />
-        <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
-          Docs Page
-        </h1>
+import { useState } from "react";
+import DocsHeader from "@/components/documents-header";
 
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/docs/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-      </main>
+import FileGrid from "@/components/file-grid";
+
+const Page = () => {
+  const [documentType, setDocumentType] = useState<"resumes" | "coverLetters">(
+    "resumes"
+  );
+
+  return (
+    <div className="h-screen flex flex-col w-full">
+      {/* Fixed header that won't scroll */}
+      <div className="flex-shrink-0 mt-6 px-1 max-w-[95%]">
+        <DocsHeader
+          documentType={documentType}
+          setDocumentType={setDocumentType}
+        />
+      </div>
+
+      {/* Scrollable content area */}
+      <div className="flex-1 overflow-y-auto mt-1">
+        <FileGrid documentType={documentType} />
+      </div>
     </div>
   );
 };
 
-export default page;
+export default Page;
