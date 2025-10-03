@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { File, MoreVertical, Plus } from "lucide-react";
+import { File, MoreVertical, Plus, Trash2 } from "lucide-react";
 import { CreateFileModal } from "./modals/CreateFileModal";
 import { useEffect, useState } from "react";
 import {
@@ -25,6 +25,8 @@ interface DocumentFile {
 
 const FileGrid = ({ documentType }: FileGridProps) => {
   const [files, setFiles] = useState<DocumentFile[]>();
+
+  // Fetch documents from the server
 
   const fetchDocuments = useCallback(async () => {
     try {
@@ -52,9 +54,13 @@ const FileGrid = ({ documentType }: FileGridProps) => {
     fetchDocuments();
   };
 
+  const getUploadText = () => {
+    return documentType === "resumes" ? "Resume" : "Cover Letter";
+  };
+
   return (
     <div className="p-6  min-h-screen">
-      <div className="grid mt-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-6">
+      <div className="grid mt-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-6 p-1">
         <CreateFileModal
           documentType={documentType}
           onSubmit={handleFileUpload}
@@ -62,7 +68,9 @@ const FileGrid = ({ documentType }: FileGridProps) => {
           <Card className="max-w-[200px] group hover:shadow-md transition-all duration-200 cursor-pointer bg-white border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50/30">
             <CardContent className="p-0 size-full">
               <div className="p-3 size-full flex flex-col items-center justify-center hover:text-blue-500">
-                <h3 className="text-sm font-medium mb-1">Upload New Resumes</h3>
+                <h3 className="text-sm font-medium mb-1">
+                  Upload New {getUploadText()}
+                </h3>
                 <Plus />
               </div>
             </CardContent>
@@ -75,11 +83,11 @@ const FileGrid = ({ documentType }: FileGridProps) => {
           files.map((file) => (
             <Card
               key={file.id}
-              className="group max-w-[200px] hover:shadow-md transition-shadow duration-200 cursor-pointer bg-white border border-gray-200 hover:border-gray-300"
+              className="group pb-2 pt-0 max-w-[200px]  shadow-lg overflow-clip"
             >
-              <CardContent className="p-0">
+              <CardContent className="!p-0">
                 {/* Thumbnail Area */}
-                <div className="relative h-24 rounded-t-lg flex items-center justify-center bg-gray-50 border-gray-200">
+                <div className="relative min-h-36 rounded-t-lg flex items-center justify-center bg-gray-50 ">
                   <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button className="p-1 rounded-full hover:bg-white/20">
                       <MoreVertical className="w-4 h-4 text-gray-600" />
@@ -89,19 +97,14 @@ const FileGrid = ({ documentType }: FileGridProps) => {
                 </div>
 
                 {/* File Info */}
-                <div className="p-3">
+                <div className="p-3 flex justify-between items-center">
                   <h3
-                    className="text-sm font-medium text-gray-900 truncate mb-1"
+                    className="text-sm w-full font-medium text-gray-900 truncate "
                     title={file.file_name}
                   >
                     {file.file_name}
                   </h3>
-                  <div className="flex items-center justify-between text-xs text-gray-500">
-                    <span>{file.file_size}</span>
-                  </div>
-                  <p className="text-xs text-gray-400 mt-1">
-                    {file.updated_at}
-                  </p>
+                  <Trash2 className="w-5 h-5 text-gray-500 hover:text-gray-700 cursor-pointer" />
                 </div>
               </CardContent>
             </Card>

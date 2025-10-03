@@ -16,7 +16,7 @@ import {
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
   try {
     const { id } = await params;
@@ -58,7 +58,7 @@ export async function GET(
 
     return NextResponse.json(response, { status: 200 });
   } catch (error) {
-    console.error(`GET /api/applications/${params.id} error:`, error);
+    console.error(`GET /api/applications error:`, error);
 
     const errorResponse: ApiError = {
       success: false,
@@ -78,7 +78,7 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
   try {
     const { id } = await params;
@@ -150,7 +150,7 @@ export async function PUT(
 
     return NextResponse.json(response, { status: 200 });
   } catch (error) {
-    console.error(`PUT /api/applications/${params.id} error:`, error);
+    console.error(`PUT /api/applications error:`, error);
 
     const errorResponse: ApiError = {
       success: false,
@@ -169,7 +169,7 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
   try {
     const { id } = await params;
@@ -211,7 +211,7 @@ export async function DELETE(
 
     return NextResponse.json(response, { status: 200 });
   } catch (error) {
-    console.error(`DELETE /api/applications/${params.id} error:`, error);
+    console.error(`DELETE /api/applications error:`, error);
 
     const errorResponse: ApiError = {
       success: false,
