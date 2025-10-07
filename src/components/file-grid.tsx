@@ -7,6 +7,7 @@ import {
   getAllDocuments,
   type GetAllDocumentsResult,
 } from "@/app/docs/actions";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface FileGridProps {
   documentType: "resumes" | "coverLetters";
@@ -25,10 +26,12 @@ interface DocumentFile {
 
 const FileGrid = ({ documentType }: FileGridProps) => {
   const [files, setFiles] = useState<DocumentFile[]>();
+  const [isLoading, setIsLoading] = useState(true);
 
   // Fetch documents from the server
 
   const fetchDocuments = useCallback(async () => {
+    setIsLoading(true);
     try {
       const result: GetAllDocumentsResult = await getAllDocuments(documentType);
 
@@ -42,6 +45,7 @@ const FileGrid = ({ documentType }: FileGridProps) => {
       console.error("Error fetching documents:", err);
       setFiles([]);
     } finally {
+      setIsLoading(false);
       console.log("Fetch documents completed");
     }
   }, [documentType]);
@@ -67,7 +71,7 @@ const FileGrid = ({ documentType }: FileGridProps) => {
         >
           <Card className="max-w-[200px] group hover:shadow-md transition-all duration-200 cursor-pointer bg-white border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50/30">
             <CardContent className="p-0 size-full">
-              <div className="p-3 size-full flex flex-col items-center justify-center hover:text-blue-500">
+              <div className="p-3 min-h-36 size-full flex flex-col items-center justify-center hover:text-blue-500">
                 <h3 className="text-sm font-medium mb-1">
                   Upload New {getUploadText()}
                 </h3>
@@ -77,7 +81,21 @@ const FileGrid = ({ documentType }: FileGridProps) => {
           </Card>
         </CreateFileModal>
 
-        {!files || files.length === 0 ? (
+        {isLoading ? (
+          // Loading skeleton cards
+          Array.from({ length: 20 }).map((_, index) => (
+            <Card key={index} className="max-w-[200px] shadow-lg overflow-clip">
+              <CardContent className="!p-0">
+                <div className="min-h-32 rounded-t-lg bg-gray-50">
+                  <Skeleton className="w-full h-32" />
+                </div>
+                <div className="p-3">
+                  <Skeleton className="h-4 w-3/4" />
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : !files || files.length === 0 ? (
           <div>No files found.</div>
         ) : (
           files.map((file) => (
