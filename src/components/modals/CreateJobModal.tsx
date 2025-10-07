@@ -93,7 +93,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
         clearResults();
         setShowCompanyDropdown(false);
       }
-    }, 500);
+    }, 1000); // 1 second debounce
 
     return () => clearTimeout(timeoutId);
   }, [formData.company, companyInputFocused, searchCompanies, clearResults]);
@@ -162,17 +162,11 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
         title: formData.jobTitle,
         companyName: formData.company,
         columnId: targetColumn,
-        companyIconUrl: selectedCompany?.icon,
         description: formData.jobDescription,
         applicationLink: formData.link,
         resumeId: formData.selectResume,
         coverLetterId: formData.selectCoverletter,
-        // Fallbacks in case company search did not yield a result
-        // ||
-        // selectedCompany?.logoUrl ||
-        // `https://cdn.brandfetch.io/${formData.company
-        //   .toLowerCase()
-        //   .replace(/\s+/g, "")}.com?c=1idy7WQ5YtpRvbd1DQy`,
+        companyDomain: selectedCompany?.domain,
       };
 
       await onSubmit(jobData);

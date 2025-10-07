@@ -17,10 +17,10 @@ export interface CreateJobRequest {
   description: string;
   columnId: string;
   applicationLink: string;
-  companyIconUrl: string;
   companyName: string;
   coverLetterId?: string;
   resumeId?: string;
+  companyDomain?: string;
 }
 
 export interface UpdateJobRequest extends Partial<CreateJobRequest> {
