@@ -38,7 +38,6 @@ const Page = () => {
       if (
         !jobData.title ||
         !jobData.companyName ||
-        !jobData.companyIconUrl ||
         !jobData.description ||
         !jobData.applicationLink ||
         !jobData.resumeId ||
@@ -52,11 +51,11 @@ const Page = () => {
         title: jobData.title,
         companyName: jobData.companyName,
         columnId: jobData.columnId,
-        companyIconUrl: jobData.companyIconUrl,
         description: jobData.description,
         applicationLink: jobData.applicationLink,
         resumeId: jobData.resumeId,
         coverLetterId: jobData.coverLetterId,
+        companyDomain: jobData.companyDomain,
       };
 
       const newJob = await createJob({
