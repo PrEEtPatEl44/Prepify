@@ -2,10 +2,12 @@ import React, { useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { File, MoreVertical, Plus, Trash2 } from "lucide-react";
 import { CreateFileModal } from "./modals/CreateFileModal";
+import { DeleteDocModal } from "./modals/DeleteDocModal";
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import {
   getAllDocuments,
+  deleteDocument,
   type GetAllDocumentsResult,
 } from "@/app/docs/actions";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -64,6 +66,18 @@ const FileGrid = ({
 
   const handleFileUpload = () => {
     fetchDocuments();
+  };
+
+  const handleDeleteFile = async (fileId: string, filePath: string) => {
+    const result = await deleteDocument(fileId, filePath, documentType);
+
+    if (result.success) {
+      // Refresh the file list
+      fetchDocuments();
+    } else {
+      console.error("Failed to delete document:", result.error);
+      // You could add a toast notification here to show the error to the user
+    }
   };
 
   const getUploadText = () => {
@@ -155,7 +169,16 @@ const FileGrid = ({
                   >
                     {file.file_name}
                   </h3>
-                  <Trash2 className="w-5 h-5 text-gray-500 hover:text-gray-700 cursor-pointer" />
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <DeleteDocModal
+                      fileName={file.file_name}
+                      onDelete={() => handleDeleteFile(file.id, file.file_path)}
+                    >
+                      <button className="flex-shrink-0">
+                        <Trash2 className="w-5 h-5 mt-2 text-gray-500 hover:text-red-600 cursor-pointer transition-colors" />
+                      </button>
+                    </DeleteDocModal>
+                  </div>
                 </div>
               </CardContent>
             </Card>
