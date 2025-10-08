@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { File, MoreVertical, Plus, Trash2 } from "lucide-react";
 import { CreateFileModal } from "./modals/CreateFileModal";
 import { useEffect, useState } from "react";
+import { createClient } from "@/utils/supabase/client";
 import {
   getAllDocuments,
   type GetAllDocumentsResult,
@@ -11,6 +12,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 interface FileGridProps {
   documentType: "resumes" | "coverLetters";
+  onFileSelect: (fileUrl: string, fileName: string) => void;
+  selectedFile?: { url: string; name: string } | null;
 }
 
 interface DocumentFile {
@@ -24,11 +27,16 @@ interface DocumentFile {
   updated_at: string;
 }
 
-const FileGrid = ({ documentType }: FileGridProps) => {
+const FileGrid = ({
+  documentType,
+  onFileSelect,
+  selectedFile,
+}: FileGridProps) => {
   const [files, setFiles] = useState<DocumentFile[]>();
   const [isLoading, setIsLoading] = useState(true);
 
   // Fetch documents from the server
+  const supabase = createClient();
 
   const fetchDocuments = useCallback(async () => {
     setIsLoading(true);
@@ -63,15 +71,24 @@ const FileGrid = ({ documentType }: FileGridProps) => {
   };
 
   return (
-    <div className="p-6  min-h-screen">
-      <div className="grid mt-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-6 p-1">
+    <div
+      className={`${selectedFile ? "p-2" : "p-6"}  min-h-screen `}
+      style={{ scrollbarWidth: "thin", msScrollbarTrackColor: "transparent" }}
+    >
+      <div
+        className={`grid mt-6 ${
+          selectedFile
+            ? "grid-cols-3 "
+            : "sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7"
+        } gap-6 p-1`}
+      >
         <CreateFileModal
           documentType={documentType}
           onSubmit={handleFileUpload}
         >
-          <Card className="max-w-[200px] group hover:shadow-md transition-all duration-200 cursor-pointer bg-white border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50/30">
+          <Card className="max-w-[170px] group hover:shadow-md transition-all duration-200 cursor-pointer bg-white border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50/30">
             <CardContent className="p-0 size-full">
-              <div className="p-3 min-h-36 size-full flex flex-col items-center justify-center hover:text-blue-500">
+              <div className="p-3 min-h-42 size-full flex flex-col items-center justify-center hover:text-blue-500">
                 <h3 className="text-sm font-medium mb-1">
                   Upload New {getUploadText()}
                 </h3>
@@ -84,7 +101,7 @@ const FileGrid = ({ documentType }: FileGridProps) => {
         {isLoading ? (
           // Loading skeleton cards
           Array.from({ length: 20 }).map((_, index) => (
-            <Card key={index} className="max-w-[200px] shadow-lg overflow-clip">
+            <Card key={index} className="max-w-[170px] shadow-lg overflow-clip">
               <CardContent className="!p-0">
                 <div className="min-h-32 rounded-t-lg bg-gray-50">
                   <Skeleton className="w-full h-32" />
@@ -101,7 +118,23 @@ const FileGrid = ({ documentType }: FileGridProps) => {
           files.map((file) => (
             <Card
               key={file.id}
-              className="group pb-2 pt-0 max-w-[200px]  shadow-lg overflow-clip"
+              className="group pb-2 pt-0 max-w-[170px] shadow-lg overflow-clip cursor-pointer hover:shadow-xl transition-shadow"
+              onClick={async () => {
+                const { data, error } = await supabase.storage
+                  .from("documents")
+                  .createSignedUrl(file.file_path, 60 * 60);
+
+                if (error || !data) {
+                  console.error(
+                    "Failed to create signed URL for file:",
+                    file,
+                    error
+                  );
+                  return;
+                }
+
+                onFileSelect(data.signedUrl, file.file_name);
+              }}
             >
               <CardContent className="!p-0">
                 {/* Thumbnail Area */}

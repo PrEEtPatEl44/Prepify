@@ -5,7 +5,7 @@ import { Document, Page } from "react-pdf";
 import { pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
-import { File } from "lucide-react";
+import { File, X, Download } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -14,45 +14,75 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 ).toString();
 
 interface ViewerProps {
-  fileUrl: string;
-  fileName?: string;
+  selectedFile: { url: string; name: string } | null;
+  setSelectedFile: (file: { url: string; name: string } | null) => void;
 }
 
-export default function Viewer({
-  fileUrl,
-  fileName = "Document",
-}: ViewerProps) {
+const loadingComponent = (
+  <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+    <div className="relative">
+      <div className="w-16 h-16 border-4 border-gray-200 border-t-[#636AE8] rounded-full animate-spin"></div>
+    </div>
+    <p className="text-white text-lg font-medium">Loading document...</p>
+  </div>
+);
+
+export default function Viewer({ selectedFile, setSelectedFile }: ViewerProps) {
   const [numPages, setNumPages] = useState<number>();
   const { setOpen } = useSidebar();
   function onDocumentLoadSuccess({ numPages }: { numPages: number }): void {
     setOpen(false);
     setNumPages(numPages);
   }
+  function handleClose() {
+    setOpen(true);
+    setSelectedFile(null);
+  }
 
   return (
     <div
-      className="h-screen flex flex-col bg-[#171A1F66] shadow-2xl overflow-scroll scrollbar-hide"
+      className="h-screen min-w-fit flex flex-col bg-[#171A1F66] shadow-2xl overflow-y-scroll scrollbar-hide"
       style={{ scrollbarWidth: "none" }}
     >
       <div className="sticky top-0 z-10 p-3 bg-gray-100 flex items-center gap-3">
-        <div className="p-2">
-          <File className="h-6 w-6 text-[#636AE8]" />
+        <div className="flex flex-1 items-center gap-3">
+          <div className="p-2">
+            <File className="h-6 w-6 text-[#636AE8]" />
+          </div>
+          <span className="text-lg">{selectedFile?.name}</span>
         </div>
-        <span className="text-lg">{fileName}</span>
+        <div className="flex gap-2 items-center">
+          <a
+            href={selectedFile?.url}
+            download
+            className="p-1 rounded-full hover:bg-white/20"
+          >
+            <Download className="h-6 w-6 text-gray-600 hover:text-gray-800 cursor-pointer" />
+          </a>
+          <X
+            className="h-6 w-6 text-gray-600 hover:text-gray-800 cursor-pointer"
+            onClick={() => handleClose()}
+          />
+        </div>
       </div>
-      <div className="h">
+      <div>
         <Document
-          file={fileUrl}
+          file={selectedFile?.url}
           onLoadSuccess={onDocumentLoadSuccess}
-          className={"m-4 flex flex-col gap-4 max-w-3xl "}
+          className={"m-4 min-w-fit mx-auto gap-4 max-w-xl "}
+          loading={loadingComponent}
         >
           {numPages &&
             Array.from(new Array(numPages), (el, index) => (
-              <Page key={`page_${index + 1}`} pageNumber={index + 1} />
+              <Page
+                key={`page_${index + 1}`}
+                pageNumber={index + 1}
+                className={"my-2"}
+              />
             ))}
         </Document>
       </div>
-      {numPages && <p className="text-center pb-4">{numPages} pages</p>}
+      {/* {numPages && <p className="text-center pb-4">{numPages} pages</p>} */}
     </div>
   );
 }
