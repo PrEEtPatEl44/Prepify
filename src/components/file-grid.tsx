@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { File, MoreVertical, Plus, Trash2 } from "lucide-react";
+import { File, MoreVertical, Plus, Trash2, FileX } from "lucide-react";
 import { CreateFileModal } from "./modals/CreateFileModal";
 import { DeleteDocModal } from "./modals/DeleteDocModal";
 import { useEffect, useState } from "react";
@@ -11,6 +11,7 @@ import {
   type GetAllDocumentsResult,
 } from "@/app/docs/actions";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "./ui/button";
 
 interface FileGridProps {
   documentType: "resumes" | "coverLetters";
@@ -96,21 +97,23 @@ const FileGrid = ({
             : "sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7"
         } gap-6 p-1`}
       >
-        <CreateFileModal
-          documentType={documentType}
-          onSubmit={handleFileUpload}
-        >
-          <Card className="max-w-[170px] group hover:shadow-md transition-all duration-200 cursor-pointer bg-white border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50/30">
-            <CardContent className="p-0 size-full">
-              <div className="p-3 min-h-42 size-full flex flex-col items-center justify-center hover:text-blue-500">
-                <h3 className="text-sm font-medium mb-1">
-                  Upload New {getUploadText()}
-                </h3>
-                <Plus />
-              </div>
-            </CardContent>
-          </Card>
-        </CreateFileModal>
+        {files && files.length > 0 && (
+          <CreateFileModal
+            documentType={documentType}
+            onSubmit={handleFileUpload}
+          >
+            <Card className="max-w-[170px] group hover:shadow-md transition-all duration-200 cursor-pointer bg-white border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50/30">
+              <CardContent className="p-0 size-full">
+                <div className="p-3 min-h-42 size-full flex flex-col items-center justify-center hover:text-blue-500">
+                  <h3 className="text-sm font-medium mb-1">
+                    Upload New {getUploadText()}
+                  </h3>
+                  <Plus />
+                </div>
+              </CardContent>
+            </Card>
+          </CreateFileModal>
+        )}
 
         {isLoading ? (
           // Loading skeleton cards
@@ -127,7 +130,28 @@ const FileGrid = ({
             </Card>
           ))
         ) : !files || files.length === 0 ? (
-          <div>No files found.</div>
+          <div className="col-span-full flex flex-col items-center justify-center py-16 px-4">
+            <div className="bg-gray-100 rounded-full p-6 mb-4">
+              <FileX className="w-16 h-16 text-gray-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">
+              No {documentType === "resumes" ? "resumes" : "cover letters"} yet
+            </h3>
+            <p className="text-gray-500 text-center max-w-md mb-6">
+              Get started by uploading your first{" "}
+              {documentType === "resumes" ? "resume" : "cover letter"}. You can
+              easily manage and organize all your documents in one place.
+            </p>
+            <CreateFileModal
+              documentType={documentType}
+              onSubmit={handleFileUpload}
+            >
+              <Button className="flex items-center gap-2 px-6 py-3 bg-[#636AE8] hover:bg-[#4e57c1] text-white rounded-lg transition-colors font-medium">
+                <Plus className="w-5 h-5" />
+                Upload {documentType === "resumes" ? "Resume" : "Cover Letter"}
+              </Button>
+            </CreateFileModal>
+          </div>
         ) : (
           files.map((file) => (
             <Card
