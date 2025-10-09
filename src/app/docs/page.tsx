@@ -11,6 +11,7 @@ const Viewer = dynamic(() => import("@/components/viewer"), {
 interface SelectedFile {
   url: string;
   name: string;
+  filePath: string;
 }
 
 const Page = () => {
@@ -38,8 +39,8 @@ const Page = () => {
         <div className="flex-1 overflow-y-auto mt-1">
           <FileGrid
             documentType={documentType}
-            onFileSelect={(url: string, name: string) =>
-              setSelectedFile({ url, name })
+            onFileSelect={(url: string, name: string, filePath: string) =>
+              setSelectedFile({ url, name, filePath })
             }
             selectedFile={selectedFile}
             searchTerm={searchTerm}

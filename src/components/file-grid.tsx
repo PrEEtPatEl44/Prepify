@@ -15,8 +15,8 @@ import { Button } from "./ui/button";
 
 interface FileGridProps {
   documentType: "resumes" | "coverLetters";
-  onFileSelect: (fileUrl: string, fileName: string) => void;
-  selectedFile?: { url: string; name: string } | null;
+  onFileSelect: (fileUrl: string, fileName: string, filePath: string) => void;
+  selectedFile?: { url: string; name: string; filePath: string } | null;
   searchTerm?: string;
 }
 
@@ -194,7 +194,7 @@ const FileGrid = ({
                   return;
                 }
 
-                onFileSelect(data.signedUrl, file.file_name);
+                onFileSelect(data.signedUrl, file.file_name, file.file_path);
               }}
             >
               <CardContent className="!p-0">
