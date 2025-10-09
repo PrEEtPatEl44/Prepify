@@ -18,6 +18,7 @@ const Page = () => {
     "resumes"
   );
   const [selectedFile, setSelectedFile] = useState<SelectedFile | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   return (
     <div className="h-screen flex flex-col lg:flex-row flex-1 w-full">
@@ -30,6 +31,7 @@ const Page = () => {
           <DocsHeader
             documentType={documentType}
             setDocumentType={setDocumentType}
+            setSearchTerm={setSearchTerm}
           />
         </div>
 
@@ -40,6 +42,7 @@ const Page = () => {
               setSelectedFile({ url, name })
             }
             selectedFile={selectedFile}
+            searchTerm={searchTerm}
           />
         </div>
       </div>

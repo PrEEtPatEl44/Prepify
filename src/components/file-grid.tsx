@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { File, MoreVertical, Plus, Trash2, FileX } from "lucide-react";
 import { CreateFileModal } from "./modals/CreateFileModal";
 import { DeleteDocModal } from "./modals/DeleteDocModal";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { createClient } from "@/utils/supabase/client";
 import {
   getAllDocuments,
@@ -17,6 +17,7 @@ interface FileGridProps {
   documentType: "resumes" | "coverLetters";
   onFileSelect: (fileUrl: string, fileName: string) => void;
   selectedFile?: { url: string; name: string } | null;
+  searchTerm?: string;
 }
 
 interface DocumentFile {
@@ -34,6 +35,7 @@ const FileGrid = ({
   documentType,
   onFileSelect,
   selectedFile,
+  searchTerm,
 }: FileGridProps) => {
   const [files, setFiles] = useState<DocumentFile[]>();
   const [isLoading, setIsLoading] = useState(true);
@@ -84,6 +86,13 @@ const FileGrid = ({
   const getUploadText = () => {
     return documentType === "resumes" ? "Resume" : "Cover Letter";
   };
+
+  const filteredFiles = useMemo(() => {
+    if (!files) return [];
+    const q = (searchTerm || "").toLowerCase().trim();
+    if (!q) return files;
+    return files.filter((f) => f.file_name.toLowerCase().includes(q));
+  }, [files, searchTerm]);
 
   return (
     <div
@@ -152,8 +161,22 @@ const FileGrid = ({
               </Button>
             </CreateFileModal>
           </div>
+        ) : filteredFiles.length === 0 ? (
+          // files exist but none match the query
+          <div className="col-span-full flex flex-col items-center justify-center py-16 px-4">
+            <div className="bg-gray-100 rounded-full p-6 mb-4">
+              <FileX className="w-16 h-16 text-gray-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">
+              No matching files
+            </h3>
+            <p className="text-gray-500 text-center max-w-md mb-6">
+              No files match &quot;{searchTerm}&quot;. Try a different search
+              term.
+            </p>
+          </div>
         ) : (
-          files.map((file) => (
+          filteredFiles.map((file) => (
             <Card
               key={file.id}
               className="group pb-2 pt-0 max-w-[170px] shadow-lg overflow-clip cursor-pointer hover:shadow-xl transition-shadow"
