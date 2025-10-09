@@ -46,7 +46,9 @@ export default function DocsHeader({
           {/* Search Box */}
           <Input
             type="text"
-            placeholder="Search..."
+            placeholder={`Search your ${
+              documentType === "resumes" ? "resumes" : "cover letters"
+            }...`}
             className={`max-h-8 bg-[#F3F4F6] !border-none`}
             onChange={(e) => handleChange(e)}
           />
