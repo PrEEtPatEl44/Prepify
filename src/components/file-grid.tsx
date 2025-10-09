@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { File, MoreVertical, Plus, Trash2, FileX } from "lucide-react";
 import { CreateFileModal } from "./modals/CreateFileModal";
 import { DeleteDocModal } from "./modals/DeleteDocModal";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { createClient } from "@/utils/supabase/client";
 import {
   getAllDocuments,
@@ -15,8 +15,9 @@ import { Button } from "./ui/button";
 
 interface FileGridProps {
   documentType: "resumes" | "coverLetters";
-  onFileSelect: (fileUrl: string, fileName: string) => void;
-  selectedFile?: { url: string; name: string } | null;
+  onFileSelect: (fileUrl: string, fileName: string, filePath: string) => void;
+  selectedFile?: { url: string; name: string; filePath: string } | null;
+  searchTerm?: string;
 }
 
 interface DocumentFile {
@@ -34,6 +35,7 @@ const FileGrid = ({
   documentType,
   onFileSelect,
   selectedFile,
+  searchTerm,
 }: FileGridProps) => {
   const [files, setFiles] = useState<DocumentFile[]>();
   const [isLoading, setIsLoading] = useState(true);
@@ -85,11 +87,55 @@ const FileGrid = ({
     return documentType === "resumes" ? "Resume" : "Cover Letter";
   };
 
+  const filteredFiles = useMemo(() => {
+    if (!files) return [];
+    const q = (searchTerm || "").toLowerCase().trim();
+    if (!q) return files;
+    return files.filter((f) => f.file_name.toLowerCase().includes(q));
+  }, [files, searchTerm]);
+
   return (
     <div
-      className={`${selectedFile ? "p-2" : "p-6"}  min-h-screen `}
+      className={`${selectedFile ? "p-2" : "p-6"}  min-h-screen relative`}
       style={{ scrollbarWidth: "thin", msScrollbarTrackColor: "transparent" }}
     >
+      {/* Floating Results Dock - Show when search is active */}
+      {searchTerm && searchTerm.trim() && files && files.length > 0 && (
+        <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 bg-white border border-gray-300 rounded-full shadow-lg backdrop-blur-sm bg-opacity-95 animate-in slide-in-from-bottom duration-300">
+          <p className="text-sm text-gray-700 whitespace-nowrap">
+            {filteredFiles.length > 0 ? (
+              <>
+                Showing{" "}
+                <span className="font-semibold text-blue-600">
+                  {filteredFiles.length}
+                </span>{" "}
+                of{" "}
+                <span className="font-semibold text-gray-900">
+                  {files.length}
+                </span>{" "}
+                {files.length === 1 ? "result" : "results"}
+                <span className="ml-1">
+                  for &quot;
+                  <span className="font-medium text-gray-900">
+                    {searchTerm}
+                  </span>
+                  &quot;
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="font-semibold text-orange-600">
+                  No results found
+                </span>{" "}
+                for &quot;
+                <span className="font-medium text-gray-900">{searchTerm}</span>
+                &quot;
+              </>
+            )}
+          </p>
+        </div>
+      )}
+
       <div
         className={`grid mt-6 ${
           selectedFile
@@ -105,7 +151,7 @@ const FileGrid = ({
             <Card className="max-w-[170px] group hover:shadow-md transition-all duration-200 cursor-pointer bg-white border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50/30">
               <CardContent className="p-0 size-full">
                 <div className="p-3 min-h-42 size-full flex flex-col items-center justify-center hover:text-blue-500">
-                  <h3 className="text-sm font-medium mb-1">
+                  <h3 className="text-sm font-medium mb-1 text-center">
                     Upload New {getUploadText()}
                   </h3>
                   <Plus />
@@ -153,7 +199,7 @@ const FileGrid = ({
             </CreateFileModal>
           </div>
         ) : (
-          files.map((file) => (
+          filteredFiles.map((file) => (
             <Card
               key={file.id}
               className="group pb-2 pt-0 max-w-[170px] shadow-lg overflow-clip cursor-pointer hover:shadow-xl transition-shadow"
@@ -171,7 +217,7 @@ const FileGrid = ({
                   return;
                 }
 
-                onFileSelect(data.signedUrl, file.file_name);
+                onFileSelect(data.signedUrl, file.file_name, file.file_path);
               }}
             >
               <CardContent className="!p-0">

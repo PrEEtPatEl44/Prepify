@@ -11,6 +11,7 @@ const Viewer = dynamic(() => import("@/components/viewer"), {
 interface SelectedFile {
   url: string;
   name: string;
+  filePath: string;
 }
 
 const Page = () => {
@@ -18,6 +19,7 @@ const Page = () => {
     "resumes"
   );
   const [selectedFile, setSelectedFile] = useState<SelectedFile | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   return (
     <div className="h-screen flex flex-col lg:flex-row flex-1 w-full">
@@ -30,16 +32,18 @@ const Page = () => {
           <DocsHeader
             documentType={documentType}
             setDocumentType={setDocumentType}
+            setSearchTerm={setSearchTerm}
           />
         </div>
 
         <div className="flex-1 overflow-y-auto mt-1">
           <FileGrid
             documentType={documentType}
-            onFileSelect={(url: string, name: string) =>
-              setSelectedFile({ url, name })
+            onFileSelect={(url: string, name: string, filePath: string) =>
+              setSelectedFile({ url, name, filePath })
             }
             selectedFile={selectedFile}
+            searchTerm={searchTerm}
           />
         </div>
       </div>

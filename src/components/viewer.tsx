@@ -7,6 +7,7 @@ import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import { File, X, Download } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
+import { createClient } from "@/utils/supabase/client";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",
@@ -14,8 +15,10 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 ).toString();
 
 interface ViewerProps {
-  selectedFile: { url: string; name: string } | null;
-  setSelectedFile: (file: { url: string; name: string } | null) => void;
+  selectedFile: { url: string; name: string; filePath: string } | null;
+  setSelectedFile: (
+    file: { url: string; name: string; filePath: string } | null
+  ) => void;
 }
 
 const loadingComponent = (
@@ -39,6 +42,30 @@ export default function Viewer({ selectedFile, setSelectedFile }: ViewerProps) {
     setSelectedFile(null);
   }
 
+  const handleDownload = async () => {
+    const supabase = createClient();
+    if (!selectedFile) return;
+
+    const { data, error } = await supabase.storage
+      .from("documents")
+      .download(selectedFile.filePath); // URL valid for 60 seconds
+
+    if (error) {
+      console.error("Error downloading file:", error);
+      return;
+    }
+
+    // Create a blob URL for the downloaded file
+    const blobUrl = URL.createObjectURL(data);
+    const a = document.createElement("a");
+    a.href = blobUrl;
+    a.download = selectedFile.name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(blobUrl);
+  };
+
   return (
     <div
       className="h-screen min-w-fit flex flex-col bg-[#171A1F66] shadow-2xl overflow-y-scroll scrollbar-hide"
@@ -53,8 +80,7 @@ export default function Viewer({ selectedFile, setSelectedFile }: ViewerProps) {
         </div>
         <div className="flex gap-2 items-center">
           <a
-            href={selectedFile?.url}
-            download
+            onClick={() => handleDownload()}
             className="p-1 rounded-full hover:bg-white/20"
           >
             <Download className="h-6 w-6 text-gray-600 hover:text-gray-800 cursor-pointer" />

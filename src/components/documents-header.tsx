@@ -4,10 +4,12 @@ import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { Input } from "./ui/input";
 import UserDropdown from "@/components/user-dropdown";
 import { useUser } from "@/hooks/useUser";
+import { useRef } from "react";
 
 interface DocsHeaderProps {
   documentType: "resumes" | "coverLetters";
   setDocumentType: (type: "resumes" | "coverLetters") => void;
+  setSearchTerm: (term: string) => void;
 }
 function getTabClasses(active: boolean) {
   return `
@@ -22,9 +24,21 @@ function getTabClasses(active: boolean) {
 export default function DocsHeader({
   documentType,
   setDocumentType,
+  setSearchTerm,
 }: DocsHeaderProps) {
   const { profile } = useUser();
+  const debounceRef = useRef<number | null>(null);
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    // simple debounce to avoid too many updates while typing
+    if (debounceRef.current) {
+      window.clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = window.setTimeout(() => {
+      setSearchTerm(val);
+    }, 300);
+  };
   return (
     <>
       <div className="w-full">
@@ -32,8 +46,11 @@ export default function DocsHeader({
           {/* Search Box */}
           <Input
             type="text"
-            placeholder="Search..."
+            placeholder={`Search your ${
+              documentType === "resumes" ? "resumes" : "cover letters"
+            }...`}
             className={`max-h-8 bg-[#F3F4F6] !border-none`}
+            onChange={(e) => handleChange(e)}
           />
 
           {/* Tabs */}
