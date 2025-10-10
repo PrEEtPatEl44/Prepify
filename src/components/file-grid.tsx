@@ -5,11 +5,8 @@ import { CreateFileModal } from "./modals/CreateFileModal";
 import { DeleteDocModal } from "./modals/DeleteDocModal";
 import { useEffect, useState, useMemo } from "react";
 import { createClient } from "@/utils/supabase/client";
-import {
-  getAllDocuments,
-  deleteDocument,
-  type GetAllDocumentsResult,
-} from "@/app/docs/actions";
+import { DocumentBasicInfo } from "@/types/docs";
+import { deleteDocument } from "@/app/docs/actions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "./ui/button";
 
@@ -20,24 +17,13 @@ interface FileGridProps {
   searchTerm?: string;
 }
 
-interface DocumentFile {
-  id: string;
-  user_id: string;
-  file_name: string;
-  file_path: string;
-  file_size: number;
-  mime_type: string;
-  created_at: string;
-  updated_at: string;
-}
-
 const FileGrid = ({
   documentType,
   onFileSelect,
   selectedFile,
   searchTerm,
 }: FileGridProps) => {
-  const [files, setFiles] = useState<DocumentFile[]>();
+  const [files, setFiles] = useState<DocumentBasicInfo[]>();
   const [isLoading, setIsLoading] = useState(true);
 
   // Fetch documents from the server
@@ -46,10 +32,11 @@ const FileGrid = ({
   const fetchDocuments = useCallback(async () => {
     setIsLoading(true);
     try {
-      const result: GetAllDocumentsResult = await getAllDocuments(documentType);
-
-      if (result.success && result.data) {
-        setFiles(result.data);
+      const result = await fetch(`/api/docs?type=${documentType}`).then((res) =>
+        res.json()
+      );
+      if (result && result.success) {
+        setFiles(result.data || []);
       } else {
         console.error("Failed to fetch documents:", result.error);
         setFiles([]);
