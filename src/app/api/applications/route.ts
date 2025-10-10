@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { jobService } from "@/lib/services/jobService";
 import { GetJobsResponse, ApiError } from "@/types/api";
 
@@ -6,24 +6,16 @@ import { GetJobsResponse, ApiError } from "@/types/api";
  * GET /api/applications
  * Retrieve all job applications
  */
-export async function GET(request: NextRequest): Promise<NextResponse> {
+export async function GET(): Promise<NextResponse> {
   try {
     console.log("GET /api/applications - Fetching all jobs");
 
-    // Extract query parameters for potential filtering/searching
-    const { searchParams } = new URL(request.url);
-    const search = searchParams.get("search");
+    // Get all jobs
+    const jobs = await jobService.getAllJobs();
+    console.log(`Found ${jobs.length} total jobs`);
 
-    let jobs;
-
-    if (search) {
-      // Search functionality
-      jobs = await jobService.searchJobs(search);
-      console.log(`Found ${jobs.length} jobs matching search: ${search}`);
-    } else {
-      // Get all jobs
-      jobs = await jobService.getAllJobs();
-      console.log(`Found ${jobs.length} total jobs`);
+    if (jobs.length === 0) {
+      console.log("No jobs found for the user");
     }
 
     const response: GetJobsResponse = {
