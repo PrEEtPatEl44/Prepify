@@ -3,8 +3,9 @@ import React from "react";
 import Header from "@/components/header";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
-import { getAllJobs, createJob, getAllColumns } from "@/lib/clients";
-import { type Column, type Job } from "@/types/jobs";
+
+import { createJob } from "@/app/jobs/actions";
+import { type CreateJob, type Column, type Job } from "@/types/jobs";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const Kanban = dynamic(() => import("@/components/kanban"), { ssr: false });
@@ -18,9 +19,30 @@ const Page = () => {
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
-      const columnsData = await getAllColumns();
-      const jobsData = await getAllJobs();
-      console.log("Fetched jobs:", jobsData);
+      const columnsData = await fetch("/api/applications/columns")
+        .then((res) => {
+          if (!res.ok) {
+            console.error("Failed to fetch columns:", res.statusText);
+            return [];
+          }
+          return res.json().then((data) => data.data.columns);
+        })
+        .catch((error) => {
+          console.error("Error fetching columns:", error);
+          return [];
+        });
+      const jobsData = await fetch("/api/applications")
+        .then((res) => {
+          if (!res.ok) {
+            console.error("Failed to fetch jobs:", res.statusText);
+            return [];
+          }
+          return res.json().then((data) => data.data.jobs);
+        })
+        .catch((error) => {
+          console.error("Error fetching jobs:", error);
+          return [];
+        });
       setColumns(columnsData);
       setJobs(jobsData);
       setIsLoading(false);
@@ -30,40 +52,22 @@ const Page = () => {
 
   // Handler to create a new job and update state at parent level as state
   // was not updating in header component due to missing jobs
-  const handleCreateJob = async (jobData: Partial<Job>) => {
-    console.log(jobData);
+  const handleCreateJob = async (jobData: CreateJob) => {
+    console.log("stack trace", new Error().stack);
 
     try {
       console.log("Creating job via API:", jobData);
-      if (
-        !jobData.title ||
-        !jobData.companyName ||
-        !jobData.description ||
-        !jobData.applicationLink ||
-        !jobData.resumeId ||
-        !jobData.coverLetterId ||
-        !jobData.columnId
-      ) {
-        throw new Error("All fields are required");
-      }
-
-      const requestData = {
-        title: jobData.title,
-        companyName: jobData.companyName,
-        columnId: jobData.columnId,
-        description: jobData.description,
-        applicationLink: jobData.applicationLink,
-        resumeId: jobData.resumeId,
-        coverLetterId: jobData.coverLetterId,
-        companyDomain: jobData.companyDomain,
-      };
-
-      const newJob = await createJob({
-        ...requestData,
+      const job = await createJob(jobData).then((res) => {
+        if (!res.success || !res.data) {
+          throw new Error(res.error || "Failed to create job");
+        }
+        return res.data as Job;
       });
-      console.log("Job created successfully:", newJob);
 
-      setJobs((prevJobs) => [...prevJobs, newJob]);
+      console.log("Job created successfully:", job);
+
+      // Update local state to reflect the new job immediately
+      setJobs((prevJobs) => [...prevJobs, job]);
     } catch (error) {
       console.error("Failed to create job:", error);
       alert(
@@ -71,9 +75,6 @@ const Page = () => {
           error instanceof Error ? error.message : "Unknown error"
         }`
       );
-    } finally {
-      // Any cleanup if necessary
-      console.log("Create job process completed");
     }
   };
 

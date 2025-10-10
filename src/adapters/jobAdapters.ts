@@ -1,5 +1,6 @@
 import { type Job } from "@/types/jobs";
 import { type KanbanItemProps } from "@/components/ui/shadcn-io/kanban/index";
+import { type JobDbRow } from "@/types/jobs";
 
 export interface JobKanbanItem extends KanbanItemProps {
   title: string;
@@ -36,6 +37,34 @@ const transformKanbanItemsToJobs = (
   companyIconUrl: kanbanItem.companyIconUrl,
   applicationLink: kanbanItem.applicationLink,
   description: kanbanItem.description,
+  coverLetterId: originalJob?.coverLetterId,
+  resumeId: originalJob?.resumeId,
+  createdAt: kanbanItem.createdAt,
+  updatedAt: kanbanItem.updatedAt,
+  companyDomain: originalJob?.companyDomain,
 });
 
-export { transformJobsToKanbanItem, transformKanbanItemsToJobs };
+const transformDbRowToJob = (row: JobDbRow): Job => {
+  return {
+    id: row.id,
+    title: row.job_title,
+    companyName: row.company_name,
+    columnId: row.column_id,
+    companyIconUrl: row.company_domain
+      ? `https://cdn.brandfetch.io/${row.company_domain}?c=${process.env.BRANDFETCH_CLIENT_ID}`
+      : "/logo.svg",
+    description: row.job_description || "",
+    applicationLink: row.job_url || "",
+    resumeId: row.resume_id,
+    coverLetterId: row.cover_letter_id,
+    createdAt: new Date(row.created_at),
+    updatedAt: new Date(row.created_at),
+    companyDomain: row.company_domain,
+  };
+};
+
+export {
+  transformJobsToKanbanItem,
+  transformKanbanItemsToJobs,
+  transformDbRowToJob,
+};

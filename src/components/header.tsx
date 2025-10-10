@@ -3,7 +3,7 @@
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { Input } from "./ui/input";
 import CreateJobModal from "@/components/modals/CreateJobModal";
-import { type Job, type Column } from "@/types/jobs";
+import { type Column, CreateJob } from "@/types/jobs";
 import UserDropdown from "@/components/user-dropdown";
 import { useUser } from "@/hooks/useUser";
 
@@ -11,19 +11,10 @@ export default function Header({
   onCreateJob,
   columns,
 }: {
-  onCreateJob: (job: Partial<Job>) => Promise<void>;
+  onCreateJob: (job: CreateJob) => Promise<void>;
   columns: Column[];
 }) {
   const { profile } = useUser();
-
-  const handleCreateJob = async (jobData: Partial<Job>) => {
-    try {
-      await onCreateJob(jobData);
-      // Optionally trigger a refresh or callback to parent if needed
-    } catch (error) {
-      console.error("Failed to create job:", error);
-    }
-  };
 
   return (
     <>
@@ -37,11 +28,13 @@ export default function Header({
 
         <div className="flex items-center gap-6 mr-4">
           {/* Create Application Button */}
-          <CreateJobModal
-            onSubmit={handleCreateJob}
-            targetColumn={columns[0]?.id} // Default to first column if available
-            isHeader={true}
-          />
+          {columns.length > 0 && (
+            <CreateJobModal
+              onSubmit={onCreateJob}
+              targetColumn={columns[0].id}
+              isHeader={true}
+            />
+          )}
 
           {/* Avatar */}
           <UserDropdown sideForMobile="bottom" sideForDesktop="bottom">
