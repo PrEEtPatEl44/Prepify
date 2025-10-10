@@ -2,44 +2,14 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
-
-interface InsertDocumentResult {
-  success: boolean;
-  data?: {
-    id: string;
-  };
-  error?: string;
-}
-
-interface DocumentRecordData {
-  filePath: string;
-  fileName: string;
-  fileSize: number;
-  mimeType: string;
-  documentType: "resumes" | "coverLetters";
-}
-
-export interface GetAllDocumentsResult {
-  success: boolean;
-  data?: {
-    id: string;
-    user_id: string;
-    file_name: string;
-    file_path: string;
-    file_size: number;
-    mime_type: string;
-    created_at: string;
-    updated_at: string;
-  }[];
-  error?: string;
-}
-
-export interface DeleteDocumentResult {
-  success: boolean;
-  error?: string;
-}
+import {
+  type DocumentRecordData,
+  type InsertDocumentResult,
+  type DeleteDocumentResult,
+} from "@/types/docs";
 
 // Inserts a document record into the database
+// storage upload is handled in the client side due to limitations with server actions request size
 export async function insertDocumentRecord(
   documentData: DocumentRecordData
 ): Promise<InsertDocumentResult> {
@@ -111,60 +81,6 @@ export async function insertDocumentRecord(
     return {
       success: false,
       error: `Database insert failed: ${errorMessage}`,
-    };
-  }
-}
-
-// Get all documents from the database for a specific document type
-export async function getAllDocuments(
-  documentType: "resumes" | "coverLetters"
-): Promise<GetAllDocumentsResult> {
-  try {
-    const supabase = await createClient();
-
-    // Get the current user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return {
-        success: false,
-        error: "User not authenticated. Please log in.",
-      };
-    }
-
-    // Determine table name based on document type
-    const tableName = documentType === "resumes" ? "resumes" : "cover_letters";
-
-    // Query documents from the database
-    const { data, error: queryError } = await supabase
-      .from(tableName)
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
-
-    if (queryError) {
-      console.error("Database query error:", queryError);
-      return {
-        success: false,
-        error: `Database query failed: ${queryError.message}`,
-      };
-    }
-
-    return {
-      success: true,
-      data: data || [],
-    };
-  } catch (error) {
-    console.error("Get all documents error:", error);
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error occurred";
-
-    return {
-      success: false,
-      error: `Failed to fetch documents: ${errorMessage}`,
     };
   }
 }

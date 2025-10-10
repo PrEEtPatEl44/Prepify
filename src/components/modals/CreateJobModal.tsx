@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { type Job } from "@/types/jobs";
+import { CreateJob } from "@/types/jobs";
 import {
   useCompanySearch,
   type CompanySearchResult,
@@ -32,10 +32,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Plus } from "lucide-react";
-
+import { DocumentBasicInfo } from "@/types/docs";
 interface CreateJobModalProps {
-  onSubmit: (jobData: Partial<Job>) => void;
-  targetColumn?: string;
+  onSubmit: (jobData: CreateJob) => void;
+  targetColumn: string;
   isHeader?: boolean;
 }
 
@@ -68,6 +68,8 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
   const [showCompanyDropdown, setShowCompanyDropdown] = useState(false);
   const [companyInputFocused, setCompanyInputFocused] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [resumes, setResumes] = useState<DocumentBasicInfo[]>([]);
+  const [coverLetters, setCoverLetters] = useState<DocumentBasicInfo[]>([]);
 
   const companyInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -157,8 +159,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
 
     setIsLoading(true);
     try {
-      const jobData: Partial<Job> = {
-        id: `task-${Date.now()}`,
+      const jobData: CreateJob = {
         title: formData.jobTitle,
         companyName: formData.company,
         columnId: targetColumn,
@@ -177,6 +178,49 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
       setIsLoading(false);
     }
   };
+
+  // Fetch dropdown options when the modal opens. This prevents multiple
+  // CreateJobModal instances mounted across the UI from all fetching on mount.
+  useEffect(() => {
+    const fetchDropdownOptions = async () => {
+      try {
+        // Fetch resumes
+        const resumesRes = await fetch("/api/docs?type=resumes");
+        if (!resumesRes.ok) {
+          console.error("Failed to fetch resumes:", resumesRes.statusText);
+        } else {
+          const resumesJson = await resumesRes.json();
+          if (resumesJson && resumesJson.success) {
+            setResumes(resumesJson.data || []);
+          } else {
+            console.error("Error in resumes response:", resumesJson);
+          }
+        }
+
+        // Fetch cover letters
+        const coverLettersRes = await fetch("/api/docs?type=coverLetters");
+        if (!coverLettersRes.ok) {
+          console.error(
+            "Failed to fetch cover letters:",
+            coverLettersRes.statusText
+          );
+        } else {
+          const coverLettersJson = await coverLettersRes.json();
+          if (coverLettersJson && coverLettersJson.success) {
+            setCoverLetters(coverLettersJson.data || []);
+          } else {
+            console.error("Error in cover letters response:", coverLettersJson);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching dropdown options:", error);
+      }
+    };
+    //we can late implement caching with swr to prevent refetching every time
+    if (isOpen && resumes.length === 0 && coverLetters.length === 0) {
+      fetchDropdownOptions();
+    }
+  }, [isOpen, resumes.length, coverLetters.length]);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -351,13 +395,19 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
                 <SelectContent position="popper" className="z-[2000]">
                   <SelectGroup>
                     <SelectLabel>Resume</SelectLabel>
-                    <SelectItem value="resume-1">
-                      Software Developer Resume
-                    </SelectItem>
-                    <SelectItem value="resume-2">
-                      Frontend Developer Resume
-                    </SelectItem>
-                    <SelectItem value="resume-3">Full Stack Resume</SelectItem>
+                    {resumes.length === 0 && (
+                      <SelectItem
+                        value="NotAvailable"
+                        className="p-3 text-sm text-gray-500"
+                      >
+                        No resumes available
+                      </SelectItem>
+                    )}
+                    {resumes.map((resume) => (
+                      <SelectItem key={resume.id} value={resume.id}>
+                        {resume.file_name}
+                      </SelectItem>
+                    ))}
                   </SelectGroup>
                 </SelectContent>
               </Select>
@@ -366,7 +416,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
             {/* Select Cover Letter Field */}
             <div className="w-full">
               <Label htmlFor="coverletter" className="text-md font-medium">
-                Select Coverletter
+                Select Cover letter
               </Label>
 
               <Select
@@ -383,16 +433,20 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    <SelectLabel>Coverletter</SelectLabel>
-                    <SelectItem value="cover-1">
-                      Software Developer Coverletter
-                    </SelectItem>
-                    <SelectItem value="cover-2">
-                      Frontend Developer Coverletter
-                    </SelectItem>
-                    <SelectItem value="cover-3">
-                      Full Stack Coverletter
-                    </SelectItem>
+                    <SelectLabel>Cover letters</SelectLabel>
+                    {coverLetters.length === 0 && (
+                      <SelectItem
+                        value="NotAvailable"
+                        className="p-3 text-sm text-gray-500"
+                      >
+                        No cover letters available
+                      </SelectItem>
+                    )}
+                    {coverLetters.map((coverLetter) => (
+                      <SelectItem key={coverLetter.id} value={coverLetter.id}>
+                        {coverLetter.file_name}
+                      </SelectItem>
+                    ))}
                   </SelectGroup>
                 </SelectContent>
               </Select>

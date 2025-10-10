@@ -10,11 +10,11 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Ellipsis } from "lucide-react";
 import { useState } from "react";
-import { type Column, type Job } from "@/types/jobs";
-import { deleteJob, createColumn, moveJob } from "@/lib/clients";
+import { CreateJob, type Column, type Job } from "@/types/jobs";
 import CreateJobModal from "@/components/modals/CreateJobModal";
 import CreateListModal from "@/components/modals/CreateListModal";
 import DeleteJobModal from "@/components/modals/DeleteJobModal";
+import { deleteJob, moveJob, createColumn } from "@/app/jobs/actions";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,6 +26,7 @@ import {
   transformKanbanItemsToJobs,
   type JobKanbanItem,
 } from "@/adapters/jobAdapters";
+import EditJobModal from "./modals/EditJobModal";
 
 const Kanban = ({
   jobs,
@@ -38,7 +39,7 @@ const Kanban = ({
   setJobs: React.Dispatch<React.SetStateAction<Job[]>>;
   columns: Column[];
   setColumns: React.Dispatch<React.SetStateAction<Column[]>>;
-  handleCreateJob: (jobData: Partial<Job>) => Promise<void>;
+  handleCreateJob: (jobData: CreateJob) => Promise<void>;
 }) => {
   // UPDATED: Handle kanban data changes and transform back to Job format
   const handleKanbanDataChange = (updatedKanbanItems: JobKanbanItem[]) => {
@@ -58,24 +59,33 @@ const Kanban = ({
 
   const handleCreateList = async (listName: string) => {
     if (!listName) return;
-    const newColumn: Column = await createColumn({ name: listName });
+    const newColumn: Column = await createColumn(listName).then((res) => {
+      if (!res.success || !res.data) {
+        throw new Error(res.error || "Failed to create column");
+      }
+      return res.data;
+    });
+    console.log("Created new column:", newColumn);
     setColumns((prev) => [...prev, newColumn]);
   };
 
   const handleConfirmDelete = async (selectedJob: Job) => {
     console.log("Confirming delete for job:", selectedJob.id);
-
     try {
-      console.log("Deleting job via API:", selectedJob.id);
-
-      await deleteJob(selectedJob.id);
-      console.log("Job deleted successfully");
-
+      await deleteJob(selectedJob.id).then((res) => {
+        if (!res.success) {
+          throw new Error(res.error || "Failed to delete job");
+        }
+        return { success: true, error: null };
+      });
       setJobs((prev) => prev.filter((j) => j.id !== selectedJob.id));
     } catch (error) {
-      throw error || new Error("Failed to delete job");
-    } finally {
-      console.log("Delete operation finished");
+      console.error("Failed to delete job:", error);
+      alert(
+        `Failed to delete job: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   };
 
@@ -92,7 +102,12 @@ const Kanban = ({
     const item = kanbanItems.find((item) => item.id === e.active.id);
     if (item && pickedItem && item.column !== pickedItem.column) {
       try {
-        await moveJob(item.id, item.column);
+        await moveJob(item.id, item.column).then((res) => {
+          if (!res.success) {
+            throw new Error(res.error || "Failed to move job");
+          }
+          return { success: true, error: null };
+        });
       } catch (error) {
         console.error("Move failed:", error);
         alert(
@@ -100,13 +115,11 @@ const Kanban = ({
             error instanceof Error ? error.message : "Unknown error"
           }`
         );
+        // Revert to previous state on failure
         if (prevJobs) {
           setJobs(prevJobs);
         }
       }
-      console.log(
-        `Drag ended and item moved from ${pickedItem.column} to new column: ${item.column}`
-      );
     }
   };
 
@@ -234,6 +247,16 @@ const Kanban = ({
                                 }}
                                 job={transformKanbanItemsToJobs(jobData) as Job}
                               />
+                              <EditJobModal
+                                job={
+                                  transformKanbanItemsToJobs(
+                                    jobData,
+                                    jobs.find((j) => j.id === jobData.id)
+                                  ) as Job
+                                }
+                              >
+                                <div>Edit</div>
+                              </EditJobModal>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>
