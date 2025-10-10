@@ -247,6 +247,16 @@ const Kanban = ({
                                 }}
                                 job={transformKanbanItemsToJobs(jobData) as Job}
                               />
+                              <EditJobModal
+                                job={
+                                  transformKanbanItemsToJobs(
+                                    jobData,
+                                    jobs.find((j) => j.id === jobData.id)
+                                  ) as Job
+                                }
+                              >
+                                <div>Edit</div>
+                              </EditJobModal>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>
