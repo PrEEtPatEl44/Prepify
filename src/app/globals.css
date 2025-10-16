@@ -123,3 +123,25 @@
   }
 }
 
+/* Smooth tab content transition */
+.tab-transition {
+  animation: fadeSlideIn 200ms ease-out both;
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab-transition {
+    animation: none !important;
+  }
+}
+

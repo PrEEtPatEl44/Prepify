@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -24,11 +24,12 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import FileCard from "@/components/file-card";
 
 import { type DocumentBasicInfo } from "@/types/docs";
 import { Job } from "@/types/jobs";
 import Image from "next/image";
-import { X } from "lucide-react";
+import { X, Sparkles, Loader2 } from "lucide-react";
 
 interface EditJobModalProps {
   job: Job;
@@ -40,6 +41,8 @@ const EditJobModal = ({ children, job }: EditJobModalProps) => {
   const [resumes, setResumes] = useState<DocumentBasicInfo[]>([]);
   const [coverLetters, setCoverLetters] = useState<DocumentBasicInfo[]>([]);
   const [activeTab, setActiveTab] = useState<"documents" | "edit">("edit");
+  const [documents, setDocuments] = useState<DocumentBasicInfo[]>([]);
+  const [loading, setLoading] = useState(false);
 
   // Form state initialized with job data
   const [companyName, setCompanyName] = useState(job.companyName);
@@ -52,10 +55,11 @@ const EditJobModal = ({ children, job }: EditJobModalProps) => {
   const [applicationLink, setApplicationLink] = useState(job.applicationLink);
 
   // Fetch dropdown options when the modal opens. This prevents multiple
-  // CreateJobModal instances mounted across the UI from all fetching on mount.
+  // EditJobModal instances mounted across the UI from all fetching on mount.
   useEffect(() => {
     const fetchDropdownOptions = async () => {
       try {
+        setLoading(true);
         // Fetch resumes
         const resumesRes = await fetch("/api/docs?type=resumes");
         if (!resumesRes.ok) {
@@ -86,6 +90,8 @@ const EditJobModal = ({ children, job }: EditJobModalProps) => {
         }
       } catch (error) {
         console.error("Error fetching dropdown options:", error);
+      } finally {
+        setLoading(false);
       }
     };
     //we can late implement caching with swr to prevent refetching every time
@@ -94,16 +100,40 @@ const EditJobModal = ({ children, job }: EditJobModalProps) => {
     }
   }, [isOpen, resumes.length, coverLetters.length]);
 
-  // Update form values when job prop changes or when dialog opens
+  const getDocuments = useCallback(() => {
+    const matchingDocuments: DocumentBasicInfo[] = [];
+
+    // Find the resume that matches job.resumeId
+    if (job.resumeId) {
+      const matchingResume = resumes.find(
+        (resume) => resume.id === job.resumeId
+      );
+      if (matchingResume) {
+        matchingDocuments.push(matchingResume);
+      }
+    }
+
+    // Find the cover letter that matches job.coverLetterId
+    if (job.coverLetterId) {
+      const matchingCoverLetter = coverLetters.find(
+        (coverLetter) => coverLetter.id === job.coverLetterId
+      );
+      if (matchingCoverLetter) {
+        matchingDocuments.push(matchingCoverLetter);
+      }
+    }
+
+    setDocuments(matchingDocuments);
+  }, [job.resumeId, job.coverLetterId, resumes, coverLetters]);
+
   useEffect(() => {
-    console.log("Job prop or isOpen changed:", job);
+    if (resumes.length > 0 || coverLetters.length > 0) {
+      getDocuments();
+    }
+  }, [resumes, coverLetters, getDocuments]);
+
+  useEffect(() => {
     if (isOpen) {
-      console.log("Updating form with job data:", {
-        resumeId: job.resumeId,
-        coverLetterId: job.coverLetterId,
-        availableResumes: resumes.map((r) => r.id),
-        availableCoverLetters: coverLetters.map((c) => c.id),
-      });
       setCompanyName(job.companyName);
       setJobTitle(job.title);
       setJobDescription(job.description);
@@ -111,7 +141,8 @@ const EditJobModal = ({ children, job }: EditJobModalProps) => {
       setSelectedCoverLetter(job.coverLetterId || "");
       setApplicationLink(job.applicationLink);
     }
-  }, [job, isOpen, resumes, coverLetters]);
+  }, [isOpen, job]);
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       {/* Header */}
@@ -126,7 +157,7 @@ const EditJobModal = ({ children, job }: EditJobModalProps) => {
           {children}
         </DropdownMenuItem>
       </DialogTrigger>
-      <DialogContent className="px-0 min-w-xl  pt-2 " showCloseButton={false}>
+      <DialogContent className="px-0 min-w-xl  pt-2" showCloseButton={false}>
         <DialogHeader className="flex size-full items-start justify-between px-4">
           <DialogTitle className="text-xl font-semibold w-full">
             <div className="flex items-center justify-between w-full">
@@ -181,154 +212,211 @@ const EditJobModal = ({ children, job }: EditJobModalProps) => {
           </div>
         </div>
 
-        <form className="px-4 flex flex-col gap-2 ">
-          <>
-            {/* Company Field with Search Dropdown */}
-            <div className="relative">
-              <Label className="text-md font-medium ">Company</Label>
-              <div className="relative">
-                <div className="relative flex items-center">
-                  <Input
-                    type="text"
-                    placeholder="Company"
-                    className={`bg-gray-100 `}
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                    required
-                  />
+        {loading ? (
+          <div className="px-4 py-10 flex items-center justify-center">
+            <Loader2
+              className="h-6 w-6 animate-spin text-gray-500"
+              aria-label="Loading"
+            />
+            <span className="sr-only">Loading</span>
+          </div>
+        ) : (
+          <div key={activeTab} className="px-0 tab-transition">
+            {activeTab === "edit" ? (
+              <form className="px-4 flex flex-col gap-2">
+                <>
+                  {/* Company Field with Search Dropdown */}
+                  <div className="relative">
+                    <Label className="text-md font-medium ">Company</Label>
+                    <div className="relative">
+                      <div className="relative flex items-center">
+                        <Input
+                          type="text"
+                          placeholder="Company"
+                          className={`bg-gray-100 `}
+                          value={companyName}
+                          onChange={(e) => setCompanyName(e.target.value)}
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Job Title Field */}
+                  <div className="">
+                    <Label className="text-md font-medium ">Job Title</Label>
+
+                    <Input
+                      type="text"
+                      placeholder="Job Title"
+                      className="bg-gray-100"
+                      value={jobTitle}
+                      onChange={(e) => setJobTitle(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  {/* Job Description Field */}
+                  <div className="pb-8 max-h-[10rem]">
+                    <Label className="text-md font-medium ">
+                      Job Description
+                    </Label>
+
+                    <Textarea
+                      rows={8}
+                      placeholder="Job Description"
+                      className="bg-gray-100 !resize-none [field-sizing-content] h-full"
+                      value={jobDescription}
+                      onChange={(e) => setJobDescription(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  {/* Select Resume Field */}
+                  <div className="flex justify-between items-center gap-4">
+                    <div className="w-full">
+                      <Label htmlFor="resume" className="text-md font-medium">
+                        Select Resume
+                      </Label>
+
+                      <Select
+                        name="resume"
+                        value={selectedResume}
+                        onValueChange={setSelectedResume}
+                        required
+                      >
+                        <SelectTrigger className="w-full h-full bg-gray-100 ">
+                          <SelectValue placeholder="Select a Resume" />
+                        </SelectTrigger>
+                        <SelectContent position="popper" className="z-[2000]">
+                          <SelectGroup>
+                            <SelectLabel>Resume</SelectLabel>
+                            {resumes.length === 0 && (
+                              <SelectItem
+                                value="NotAvailable"
+                                className="p-3 text-sm text-gray-500"
+                              >
+                                No resumes available
+                              </SelectItem>
+                            )}
+                            {resumes.map((resume) => (
+                              <SelectItem key={resume.id} value={resume.id}>
+                                {resume.file_name}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Select Cover Letter Field */}
+                    <div className="w-full">
+                      <Label
+                        htmlFor="coverletter"
+                        className="text-md font-medium"
+                      >
+                        Select Cover letter
+                      </Label>
+
+                      <Select
+                        name="coverletter"
+                        value={selectedCoverLetter}
+                        onValueChange={setSelectedCoverLetter}
+                        required
+                      >
+                        <SelectTrigger className="w-full h-full bg-gray-100 ">
+                          <SelectValue placeholder="Select a Coverletter" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectLabel>Cover letters</SelectLabel>
+                            {coverLetters.length === 0 && (
+                              <SelectItem
+                                value="NotAvailable"
+                                className="p-3 text-sm text-gray-500"
+                              >
+                                No cover letters available
+                              </SelectItem>
+                            )}
+                            {coverLetters.map((coverLetter) => (
+                              <SelectItem
+                                key={coverLetter.id}
+                                value={coverLetter.id}
+                              >
+                                {coverLetter.file_name}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  {/* Link Field */}
+                  <div className="">
+                    <Label className="text-md font-medium ">Link</Label>
+                    <Input
+                      type="url"
+                      placeholder="Link"
+                      className="bg-gray-100"
+                      value={applicationLink}
+                      onChange={(e) => setApplicationLink(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <DialogFooter className="mt-4 gap-2">
+                    {/* Cancel Button */}
+                    <DialogClose
+                      type="button"
+                      className="hover:bg-gray-200 rounded-md border border-gray-200 px-2"
+                    >
+                      Cancel
+                    </DialogClose>
+
+                    {/* Save Button */}
+                    <Button
+                      type="submit"
+                      className="bg-[#636AE8] hover:bg-[#4e57c1]"
+                    >
+                      Save
+                    </Button>
+                  </DialogFooter>
+                </>
+              </form>
+            ) : documents.length === 0 ? (
+              <div className="p-4 text-center text-gray-500">
+                No documents available for this job.
+              </div>
+            ) : (
+              <div>
+                <div className="grid grid-cols-3 gap-4 p-4">
+                  {documents.map((doc) => (
+                    <FileCard
+                      key={doc.id}
+                      file={doc}
+                      onFileSelect={() => {}}
+                      handleDeleteFile={() => {}}
+                    />
+                  ))}
                 </div>
+                <DialogFooter className="mt-4 gap-2 p-2">
+                  <DialogClose
+                    type="button"
+                    className="hover:bg-gray-200 rounded-md border border-gray-200 px-2"
+                  >
+                    Cancel
+                  </DialogClose>
+                  <Button
+                    type="submit"
+                    className="bg-[#636AE8] hover:bg-[#4e57c1]"
+                  >
+                    <Sparkles className="mr-2" />
+                    Get Job Score
+                  </Button>
+                </DialogFooter>
               </div>
-            </div>
-
-            {/* Job Title Field */}
-            <div className="">
-              <Label className="text-md font-medium ">Job Title</Label>
-
-              <Input
-                type="text"
-                placeholder="Job Title"
-                className="bg-gray-100"
-                value={jobTitle}
-                onChange={(e) => setJobTitle(e.target.value)}
-                required
-              />
-            </div>
-
-            {/* Job Description Field */}
-            <div className="pb-8 max-h-[10rem]">
-              <Label className="text-md font-medium ">Job Description</Label>
-
-              <Textarea
-                rows={8}
-                placeholder="Job Description"
-                className="bg-gray-100 !resize-none [field-sizing-content] h-full"
-                value={jobDescription}
-                onChange={(e) => setJobDescription(e.target.value)}
-                required
-              />
-            </div>
-
-            {/* Select Resume Field */}
-            <div className="flex justify-between items-center gap-4">
-              <div className="w-full">
-                <Label htmlFor="resume" className="text-md font-medium">
-                  Select Resume
-                </Label>
-
-                <Select
-                  name="resume"
-                  value={selectedResume}
-                  onValueChange={setSelectedResume}
-                  required
-                >
-                  <SelectTrigger className="w-full h-full bg-gray-100 ">
-                    <SelectValue placeholder="Select a Resume" />
-                  </SelectTrigger>
-                  <SelectContent position="popper" className="z-[2000]">
-                    <SelectGroup>
-                      <SelectLabel>Resume</SelectLabel>
-                      {resumes.length === 0 && (
-                        <SelectItem
-                          value="NotAvailable"
-                          className="p-3 text-sm text-gray-500"
-                        >
-                          No resumes available
-                        </SelectItem>
-                      )}
-                      {resumes.map((resume) => (
-                        <SelectItem key={resume.id} value={resume.id}>
-                          {resume.file_name}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Select Cover Letter Field */}
-              <div className="w-full">
-                <Label htmlFor="coverletter" className="text-md font-medium">
-                  Select Cover letter
-                </Label>
-
-                <Select
-                  name="coverletter"
-                  value={selectedCoverLetter}
-                  onValueChange={setSelectedCoverLetter}
-                  required
-                >
-                  <SelectTrigger className="w-full h-full bg-gray-100 ">
-                    <SelectValue placeholder="Select a Coverletter" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Cover letters</SelectLabel>
-                      {coverLetters.length === 0 && (
-                        <SelectItem
-                          value="NotAvailable"
-                          className="p-3 text-sm text-gray-500"
-                        >
-                          No cover letters available
-                        </SelectItem>
-                      )}
-                      {coverLetters.map((coverLetter) => (
-                        <SelectItem key={coverLetter.id} value={coverLetter.id}>
-                          {coverLetter.file_name}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            {/* Link Field */}
-            <div className="">
-              <Label className="text-md font-medium ">Link</Label>
-              <Input
-                type="url"
-                placeholder="Link"
-                className="bg-gray-100"
-                value={applicationLink}
-                onChange={(e) => setApplicationLink(e.target.value)}
-                required
-              />
-            </div>
-            <DialogFooter className="mt-4 gap-2">
-              {/* Cancel Button */}
-              <DialogClose
-                type="button"
-                className="hover:bg-gray-200 rounded-md border border-gray-200 px-2"
-              >
-                Cancel
-              </DialogClose>
-
-              {/* Save Button */}
-              <Button type="submit" className="bg-[#636AE8] hover:bg-[#4e57c1]">
-                Save
-              </Button>
-            </DialogFooter>
-          </>
-        </form>
+            )}
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
