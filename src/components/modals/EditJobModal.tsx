@@ -25,7 +25,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import FileCard from "@/components/file-card";
-
+import { useRouter } from "next/navigation";
 import { type DocumentBasicInfo } from "@/types/docs";
 import { Job } from "@/types/jobs";
 import Image from "next/image";
@@ -36,12 +36,16 @@ interface EditJobModalProps {
   children: React.ReactNode;
 }
 
+type DocumentWithType = DocumentBasicInfo & {
+  documentType: "resumes" | "coverLetters";
+};
+
 const EditJobModal = ({ children, job }: EditJobModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [resumes, setResumes] = useState<DocumentBasicInfo[]>([]);
   const [coverLetters, setCoverLetters] = useState<DocumentBasicInfo[]>([]);
   const [activeTab, setActiveTab] = useState<"documents" | "edit">("edit");
-  const [documents, setDocuments] = useState<DocumentBasicInfo[]>([]);
+  const [documents, setDocuments] = useState<DocumentWithType[]>([]);
   const [loading, setLoading] = useState(false);
 
   // Form state initialized with job data
@@ -52,6 +56,17 @@ const EditJobModal = ({ children, job }: EditJobModalProps) => {
   const [selectedCoverLetter, setSelectedCoverLetter] = useState(
     job.coverLetterId || ""
   );
+
+  const router = useRouter();
+  const handleFileSelect = (file: DocumentBasicInfo) => {
+    if (file && file.documentType) {
+      sessionStorage.setItem("selectedFile", JSON.stringify(file));
+    }
+    console.log(sessionStorage.getItem("selectedFile"));
+    // Redirect to docs page
+    router.push("/docs");
+  };
+
   const [applicationLink, setApplicationLink] = useState(job.applicationLink);
 
   // Fetch dropdown options when the modal opens. This prevents multiple
@@ -101,7 +116,7 @@ const EditJobModal = ({ children, job }: EditJobModalProps) => {
   }, [isOpen, resumes.length, coverLetters.length]);
 
   const getDocuments = useCallback(() => {
-    const matchingDocuments: DocumentBasicInfo[] = [];
+    const matchingDocuments: DocumentWithType[] = [];
 
     // Find the resume that matches job.resumeId
     if (job.resumeId) {
@@ -109,7 +124,7 @@ const EditJobModal = ({ children, job }: EditJobModalProps) => {
         (resume) => resume.id === job.resumeId
       );
       if (matchingResume) {
-        matchingDocuments.push(matchingResume);
+        matchingDocuments.push({ ...matchingResume, documentType: "resumes" });
       }
     }
 
@@ -119,7 +134,10 @@ const EditJobModal = ({ children, job }: EditJobModalProps) => {
         (coverLetter) => coverLetter.id === job.coverLetterId
       );
       if (matchingCoverLetter) {
-        matchingDocuments.push(matchingCoverLetter);
+        matchingDocuments.push({
+          ...matchingCoverLetter,
+          documentType: "coverLetters",
+        });
       }
     }
 
@@ -393,8 +411,9 @@ const EditJobModal = ({ children, job }: EditJobModalProps) => {
                     <FileCard
                       key={doc.id}
                       file={doc}
-                      onFileSelect={() => {}}
+                      onFileSelect={handleFileSelect}
                       handleDeleteFile={() => {}}
+                      deletable={false}
                     />
                   ))}
                 </div>

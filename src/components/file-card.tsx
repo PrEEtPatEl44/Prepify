@@ -2,7 +2,6 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { File, MoreVertical, Trash2 } from "lucide-react";
 import { DeleteDocModal } from "./modals/DeleteDocModal";
-import { createClient } from "@/utils/supabase/client";
 import { DocumentBasicInfo } from "@/types/docs";
 
 interface FileCardProps {
@@ -18,7 +17,6 @@ const FileCard: React.FC<FileCardProps> = ({
   handleDeleteFile,
   deletable = true,
 }) => {
-  const supabase = createClient();
   return (
     <Card
       key={file.id}
@@ -48,14 +46,14 @@ const FileCard: React.FC<FileCardProps> = ({
           </h3>
           <div onClick={(e) => e.stopPropagation()}>
             {deletable && (
-            <DeleteDocModal
-              fileName={file.file_name}
-              onDelete={() => handleDeleteFile(file.id, file.file_path)}
-            >
-              <button className="flex-shrink-0">
-                <Trash2 className="w-5 h-5 mt-2 text-gray-500 hover:text-red-600 cursor-pointer transition-colors" />
-              </button>
-            </DeleteDocModal>
+              <DeleteDocModal
+                fileName={file.file_name}
+                onDelete={() => handleDeleteFile(file.id, file.file_path)}
+              >
+                <button className="flex-shrink-0">
+                  <Trash2 className="w-5 h-5 mt-2 text-gray-500 hover:text-red-600 cursor-pointer transition-colors" />
+                </button>
+              </DeleteDocModal>
             )}
           </div>
         </div>

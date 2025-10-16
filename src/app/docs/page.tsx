@@ -9,20 +9,51 @@ const Viewer = dynamic(() => import("@/components/viewer"), {
   ssr: false,
 });
 
-interface SelectedFile {
-  url: string;
-  name: string;
-  filePath: string;
-}
-
 const Page = () => {
   const [documentType, setDocumentType] = useState<"resumes" | "coverLetters">(
-    "resumes"
+    //because fetch in file grid uses useCallback
+    //we need this to be stable across renders
+    () => {
+      if (typeof window !== "undefined") {
+        const fileData = sessionStorage.getItem("selectedFile");
+        if (fileData) {
+          try {
+            const file: DocumentBasicInfo = JSON.parse(fileData);
+            return file.documentType || "resumes";
+          } catch (error) {
+            console.error(
+              "Error parsing selected file from sessionStorage:",
+              error
+            );
+          }
+        }
+      }
+      return "resumes";
+    }
   );
   const [selectedFile, setSelectedFile] = useState<DocumentBasicInfo | null>(
     null
   );
   const [searchTerm, setSearchTerm] = useState("");
+  useEffect(() => {
+    setFileFromSession();
+  }, []);
+  const setFileFromSession = () => {
+    const fileData = sessionStorage.getItem("selectedFile");
+    if (fileData) {
+      try {
+        const file: DocumentBasicInfo = JSON.parse(fileData);
+        setSelectedFile(file);
+        setDocumentType(file.documentType || "resumes");
+        sessionStorage.removeItem("selectedFile"); // Clear after using
+      } catch (error) {
+        console.error(
+          "Error parsing selected file from sessionStorage:",
+          error
+        );
+      }
+    }
+  };
 
   return (
     <div className="h-screen flex flex-col lg:flex-row flex-1 w-full">
