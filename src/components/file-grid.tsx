@@ -11,8 +11,8 @@ import { Button } from "./ui/button";
 
 interface FileGridProps {
   documentType: "resumes" | "coverLetters";
-  onFileSelect: (fileUrl: string, fileName: string, filePath: string) => void;
-  selectedFile?: { url: string; name: string; filePath: string } | null;
+  onFileSelect: (file: DocumentBasicInfo) => void;
+  selectedFile?: DocumentBasicInfo | null;
   searchTerm?: string;
 }
 

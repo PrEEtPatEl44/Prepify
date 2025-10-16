@@ -38,6 +38,7 @@ interface DocumentBasicInfo {
   id: string;
   file_name: string;
   file_path: string;
+  documentType?: "resumes" | "coverLetters";
 }
 
 interface GetDocumentInfoResult {

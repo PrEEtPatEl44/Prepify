@@ -7,7 +7,8 @@ import { DocumentBasicInfo } from "@/types/docs";
 
 interface FileCardProps {
   file: DocumentBasicInfo;
-  onFileSelect: (fileUrl: string, fileName: string, filePath: string) => void;
+  deletable?: boolean;
+  onFileSelect: (file: DocumentBasicInfo) => void;
   handleDeleteFile: (fileId: string, filePath: string) => void;
 }
 
@@ -15,6 +16,7 @@ const FileCard: React.FC<FileCardProps> = ({
   file,
   onFileSelect,
   handleDeleteFile,
+  deletable = true,
 }) => {
   const supabase = createClient();
   return (
@@ -22,16 +24,7 @@ const FileCard: React.FC<FileCardProps> = ({
       key={file.id}
       className="group pb-2 pt-0 max-w-[170px] shadow-lg overflow-clip cursor-pointer hover:shadow-xl transition-shadow"
       onClick={async () => {
-        const { data, error } = await supabase.storage
-          .from("documents")
-          .createSignedUrl(file.file_path, 60 * 60);
-
-        if (error || !data) {
-          console.error("Failed to create signed URL for file:", file, error);
-          return;
-        }
-
-        onFileSelect(data.signedUrl, file.file_name, file.file_path);
+        onFileSelect(file);
       }}
     >
       <CardContent className="!p-0 ">
@@ -54,6 +47,7 @@ const FileCard: React.FC<FileCardProps> = ({
             {file.file_name}
           </h3>
           <div onClick={(e) => e.stopPropagation()}>
+            {deletable && (
             <DeleteDocModal
               fileName={file.file_name}
               onDelete={() => handleDeleteFile(file.id, file.file_path)}
@@ -62,6 +56,7 @@ const FileCard: React.FC<FileCardProps> = ({
                 <Trash2 className="w-5 h-5 mt-2 text-gray-500 hover:text-red-600 cursor-pointer transition-colors" />
               </button>
             </DeleteDocModal>
+            )}
           </div>
         </div>
       </CardContent>

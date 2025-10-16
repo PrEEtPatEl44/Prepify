@@ -1,9 +1,10 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 import DocsHeader from "@/components/documents-header";
 import FileGrid from "@/components/file-grid";
 import dynamic from "next/dynamic";
+import { DocumentBasicInfo } from "@/types/docs";
 const Viewer = dynamic(() => import("@/components/viewer"), {
   ssr: false,
 });
@@ -18,7 +19,9 @@ const Page = () => {
   const [documentType, setDocumentType] = useState<"resumes" | "coverLetters">(
     "resumes"
   );
-  const [selectedFile, setSelectedFile] = useState<SelectedFile | null>(null);
+  const [selectedFile, setSelectedFile] = useState<DocumentBasicInfo | null>(
+    null
+  );
   const [searchTerm, setSearchTerm] = useState("");
 
   return (
@@ -39,9 +42,7 @@ const Page = () => {
         <div className="flex-1 overflow-y-auto mt-1">
           <FileGrid
             documentType={documentType}
-            onFileSelect={(url: string, name: string, filePath: string) =>
-              setSelectedFile({ url, name, filePath })
-            }
+            onFileSelect={(file: DocumentBasicInfo) => setSelectedFile(file)}
             selectedFile={selectedFile}
             searchTerm={searchTerm}
           />
