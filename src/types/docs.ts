@@ -1,19 +1,3 @@
-interface InsertDocumentResult {
-  success: boolean;
-  data?: {
-    id: string;
-  };
-  error?: string;
-}
-
-interface DocumentRecordData {
-  filePath: string;
-  fileName: string;
-  fileSize: number;
-  mimeType: string;
-  documentType: "resumes" | "coverLetters";
-}
-
 interface GetAllDocumentsResult {
   success: boolean;
   data?: {
@@ -47,11 +31,21 @@ interface GetDocumentInfoResult {
   error?: string;
 }
 
+interface UploadDocumentResult {
+  success: boolean;
+  data?: {
+    id: string;
+    url: string;
+    filePath: string;
+  };
+  error?: string;
+  message?: string;
+}
+
 export type {
-  InsertDocumentResult,
-  DocumentRecordData,
   GetAllDocumentsResult,
   DeleteDocumentResult,
   GetDocumentInfoResult,
   DocumentBasicInfo,
+  UploadDocumentResult,
 };
