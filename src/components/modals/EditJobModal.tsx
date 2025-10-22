@@ -485,7 +485,7 @@ const EditJobModal = ({ children, job, onJobUpdated }: EditJobModalProps) => {
                     <Textarea
                       rows={8}
                       placeholder="Job Description"
-                      className="bg-gray-100 !resize-none [field-sizing-content] h-full"
+                      className="bg-gray-100 !resize-none max-h-[9rem] overflow-y-auto"
                       value={jobDescription}
                       onChange={(e) => setJobDescription(e.target.value)}
                       required
