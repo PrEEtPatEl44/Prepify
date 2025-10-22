@@ -3,12 +3,8 @@ import React, { useEffect } from "react";
 import { useState } from "react";
 import DocsHeader from "@/components/documents-header";
 import FileGrid from "@/components/file-grid";
-import dynamic from "next/dynamic";
 import { DocumentBasicInfo } from "@/types/docs";
 import DocxViewer from "@/components/docx-viewer";
-const Viewer = dynamic(() => import("@/components/viewer"), {
-  ssr: false,
-});
 
 const Page = () => {
   const [documentType, setDocumentType] = useState<"resumes" | "coverLetters">(
@@ -81,11 +77,7 @@ const Page = () => {
         </div>
       </div>
       {selectedFile && (
-        <div className="flex-1 flex-shring-0 animate-in slide-in-from-right duration-300">
-          {/* <Viewer
-            selectedFile={selectedFile}
-            setSelectedFile={setSelectedFile}
-          /> */}
+        <div className="flex-1 flex-shrink-0 animate-in slide-in-from-right duration-300">
           <DocxViewer
             selectedFile={selectedFile}
             setSelectedFile={setSelectedFile}
