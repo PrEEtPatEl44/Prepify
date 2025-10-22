@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { createJob } from "@/app/jobs/actions";
 import { type CreateJob, type Column, type Job } from "@/types/jobs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 const Kanban = dynamic(() => import("@/components/kanban"), { ssr: false });
 
@@ -61,6 +62,7 @@ const Page = () => {
         if (!res.success || !res.data) {
           throw new Error(res.error || "Failed to create job");
         }
+        toast.success("Job created successfully");
         return res.data as Job;
       });
 
@@ -70,7 +72,7 @@ const Page = () => {
       setJobs((prevJobs) => [...prevJobs, job]);
     } catch (error) {
       console.error("Failed to create job:", error);
-      alert(
+      toast.error(
         `Failed to create job: ${
           error instanceof Error ? error.message : "Unknown error"
         }`

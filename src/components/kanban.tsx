@@ -27,6 +27,7 @@ import {
   type JobKanbanItem,
 } from "@/adapters/jobAdapters";
 import EditJobModal from "./modals/EditJobModal";
+import { toast } from "sonner";
 
 const Kanban = ({
   jobs,
@@ -76,12 +77,13 @@ const Kanban = ({
         if (!res.success) {
           throw new Error(res.error || "Failed to delete job");
         }
+        toast.success("Job deleted successfully");
         return { success: true, error: null };
       });
       setJobs((prev) => prev.filter((j) => j.id !== selectedJob.id));
     } catch (error) {
       console.error("Failed to delete job:", error);
-      alert(
+      toast.error(
         `Failed to delete job: ${
           error instanceof Error ? error.message : "Unknown error"
         }`

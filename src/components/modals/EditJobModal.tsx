@@ -35,6 +35,7 @@ import {
   type CompanySearchResult,
 } from "@/hooks/useCompanySearch";
 import { editJob } from "@/app/jobs/actions";
+import { toast } from "sonner";
 
 interface EditJobModalProps {
   job: Job;
@@ -254,13 +255,15 @@ const EditJobModal = ({ children, job, onJobUpdated }: EditJobModalProps) => {
           onJobUpdated(result.data);
         }
         setIsOpen(false);
+        toast.success("Job application updated successfully");
         // Refresh the page to show updated data
         router.refresh();
       } else {
-        console.error(result.error || "Failed to update job application");
+        toast.error(result.error || "Failed to update job application");
       }
     } catch (error) {
       console.error("Error updating job:", error);
+      toast.error("Failed to update job application");
     } finally {
       setIsSubmitting(false);
     }
