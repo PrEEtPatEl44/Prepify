@@ -280,7 +280,14 @@ const EditJobModal = ({ children, job, onJobUpdated }: EditJobModalProps) => {
           {children}
         </DropdownMenuItem>
       </DialogTrigger>
-      <DialogContent className="px-0 min-w-xl  pt-2" showCloseButton={false}>
+      <DialogContent
+        className="px-0 min-w-xl  pt-2"
+        showCloseButton={false}
+        onKeyDown={(e) => {
+          // Prevent keyboard events from bubbling to kanban items below
+          e.stopPropagation();
+        }}
+      >
         <DialogHeader className="flex size-full items-start justify-between px-4">
           <DialogTitle className="text-xl font-semibold w-full">
             <div className="flex items-center justify-between w-full">
