@@ -5,6 +5,7 @@ import DocsHeader from "@/components/documents-header";
 import FileGrid from "@/components/file-grid";
 import dynamic from "next/dynamic";
 import { DocumentBasicInfo } from "@/types/docs";
+import DocxViewer from "@/components/docx-viewer";
 const Viewer = dynamic(() => import("@/components/viewer"), {
   ssr: false,
 });
@@ -60,7 +61,7 @@ const Page = () => {
       <div
         className={`flex flex-col ${
           selectedFile ? "w-1/2" : "w-full"
-        } h-full transition-all duration-300 ease-in-out`}
+        } h-full transition-all duration-500 ease-in-out`}
       >
         <div className="flex-shrink-0 mt-6 px-1 max-w-[95%]">
           <DocsHeader
@@ -81,7 +82,11 @@ const Page = () => {
       </div>
       {selectedFile && (
         <div className="flex-1 flex-shring-0 animate-in slide-in-from-right duration-300">
-          <Viewer
+          {/* <Viewer
+            selectedFile={selectedFile}
+            setSelectedFile={setSelectedFile}
+          /> */}
+          <DocxViewer
             selectedFile={selectedFile}
             setSelectedFile={setSelectedFile}
           />
