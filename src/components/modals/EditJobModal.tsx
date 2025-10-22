@@ -39,13 +39,14 @@ import { editJob } from "@/app/jobs/actions";
 interface EditJobModalProps {
   job: Job;
   children: React.ReactNode;
+  onJobUpdated?: (updatedJob: Job) => void;
 }
 
 type DocumentWithType = DocumentBasicInfo & {
   documentType: "resumes" | "coverLetters";
 };
 
-const EditJobModal = ({ children, job }: EditJobModalProps) => {
+const EditJobModal = ({ children, job, onJobUpdated }: EditJobModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [resumes, setResumes] = useState<DocumentBasicInfo[]>([]);
   const [coverLetters, setCoverLetters] = useState<DocumentBasicInfo[]>([]);
@@ -246,8 +247,12 @@ const EditJobModal = ({ children, job }: EditJobModalProps) => {
         columnId: job.columnId, // Keep the same column
       });
 
-      if (result.success) {
+      if (result.success && result.data) {
         console.log("Job application updated successfully");
+        // Call the callback to update the parent state
+        if (onJobUpdated) {
+          onJobUpdated(result.data);
+        }
         setIsOpen(false);
         // Refresh the page to show updated data
         router.refresh();

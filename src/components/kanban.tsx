@@ -89,6 +89,13 @@ const Kanban = ({
     }
   };
 
+  const handleJobUpdated = (updatedJob: Job) => {
+    console.log("Job updated:", updatedJob);
+    setJobs((prev) =>
+      prev.map((j) => (j.id === updatedJob.id ? updatedJob : j))
+    );
+  };
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleDragStart = (e: any) => {
     const item = kanbanItems.find((item) => item.id === e.active.id);
@@ -254,6 +261,7 @@ const Kanban = ({
                                     jobs.find((j) => j.id === jobData.id)
                                   ) as Job
                                 }
+                                onJobUpdated={handleJobUpdated}
                               >
                                 <div>Edit</div>
                               </EditJobModal>
