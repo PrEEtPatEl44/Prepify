@@ -6,15 +6,30 @@ import CreateJobModal from "@/components/modals/CreateJobModal";
 import { type Column, CreateJob } from "@/types/jobs";
 import UserDropdown from "@/components/user-dropdown";
 import { useUser } from "@/hooks/useUser";
+import { useRef } from "react";
 
 export default function Header({
   onCreateJob,
   columns,
+  setSearchTerm,
 }: {
   onCreateJob: (job: CreateJob) => Promise<void>;
   columns: Column[];
+  setSearchTerm: (term: string) => void;
 }) {
   const { profile } = useUser();
+  const debounceRef = useRef<number | null>(null);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    // simple debounce to avoid too many updates while typing
+    if (debounceRef.current) {
+      window.clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = window.setTimeout(() => {
+      setSearchTerm(val);
+    }, 300);
+  };
 
   return (
     <>
@@ -22,8 +37,9 @@ export default function Header({
         {/* Search Box */}
         <Input
           type="text"
-          placeholder="Search..."
+          placeholder="Search jobs..."
           className="max-w-2xl max-h-8 bg-[#F3F4F6] !border-none"
+          onChange={handleChange}
         />
 
         <div className="flex items-center gap-6 mr-4">

@@ -15,6 +15,7 @@ const Page = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [columns, setColumns] = useState<Column[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState<string>("");
 
   // Fetch jobs and columns on component mount
   useEffect(() => {
@@ -98,7 +99,11 @@ const Page = () => {
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       <div className="mt-6 px-1 max-w-[95%]">
-        <Header columns={columns} onCreateJob={handleCreateJob} />
+        <Header
+          columns={columns}
+          onCreateJob={handleCreateJob}
+          setSearchTerm={setSearchTerm}
+        />
       </div>
       <div className="flex-1 overflow-hidden">
         <Kanban
@@ -107,6 +112,7 @@ const Page = () => {
           columns={columns}
           setColumns={setColumns}
           handleCreateJob={handleCreateJob}
+          searchTerm={searchTerm}
         />
       </div>
     </div>
