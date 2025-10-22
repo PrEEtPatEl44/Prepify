@@ -1,19 +1,19 @@
 import React, { useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { File, MoreVertical, Plus, Trash2, FileX } from "lucide-react";
+import { Plus, FileX } from "lucide-react";
 import { CreateFileModal } from "./modals/CreateFileModal";
-import { DeleteDocModal } from "./modals/DeleteDocModal";
+import FileCard from "./file-card";
 import { useEffect, useState, useMemo } from "react";
-import { createClient } from "@/utils/supabase/client";
 import { DocumentBasicInfo } from "@/types/docs";
 import { deleteDocument } from "@/app/docs/actions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "./ui/button";
+import SearchResultsDock from "./search-results-dock";
 
 interface FileGridProps {
   documentType: "resumes" | "coverLetters";
-  onFileSelect: (fileUrl: string, fileName: string, filePath: string) => void;
-  selectedFile?: { url: string; name: string; filePath: string } | null;
+  onFileSelect: (file: DocumentBasicInfo) => void;
+  selectedFile?: DocumentBasicInfo | null;
   searchTerm?: string;
 }
 
@@ -25,9 +25,6 @@ const FileGrid = ({
 }: FileGridProps) => {
   const [files, setFiles] = useState<DocumentBasicInfo[]>();
   const [isLoading, setIsLoading] = useState(true);
-
-  // Fetch documents from the server
-  const supabase = createClient();
 
   const fetchDocuments = useCallback(async () => {
     setIsLoading(true);
@@ -86,42 +83,12 @@ const FileGrid = ({
       className={`${selectedFile ? "p-2" : "p-6"}  min-h-screen relative`}
       style={{ scrollbarWidth: "thin", msScrollbarTrackColor: "transparent" }}
     >
-      {/* Floating Results Dock - Show when search is active */}
-      {searchTerm && searchTerm.trim() && files && files.length > 0 && (
-        <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 bg-white border border-gray-300 rounded-full shadow-lg backdrop-blur-sm bg-opacity-95 animate-in slide-in-from-bottom duration-300">
-          <p className="text-sm text-gray-700 whitespace-nowrap">
-            {filteredFiles.length > 0 ? (
-              <>
-                Showing{" "}
-                <span className="font-semibold text-blue-600">
-                  {filteredFiles.length}
-                </span>{" "}
-                of{" "}
-                <span className="font-semibold text-gray-900">
-                  {files.length}
-                </span>{" "}
-                {files.length === 1 ? "result" : "results"}
-                <span className="ml-1">
-                  for &quot;
-                  <span className="font-medium text-gray-900">
-                    {searchTerm}
-                  </span>
-                  &quot;
-                </span>
-              </>
-            ) : (
-              <>
-                <span className="font-semibold text-orange-600">
-                  No results found
-                </span>{" "}
-                for &quot;
-                <span className="font-medium text-gray-900">{searchTerm}</span>
-                &quot;
-              </>
-            )}
-          </p>
-        </div>
-      )}
+      <SearchResultsDock
+        searchTerm={searchTerm || ""}
+        filteredCount={filteredFiles.length}
+        totalCount={files?.length || 0}
+        itemType="result"
+      />
 
       <div
         className={`grid mt-6 ${
@@ -187,58 +154,12 @@ const FileGrid = ({
           </div>
         ) : (
           filteredFiles.map((file) => (
-            <Card
+            <FileCard
               key={file.id}
-              className="group pb-2 pt-0 max-w-[170px] shadow-lg overflow-clip cursor-pointer hover:shadow-xl transition-shadow"
-              onClick={async () => {
-                const { data, error } = await supabase.storage
-                  .from("documents")
-                  .createSignedUrl(file.file_path, 60 * 60);
-
-                if (error || !data) {
-                  console.error(
-                    "Failed to create signed URL for file:",
-                    file,
-                    error
-                  );
-                  return;
-                }
-
-                onFileSelect(data.signedUrl, file.file_name, file.file_path);
-              }}
-            >
-              <CardContent className="!p-0">
-                {/* Thumbnail Area */}
-                <div className="relative min-h-36 rounded-t-lg flex items-center justify-center bg-gray-50 ">
-                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button className="p-1 rounded-full hover:bg-white/20">
-                      <MoreVertical className="w-4 h-4 text-gray-600" />
-                    </button>
-                  </div>
-                  <File className="w-6 h-6 text-blue-500" />
-                </div>
-
-                {/* File Info */}
-                <div className="p-3 flex justify-between items-center">
-                  <h3
-                    className="text-sm w-full font-medium text-gray-900 truncate "
-                    title={file.file_name}
-                  >
-                    {file.file_name}
-                  </h3>
-                  <div onClick={(e) => e.stopPropagation()}>
-                    <DeleteDocModal
-                      fileName={file.file_name}
-                      onDelete={() => handleDeleteFile(file.id, file.file_path)}
-                    >
-                      <button className="flex-shrink-0">
-                        <Trash2 className="w-5 h-5 mt-2 text-gray-500 hover:text-red-600 cursor-pointer transition-colors" />
-                      </button>
-                    </DeleteDocModal>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+              file={file}
+              onFileSelect={onFileSelect}
+              handleDeleteFile={handleDeleteFile}
+            />
           ))
         )}
       </div>

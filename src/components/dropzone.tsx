@@ -28,7 +28,7 @@ export function FileDropzone({
           <Upload className="h-5 w-5 text-muted-foreground" />
         </div>
         <p className="text-sm font-medium text-foreground">
-          Upload a file (.pdf or .docx)
+          Upload a file (.docx)
         </p>
         <p className="text-sm text-muted-foreground mt-1">
           or,{" "}
@@ -45,7 +45,7 @@ export function FileDropzone({
           id="fileUpload"
           ref={fileInputRef}
           className="hidden"
-          accept=".pdf,.doc,.docx"
+          accept=".docx"
           onChange={(e) => handleFileSelect(e.target.files)}
         />
       </div>

@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { createJob } from "@/app/jobs/actions";
 import { type CreateJob, type Column, type Job } from "@/types/jobs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 const Kanban = dynamic(() => import("@/components/kanban"), { ssr: false });
 
@@ -14,6 +15,7 @@ const Page = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [columns, setColumns] = useState<Column[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState<string>("");
 
   // Fetch jobs and columns on component mount
   useEffect(() => {
@@ -61,6 +63,7 @@ const Page = () => {
         if (!res.success || !res.data) {
           throw new Error(res.error || "Failed to create job");
         }
+        toast.success("Job created successfully");
         return res.data as Job;
       });
 
@@ -70,7 +73,7 @@ const Page = () => {
       setJobs((prevJobs) => [...prevJobs, job]);
     } catch (error) {
       console.error("Failed to create job:", error);
-      alert(
+      toast.error(
         `Failed to create job: ${
           error instanceof Error ? error.message : "Unknown error"
         }`
@@ -96,7 +99,11 @@ const Page = () => {
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       <div className="mt-6 px-1 max-w-[95%]">
-        <Header columns={columns} onCreateJob={handleCreateJob} />
+        <Header
+          columns={columns}
+          onCreateJob={handleCreateJob}
+          setSearchTerm={setSearchTerm}
+        />
       </div>
       <div className="flex-1 overflow-hidden">
         <Kanban
@@ -105,6 +112,7 @@ const Page = () => {
           columns={columns}
           setColumns={setColumns}
           handleCreateJob={handleCreateJob}
+          searchTerm={searchTerm}
         />
       </div>
     </div>

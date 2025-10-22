@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Document, Page } from "react-pdf";
 import { pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
@@ -8,6 +8,7 @@ import "react-pdf/dist/Page/TextLayer.css";
 import { File, X, Download } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
 import { createClient } from "@/utils/supabase/client";
+import { DocumentBasicInfo } from "@/types/docs";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",
@@ -15,10 +16,8 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 ).toString();
 
 interface ViewerProps {
-  selectedFile: { url: string; name: string; filePath: string } | null;
-  setSelectedFile: (
-    file: { url: string; name: string; filePath: string } | null
-  ) => void;
+  selectedFile: DocumentBasicInfo | null;
+  setSelectedFile: (file: DocumentBasicInfo | null) => void;
 }
 
 const loadingComponent = (
@@ -33,6 +32,8 @@ const loadingComponent = (
 export default function Viewer({ selectedFile, setSelectedFile }: ViewerProps) {
   const [numPages, setNumPages] = useState<number>();
   const { setOpen } = useSidebar();
+  const [fileURl, setFileURL] = useState<string | null>(null);
+
   function onDocumentLoadSuccess({ numPages }: { numPages: number }): void {
     setOpen(false);
     setNumPages(numPages);
@@ -48,7 +49,7 @@ export default function Viewer({ selectedFile, setSelectedFile }: ViewerProps) {
 
     const { data, error } = await supabase.storage
       .from("documents")
-      .download(selectedFile.filePath); // URL valid for 60 seconds
+      .download(selectedFile.file_path); // URL valid for 60 seconds
 
     if (error) {
       console.error("Error downloading file:", error);
@@ -59,11 +60,33 @@ export default function Viewer({ selectedFile, setSelectedFile }: ViewerProps) {
     const blobUrl = URL.createObjectURL(data);
     const a = document.createElement("a");
     a.href = blobUrl;
-    a.download = selectedFile.name;
+    a.download = selectedFile.file_name;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(blobUrl);
+  };
+
+  useEffect(() => {
+    if (selectedFile) {
+      createViewerUrl(selectedFile).then((url) => {
+        setFileURL(url);
+      });
+    } else {
+      setFileURL(null);
+    }
+  }, [selectedFile]);
+
+  const createViewerUrl = async (file: DocumentBasicInfo) => {
+    const supabase = createClient();
+    const { data, error } = await supabase.storage
+      .from("documents")
+      .createSignedUrl(file.file_path, 60 * 60);
+    if (error) {
+      console.error("Error creating signed URL:", error);
+      return "";
+    }
+    return data.signedUrl;
   };
 
   return (
@@ -76,7 +99,7 @@ export default function Viewer({ selectedFile, setSelectedFile }: ViewerProps) {
           <div className="p-2">
             <File className="h-6 w-6 text-[#636AE8]" />
           </div>
-          <span className="text-lg">{selectedFile?.name}</span>
+          <span className="text-lg">{selectedFile?.file_name}</span>
         </div>
         <div className="flex gap-2 items-center">
           <a
@@ -93,7 +116,7 @@ export default function Viewer({ selectedFile, setSelectedFile }: ViewerProps) {
       </div>
       <div>
         <Document
-          file={selectedFile?.url}
+          file={fileURl}
           onLoadSuccess={onDocumentLoadSuccess}
           className={"m-4 min-w-fit mx-auto gap-4 max-w-xl "}
           loading={loadingComponent}

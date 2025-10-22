@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/shadcn-io/kanban";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Ellipsis } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { CreateJob, type Column, type Job } from "@/types/jobs";
 import CreateJobModal from "@/components/modals/CreateJobModal";
 import CreateListModal from "@/components/modals/CreateListModal";
@@ -27,6 +27,8 @@ import {
   type JobKanbanItem,
 } from "@/adapters/jobAdapters";
 import EditJobModal from "./modals/EditJobModal";
+import { toast } from "sonner";
+import SearchResultsDock from "./search-results-dock";
 
 const Kanban = ({
   jobs,
@@ -34,12 +36,14 @@ const Kanban = ({
   columns,
   setColumns,
   handleCreateJob,
+  searchTerm,
 }: {
   jobs: Job[];
   setJobs: React.Dispatch<React.SetStateAction<Job[]>>;
   columns: Column[];
   setColumns: React.Dispatch<React.SetStateAction<Column[]>>;
   handleCreateJob: (jobData: CreateJob) => Promise<void>;
+  searchTerm?: string;
 }) => {
   // UPDATED: Handle kanban data changes and transform back to Job format
   const handleKanbanDataChange = (updatedKanbanItems: JobKanbanItem[]) => {
@@ -56,6 +60,19 @@ const Kanban = ({
 
   const [pickedItem, setPickedItem] = useState<JobKanbanItem | null>();
   const [prevJobs, setPrevJobs] = useState<Job[] | null>(null);
+
+  // Filter jobs based on search term
+  const filteredJobs = useMemo(() => {
+    if (!searchTerm || !searchTerm.trim()) return jobs;
+    const query = searchTerm.toLowerCase().trim();
+    return jobs.filter(
+      (job) =>
+        job.title.toLowerCase().includes(query) ||
+        job.companyName.toLowerCase().includes(query) ||
+        job.description?.toLowerCase().includes(query) ||
+        job.applicationLink?.toLowerCase().includes(query)
+    );
+  }, [jobs, searchTerm]);
 
   const handleCreateList = async (listName: string) => {
     if (!listName) return;
@@ -76,17 +93,25 @@ const Kanban = ({
         if (!res.success) {
           throw new Error(res.error || "Failed to delete job");
         }
+        toast.success("Job deleted successfully");
         return { success: true, error: null };
       });
       setJobs((prev) => prev.filter((j) => j.id !== selectedJob.id));
     } catch (error) {
       console.error("Failed to delete job:", error);
-      alert(
+      toast.error(
         `Failed to delete job: ${
           error instanceof Error ? error.message : "Unknown error"
         }`
       );
     }
+  };
+
+  const handleJobUpdated = (updatedJob: Job) => {
+    console.log("Job updated:", updatedJob);
+    setJobs((prev) =>
+      prev.map((j) => (j.id === updatedJob.id ? updatedJob : j))
+    );
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -127,10 +152,16 @@ const Kanban = ({
     ...columns,
     { id: "create-new-list", name: "Create New List" },
   ];
-  const kanbanItems = jobs.map(transformJobsToKanbanItem);
+  const kanbanItems = filteredJobs.map(transformJobsToKanbanItem);
   const kanbanColumns = allColumns;
   return (
     <>
+      <SearchResultsDock
+        searchTerm={searchTerm || ""}
+        filteredCount={filteredJobs.length}
+        totalCount={jobs.length}
+        itemType="job"
+      />
       <KanbanProvider
         columns={kanbanColumns}
         data={kanbanItems}
@@ -254,6 +285,7 @@ const Kanban = ({
                                     jobs.find((j) => j.id === jobData.id)
                                   ) as Job
                                 }
+                                onJobUpdated={handleJobUpdated}
                               >
                                 <div>Edit</div>
                               </EditJobModal>
