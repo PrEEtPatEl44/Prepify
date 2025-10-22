@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -30,6 +30,11 @@ import { type DocumentBasicInfo } from "@/types/docs";
 import { Job } from "@/types/jobs";
 import Image from "next/image";
 import { X, Sparkles, Loader2 } from "lucide-react";
+import {
+  useCompanySearch,
+  type CompanySearchResult,
+} from "@/hooks/useCompanySearch";
+import { editJob } from "@/app/jobs/actions";
 
 interface EditJobModalProps {
   job: Job;
@@ -47,6 +52,7 @@ const EditJobModal = ({ children, job }: EditJobModalProps) => {
   const [activeTab, setActiveTab] = useState<"documents" | "edit">("edit");
   const [documents, setDocuments] = useState<DocumentWithType[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form state initialized with job data
   const [companyName, setCompanyName] = useState(job.companyName);
@@ -56,6 +62,22 @@ const EditJobModal = ({ children, job }: EditJobModalProps) => {
   const [selectedCoverLetter, setSelectedCoverLetter] = useState(
     job.coverLetterId || ""
   );
+
+  // Company search state
+  const [selectedCompany, setSelectedCompany] =
+    useState<CompanySearchResult | null>(null);
+  const [showCompanyDropdown, setShowCompanyDropdown] = useState(false);
+  const [companyInputFocused, setCompanyInputFocused] = useState(false);
+
+  const companyInputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const {
+    results,
+    loading: searchLoading,
+    searchCompanies,
+    clearResults,
+  } = useCompanySearch();
 
   const router = useRouter();
   const handleFileSelect = (file: DocumentBasicInfo) => {
@@ -68,6 +90,45 @@ const EditJobModal = ({ children, job }: EditJobModalProps) => {
   };
 
   const [applicationLink, setApplicationLink] = useState(job.applicationLink);
+
+  // Debounced company search
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (companyName && companyName.length >= 2 && companyInputFocused) {
+        searchCompanies(companyName);
+        setShowCompanyDropdown(true);
+      } else {
+        clearResults();
+        setShowCompanyDropdown(false);
+      }
+    }, 1000); // 1 second debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [companyName, companyInputFocused, searchCompanies, clearResults]);
+
+  // Handle clicks outside dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowCompanyDropdown(false);
+        setCompanyInputFocused(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleCompanySelect = (company: CompanySearchResult) => {
+    setCompanyName(company.name);
+    setSelectedCompany(company);
+    setShowCompanyDropdown(false);
+    setCompanyInputFocused(false);
+    companyInputRef.current?.blur();
+  };
 
   // Fetch dropdown options when the modal opens. This prevents multiple
   // EditJobModal instances mounted across the UI from all fetching on mount.
@@ -158,8 +219,47 @@ const EditJobModal = ({ children, job }: EditJobModalProps) => {
       setSelectedResume(job.resumeId || "");
       setSelectedCoverLetter(job.coverLetterId || "");
       setApplicationLink(job.applicationLink);
+      setSelectedCompany(null);
+      setShowCompanyDropdown(false);
+      setCompanyInputFocused(false);
     }
   }, [isOpen, job]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!companyName.trim() || !jobTitle.trim()) {
+      console.error("Please fill in all required fields");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const result = await editJob(job.id, {
+        title: jobTitle,
+        companyName: companyName,
+        description: jobDescription,
+        applicationLink: applicationLink,
+        resumeId: selectedResume,
+        coverLetterId: selectedCoverLetter,
+        companyDomain: selectedCompany?.domain || job.companyDomain,
+        columnId: job.columnId, // Keep the same column
+      });
+
+      if (result.success) {
+        console.log("Job application updated successfully");
+        setIsOpen(false);
+        // Refresh the page to show updated data
+        router.refresh();
+      } else {
+        console.error(result.error || "Failed to update job application");
+      }
+    } catch (error) {
+      console.error("Error updating job:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -241,7 +341,10 @@ const EditJobModal = ({ children, job }: EditJobModalProps) => {
         ) : (
           <div key={activeTab} className="px-0 tab-transition">
             {activeTab === "edit" ? (
-              <form className="px-4 flex flex-col gap-2">
+              <form
+                className="px-4 flex flex-col gap-2"
+                onSubmit={handleSubmit}
+              >
                 <>
                   {/* Company Field with Search Dropdown */}
                   <div className="relative">
@@ -249,14 +352,98 @@ const EditJobModal = ({ children, job }: EditJobModalProps) => {
                     <div className="relative">
                       <div className="relative flex items-center">
                         <Input
+                          ref={companyInputRef}
                           type="text"
                           placeholder="Company"
-                          className={`bg-gray-100 `}
+                          className={`bg-gray-100 ${
+                            selectedCompany ? "pr-10" : ""
+                          }`}
                           value={companyName}
-                          onChange={(e) => setCompanyName(e.target.value)}
+                          onChange={(e) => {
+                            setCompanyName(e.target.value);
+                            // Clear selected company if user manually types
+                            if (selectedCompany) {
+                              setSelectedCompany(null);
+                            }
+                          }}
+                          onFocus={() => {
+                            setCompanyInputFocused(true);
+                            if (companyName.length >= 2) {
+                              setShowCompanyDropdown(true);
+                            }
+                          }}
                           required
                         />
+                        {searchLoading && !selectedCompany && (
+                          <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                            <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
+                          </div>
+                        )}
+                        {selectedCompany && selectedCompany.icon && (
+                          <div className="absolute right-2 w-7 h-7 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden">
+                            <Image
+                              src={selectedCompany.icon}
+                              alt={selectedCompany.name}
+                              className="w-full h-full object-contain"
+                              width={24}
+                              height={24}
+                              onError={(e) => {
+                                const img = e.target as HTMLImageElement;
+                                img.style.display = "none";
+                                const parent = img.parentElement;
+                                if (parent) {
+                                  parent.innerHTML = `<span class="text-xs font-semibold text-gray-600">${selectedCompany.name
+                                    .slice(0, 2)
+                                    .toUpperCase()}</span>`;
+                                }
+                              }}
+                            />
+                          </div>
+                        )}
                       </div>
+
+                      {showCompanyDropdown && results.length > 0 && (
+                        <div
+                          ref={dropdownRef}
+                          className="absolute w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-[2000] max-h-64 overflow-y-auto"
+                        >
+                          {results.map((company) => (
+                            <div
+                              key={`${company.brandId}`}
+                              className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                              onClick={() => handleCompanySelect(company)}
+                            >
+                              <div className="w-8 h-8 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden flex-shrink-0">
+                                <Image
+                                  src={company.icon}
+                                  alt={`${company.name}`}
+                                  className="w-full h-full object-contain"
+                                  width={32}
+                                  height={32}
+                                  onError={(e) => {
+                                    const img = e.target as HTMLImageElement;
+                                    img.style.display = "none";
+                                    const parent = img.parentElement;
+                                    if (parent) {
+                                      parent.innerHTML = `<span class="text-xs font-semibold text-gray-600">${company.name
+                                        .slice(0, 2)
+                                        .toUpperCase()}</span>`;
+                                    }
+                                  }}
+                                />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium text-sm text-gray-900 truncate">
+                                  {company.name}
+                                </div>
+                                <div className="text-xs text-gray-500 truncate">
+                                  {company.domain}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -385,6 +572,7 @@ const EditJobModal = ({ children, job }: EditJobModalProps) => {
                     {/* Cancel Button */}
                     <DialogClose
                       type="button"
+                      disabled={isSubmitting}
                       className="hover:bg-gray-200 rounded-md border border-gray-200 px-2"
                     >
                       Cancel
@@ -393,9 +581,17 @@ const EditJobModal = ({ children, job }: EditJobModalProps) => {
                     {/* Save Button */}
                     <Button
                       type="submit"
+                      disabled={isSubmitting}
                       className="bg-[#636AE8] hover:bg-[#4e57c1]"
                     >
-                      Save
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        "Save"
+                      )}
                     </Button>
                   </DialogFooter>
                 </>
