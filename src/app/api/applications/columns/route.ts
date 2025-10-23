@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { jobService } from "@/lib/services/jobService";
 import { GetColumnsResponse, ApiError } from "@/types/api";
+import { createClient } from "@/utils/supabase/server";
 
 /**
  * GET /api/applications/columns
@@ -9,8 +9,50 @@ import { GetColumnsResponse, ApiError } from "@/types/api";
 export async function GET(): Promise<NextResponse> {
   try {
     console.log("GET /api/applications/columns - Fetching all columns");
-    const columns = await jobService.getAllColumns();
-    console.log(`Found ${columns.length} total columns`);
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Unauthorized",
+          message: "User not authenticated. Please log in.",
+        },
+        { status: 401 }
+      );
+    }
+
+    const { data: columns, error: columnError } = await supabase
+      .from("columns")
+      .select("*")
+      .eq("user_id", user.id);
+
+    if (columnError) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Failed to retrieve columns",
+          message: columnError.message,
+        },
+        { status: 500 }
+      );
+    }
+
+    if (!columns) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "No columns found",
+          message: "No columns found for the user",
+        },
+        { status: 404 }
+      );
+    }
 
     const response: GetColumnsResponse = {
       success: true,

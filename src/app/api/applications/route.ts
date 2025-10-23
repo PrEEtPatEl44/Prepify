@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { jobService } from "@/lib/services/jobService";
 import { GetJobsResponse, ApiError } from "@/types/api";
+import { createClient } from "@/utils/supabase/server";
+import { transformDbRowToJob } from "@/adapters/jobAdapters";
 
 /**
  * GET /api/applications
@@ -10,19 +11,60 @@ export async function GET(): Promise<NextResponse> {
   try {
     console.log("GET /api/applications - Fetching all jobs");
 
-    // Get all jobs
-    const jobs = await jobService.getAllJobs();
-    console.log(`Found ${jobs.length} total jobs`);
+    const supabase = await createClient();
 
-    if (jobs.length === 0) {
-      console.log("No jobs found for the user");
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Unauthorized",
+          message: "User not authenticated. Please log in.",
+        },
+        { status: 401 }
+      );
     }
+
+    const { data: jobs, error: jobsError } = await supabase
+      .from("job_applications")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+
+    if (jobsError) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Failed to retrieve jobs",
+          message: jobsError.message,
+        },
+        { status: 500 }
+      );
+    }
+
+    if (!jobs) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "No jobs found",
+          message: "No job applications found for the user",
+        },
+        { status: 404 }
+      );
+    }
+    const transformedJobs = jobs.map(transformDbRowToJob);
+
+    console.log(`Found ${jobs.length} total jobs`);
 
     const response: GetJobsResponse = {
       success: true,
       data: {
-        jobs,
-        total: jobs.length,
+        jobs: transformedJobs,
+        total: transformedJobs.length,
       },
       message: "Jobs retrieved successfully",
     };

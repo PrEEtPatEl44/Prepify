@@ -8,7 +8,7 @@ import {
   KanbanProvider,
 } from "@/components/ui/shadcn-io/kanban";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Ellipsis } from "lucide-react";
+import { Ellipsis, GripVertical } from "lucide-react";
 import { useState, useMemo } from "react";
 import { CreateJob, type Column, type Job } from "@/types/jobs";
 import CreateJobModal from "@/components/modals/CreateJobModal";
@@ -202,7 +202,9 @@ const Kanban = ({
                   <span
                     className={`text-md font-archivo font-semibold flex items-center gap-2`}
                   >
-                    <span className="text-gray-400 text-xs">⋮⋮</span>
+                    <span className="text-gray-400 text-xs">
+                      <GripVertical size={16} />
+                    </span>
                     {column.name}
                   </span>
 
