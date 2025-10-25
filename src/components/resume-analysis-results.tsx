@@ -80,7 +80,7 @@ export default function ResumeAnalysisResults({
 
       {/* Strengths - Using Green Issue Cards */}
       <div>
-        <h2 className="text-2xl font-bold mb-4">✅ Strengths</h2>
+        <h2 className="text-2xl font-bold mb-4">Strengths</h2>
         <div className="space-y-3">
           {result.strengths.map((strength, index) => (
             <ResumeIssueCard key={index} title={strength} stripColor="green" />
@@ -90,7 +90,7 @@ export default function ResumeAnalysisResults({
 
       {/* Areas for Improvement - Using Red Issue Cards */}
       <div>
-        <h2 className="text-2xl font-bold mb-4">⚠️ Areas for Improvement</h2>
+        <h2 className="text-2xl font-bold mb-4">Areas for Improvement</h2>
         <div className="space-y-3">
           {result.areas_for_improvement.map((area, index) => (
             <ResumeIssueCard key={index} title={area} stripColor="red" />
@@ -100,7 +100,7 @@ export default function ResumeAnalysisResults({
 
       {/* Recommendations - Using Red Issue Cards with Suggested Fixes */}
       <div>
-        <h2 className="text-2xl font-bold mb-4">💡 Recommendations</h2>
+        <h2 className="text-2xl font-bold mb-4">Recommendations</h2>
         <div className="space-y-3">
           {result.recommendations.map((rec, index) => (
             <ResumeIssueCard
@@ -116,77 +116,69 @@ export default function ResumeAnalysisResults({
       </div>
 
       {/* Detailed Analysis */}
-      <Card>
-        <CardHeader>
-          <CardTitle>📊 Detailed Analysis</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Keyword Analysis */}
-          <ResumeIssueCard
-            title="Keyword Analysis"
-            subtitle={result.detailed_analysis.keyword_analysis.insights}
-            stripColor="green"
-            showSuggestedFix={false}
-          />
+      <h2 className="text-2xl font-bold mb-4">Detailed Analysis</h2>
+      {/* Keyword Analysis */}
+      <ResumeIssueCard
+        title="Keyword Analysis"
+        subtitle={result.detailed_analysis.keyword_analysis.insights}
+        stripColor="green"
+        showSuggestedFix={false}
+      />
 
-          {/* Experience Match */}
-          <ResumeIssueCard
-            title={`Experience Match (${result.detailed_analysis.experience_match.score}/100)`}
-            subtitle={result.detailed_analysis.experience_match.analysis}
-            stripColor={
-              result.detailed_analysis.experience_match.score >= 70
-                ? "green"
-                : "red"
-            }
-            showSuggestedFix={false}
-          />
+      {/* Experience Match */}
+      <ResumeIssueCard
+        title={`Experience Match (${result.detailed_analysis.experience_match.score}/100)`}
+        subtitle={result.detailed_analysis.experience_match.analysis}
+        stripColor={
+          result.detailed_analysis.experience_match.score >= 70
+            ? "green"
+            : "red"
+        }
+        showSuggestedFix={false}
+      />
 
-          {/* Qualification Match */}
-          <ResumeIssueCard
-            title={`Qualification Match (${result.detailed_analysis.qualification_match.score}/100)`}
-            subtitle={result.detailed_analysis.qualification_match.analysis}
-            stripColor={
-              result.detailed_analysis.qualification_match.score >= 70
-                ? "green"
-                : "red"
-            }
-            showSuggestedFix={false}
-          />
+      {/* Qualification Match */}
+      <ResumeIssueCard
+        title={`Qualification Match (${result.detailed_analysis.qualification_match.score}/100)`}
+        subtitle={result.detailed_analysis.qualification_match.analysis}
+        stripColor={
+          result.detailed_analysis.qualification_match.score >= 70
+            ? "green"
+            : "red"
+        }
+        showSuggestedFix={false}
+      />
 
-          {/* Cultural Fit */}
-          <ResumeIssueCard
-            title={`Cultural Fit (${result.detailed_analysis.cultural_fit.score}/100)`}
-            subtitle={result.detailed_analysis.cultural_fit.analysis}
-            stripColor={
-              result.detailed_analysis.cultural_fit.score >= 70
-                ? "green"
-                : "red"
-            }
-            showSuggestedFix={false}
-          />
+      {/* Cultural Fit */}
+      <ResumeIssueCard
+        title={`Cultural Fit (${result.detailed_analysis.cultural_fit.score}/100)`}
+        subtitle={result.detailed_analysis.cultural_fit.analysis}
+        stripColor={
+          result.detailed_analysis.cultural_fit.score >= 70 ? "green" : "red"
+        }
+        showSuggestedFix={false}
+      />
 
-          {/* Career Trajectory */}
-          <ResumeIssueCard
-            title={`Career Trajectory (${result.detailed_analysis.career_trajectory.score}/100)`}
-            subtitle={result.detailed_analysis.career_trajectory.analysis}
-            stripColor={
-              result.detailed_analysis.career_trajectory.score >= 70
-                ? "green"
-                : "red"
-            }
-            showSuggestedFix={false}
-          />
-        </CardContent>
-      </Card>
+      {/* Career Trajectory */}
+      <ResumeIssueCard
+        title={`Career Trajectory (${result.detailed_analysis.career_trajectory.score}/100)`}
+        subtitle={result.detailed_analysis.career_trajectory.analysis}
+        stripColor={
+          result.detailed_analysis.career_trajectory.score >= 70
+            ? "green"
+            : "red"
+        }
+        showSuggestedFix={false}
+      />
 
       {/* Full JSON Response - Optional */}
       {showFullJson && (
         <Card>
           <CardHeader>
-            <CardTitle>📄 Full JSON Response</CardTitle>
+            <CardTitle>Full JSON Response</CardTitle>
           </CardHeader>
           <CardContent>
-            <pre className="bg-muted p-4 rounded-lg overflow-auto max-h-96 text-xs">
+            <pre className="bg-muted p-4 rounded-lg overflow-x-auto max-h-96 text-xs whitespace-pre-wrap break-words">
               {JSON.stringify(result, null, 2)}
             </pre>
           </CardContent>
