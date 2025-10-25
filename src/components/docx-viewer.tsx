@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
-import { File, Download, X } from "lucide-react";
+import { File, Download, X, Sparkles } from "lucide-react";
 import {
   DocumentEditorContainerComponent,
   Toolbar,
@@ -9,6 +9,7 @@ import {
 import { createClient } from "@/utils/supabase/client";
 import { DocumentBasicInfo } from "@/types/docs";
 import { useSidebar } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
 
 DocumentEditorContainerComponent.Inject(Toolbar);
 
@@ -116,6 +117,22 @@ const DocxViewer = ({ selectedFile, setSelectedFile }: ViewerProps) => {
             </div>
           </div>
         )}
+
+          {/* Get Score Button Overlay */}
+          {!isLoading && (
+            <div className="absolute bottom-12 bg-black/50 right-0 z-40 p-2 rounded-l-lg">
+              <Button
+                size="sm"
+                className="bg-[#636AE8] hover:bg-[#4f56d4] text-white shadow-lg transition-all duration-200 mr-5"
+                onClick={handleGetATSScore}
+                disabled={isAnalyzing}
+              >
+                <Sparkles className="h-4 w-4 mr-2" />
+                Get ATS Score
+              </Button>
+            </div>
+          )}
+
         <DocumentEditorContainerComponent
           ref={editorRef}
           className="min-w-fit mx-auto gap-4 !max-w-2xl"
