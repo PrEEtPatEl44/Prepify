@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import {
   Dialog,
   DialogContent,
@@ -12,8 +11,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent } from "@/components/ui/card";
-import { Briefcase, Building2, ExternalLink, CheckCircle2 } from "lucide-react";
+import { Building2, ExternalLink, CheckCircle2 } from "lucide-react";
 import { Job } from "@/types/jobs";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
 
 interface JobSelectionDialogProps {
   open: boolean;
@@ -54,19 +55,20 @@ export default function JobSelectionDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[80vh]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Briefcase className="h-5 w-5 text-[#636AE8]" />
-            Select Job for Analysis
-          </DialogTitle>
-          <DialogDescription>
-            Multiple jobs found for this resume. Please select one job to
-            analyze against.
-          </DialogDescription>
-        </DialogHeader>
-
-        <ScrollArea className="h-[400px] pr-4">
+      <DialogContent className="max-w-3xl max-h-[80vh] p-0">
+        <div className="px-6 pt-6">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              Select Job for Analysis
+            </DialogTitle>
+            <DialogDescription>
+              Multiple jobs found for this resume. Please select one job to
+              analyze against.
+            </DialogDescription>
+          </DialogHeader>
+        </div>
+        <Separator />
+        <ScrollArea className="h-[400px] px-6 pr-4">
           <div className="space-y-3">
             {jobs.map((job) => {
               const isSelected = selectedJobId === job.id;
@@ -74,34 +76,34 @@ export default function JobSelectionDialog({
               return (
                 <Card
                   key={job.id}
-                  className={`cursor-pointer transition-all duration-200 ${
+                  className={`cursor-pointer transition-all duration-200 !py-0 ${
                     isSelected
                       ? "border-[#636AE8] border-2 bg-[#636AE8]/5"
                       : "border-gray-200 hover:border-[#636AE8]/50 hover:bg-gray-50"
                   }`}
                   onClick={() => handleSelectJob(job)}
                 >
-                  <CardContent className="p-4">
+                  <CardContent className="p-4 ">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
-                        <div className="flex items-start gap-3">
+                        <div className="flex items-center gap-3">
                           {job.companyIconUrl ? (
-                            <Image
-                              src={job.companyIconUrl}
-                              alt={job.companyName}
-                              width={48}
-                              height={48}
-                              className="rounded-lg object-cover"
-                            />
+                            <Avatar className="w-16 h-16 flex-shrink-0">
+                              <AvatarImage
+                                src={job.companyIconUrl}
+                                alt={job.companyName}
+                                className="rounded-lg object-cover border border-black/5"
+                              />
+                            </Avatar>
                           ) : (
-                            <div className="w-12 h-12 rounded-lg bg-[#636AE8]/10 flex items-center justify-center">
-                              <Building2 className="h-6 w-6 text-[#636AE8]" />
+                            <div className="w-16 h-16 rounded-lg bg-[#636AE8]/10 flex items-center justify-center flex-shrink-0">
+                              <Building2 className="h-8 w-8 text-[#636AE8]" />
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-lg mb-1 truncate">
+                            <span className="font-semibold text-md mb-1 truncate">
                               {job.title}
-                            </h3>
+                            </span>
                             <p className="text-sm text-muted-foreground mb-2">
                               {job.companyName}
                             </p>
@@ -136,7 +138,7 @@ export default function JobSelectionDialog({
           </div>
         </ScrollArea>
 
-        <div className="flex items-center justify-between pt-4 border-t">
+        <div className="flex items-center justify-between pt-4 px-6 pb-6 border-t">
           <p className="text-sm text-muted-foreground">
             {selectedJobId
               ? "Click 'Analyze' to proceed"
