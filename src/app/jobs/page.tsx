@@ -41,12 +41,15 @@ const Page = () => {
           }
           return res.json().then((data) => data.data.jobs);
         })
+
         .catch((error) => {
           console.error("Error fetching jobs:", error);
           return [];
         });
       setColumns(columnsData);
       setJobs(jobsData);
+      console.log(jobsData);
+      console.log(columnsData);
       setIsLoading(false);
     };
     fetchData();

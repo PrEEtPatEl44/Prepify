@@ -5,6 +5,40 @@ import DocsHeader from "@/components/documents-header";
 import FileGrid from "@/components/file-grid";
 import { DocumentBasicInfo } from "@/types/docs";
 import DocxViewer from "@/components/docx-viewer";
+import ResumeAnalysisResults from "@/components/resume-analysis-results";
+
+interface AnalysisResult {
+  total_score: number;
+  score_breakdown: {
+    keyword_match_score: number;
+    holistic_score: number;
+  };
+  description: string;
+  strengths: string[];
+  areas_for_improvement: string[];
+  recommendations: string[];
+  detailed_analysis: {
+    keyword_analysis: {
+      insights: string;
+    };
+    experience_match: {
+      score: number;
+      analysis: string;
+    };
+    qualification_match: {
+      score: number;
+      analysis: string;
+    };
+    cultural_fit: {
+      score: number;
+      analysis: string;
+    };
+    career_trajectory: {
+      score: number;
+      analysis: string;
+    };
+  };
+}
 
 const Page = () => {
   const [documentType, setDocumentType] = useState<"resumes" | "coverLetters">(
@@ -32,6 +66,9 @@ const Page = () => {
     null
   );
   const [searchTerm, setSearchTerm] = useState("");
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
+    null
+  );
   useEffect(() => {
     setFileFromSession();
   }, []);
@@ -68,12 +105,26 @@ const Page = () => {
         </div>
 
         <div className="flex-1 overflow-y-auto mt-1">
-          <FileGrid
-            documentType={documentType}
-            onFileSelect={(file: DocumentBasicInfo) => setSelectedFile(file)}
-            selectedFile={selectedFile}
-            searchTerm={searchTerm}
-          />
+          {analysisResult ? (
+            <div className="p-4">
+              <div className="mb-4">
+                <button
+                  onClick={() => setAnalysisResult(null)}
+                  className="text-[#636AE8] hover:text-[#4f56d4] flex items-center gap-2 font-medium"
+                >
+                  Back to Documents
+                </button>
+              </div>
+              <ResumeAnalysisResults result={analysisResult} />
+            </div>
+          ) : (
+            <FileGrid
+              documentType={documentType}
+              onFileSelect={(file: DocumentBasicInfo) => setSelectedFile(file)}
+              selectedFile={selectedFile}
+              searchTerm={searchTerm}
+            />
+          )}
         </div>
       </div>
       {selectedFile && (
@@ -81,6 +132,7 @@ const Page = () => {
           <DocxViewer
             selectedFile={selectedFile}
             setSelectedFile={setSelectedFile}
+            onAnalysisComplete={(result) => setAnalysisResult(result)}
           />
         </div>
       )}

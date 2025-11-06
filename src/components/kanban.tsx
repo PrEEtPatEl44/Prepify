@@ -8,7 +8,7 @@ import {
   KanbanProvider,
 } from "@/components/ui/shadcn-io/kanban";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Ellipsis } from "lucide-react";
+import { Ellipsis, GripVertical } from "lucide-react";
 import { useState, useMemo } from "react";
 import { CreateJob, type Column, type Job } from "@/types/jobs";
 import CreateJobModal from "@/components/modals/CreateJobModal";
@@ -56,6 +56,17 @@ const Kanban = ({
     });
 
     setJobs(updatedJobs as Job[]);
+  };
+
+  // Handle column reordering
+  const handleColumnsChange = (updatedColumns: Column[]) => {
+    console.log("Columns reordered:", updatedColumns);
+    // Filter out the "create-new-list" pseudo-column if it exists
+    const realColumns = updatedColumns.filter(
+      (col) => col.id !== "create-new-list"
+    );
+    setColumns(realColumns);
+    // TODO: Call backend API to persist column order
   };
 
   const [pickedItem, setPickedItem] = useState<JobKanbanItem | null>();
@@ -166,20 +177,20 @@ const Kanban = ({
         columns={kanbanColumns}
         data={kanbanItems}
         onDataChange={handleKanbanDataChange}
+        onColumnsChange={handleColumnsChange}
         onDragStart={(e) => handleDragStart(e)}
         onDragEnd={(e) => handleDragEnd(e)}
       >
         {(column) =>
           column.id === "create-new-list" ? (
-            <KanbanBoard
-              id={column.id}
+            <div
               key={column.id}
-              className="bg-gray-100 p-2 shadow-lg"
+              className="flex h-[100%] max-h-[100vh] flex-col divide-y overflow-hidden !rounded-t-xl border bg-gray-100 text-xs shadow-lg p-2"
             >
-              <KanbanHeader className="border-0">
+              <div className="m-0 p-2 font-semibold text-sm border-0">
                 <CreateListModal onSubmit={handleCreateList} />
-              </KanbanHeader>
-            </KanbanBoard>
+              </div>
+            </div>
           ) : (
             <KanbanBoard
               id={column.id}
@@ -188,7 +199,12 @@ const Kanban = ({
             >
               <KanbanHeader className="border-0">
                 <div className="flex justify-between items-center gap-2">
-                  <span className={`text-md font-archivo font-semibold`}>
+                  <span
+                    className={`text-md font-archivo font-semibold flex items-center gap-2`}
+                  >
+                    <span className="text-gray-400 text-xs">
+                      <GripVertical size={16} />
+                    </span>
                     {column.name}
                   </span>
 
