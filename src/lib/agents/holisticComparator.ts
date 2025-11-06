@@ -55,10 +55,19 @@ export class HolisticComparatorAgent {
     typeof StructuredOutputParser.fromZodSchema<typeof holisticComparisonSchema>
   >;
 
-  constructor(apiKey?: string, modelName: string = "gpt-4o") {
+  constructor(apiKey?: string, modelName: string = "openai/gpt-oss-20b:free") {
     this.llm = new ChatOpenAI({
-      openAIApiKey: apiKey || process.env.OPENAI_API_KEY,
-      modelName: modelName,
+      configuration: {
+        baseURL: "https://openrouter.ai/api/v1",
+        defaultHeaders: {
+          "HTTP-Referer":
+            process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+          "X-Title": "Prepify Resume Analysis",
+        },
+      },
+
+      model: modelName,
+      apiKey: apiKey || process.env.OPENROUTER_API_KEY,
       temperature: 0.4,
     });
 

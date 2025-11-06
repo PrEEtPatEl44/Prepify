@@ -31,10 +31,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check for OpenAI API key
-    if (!process.env.OPENAI_API_KEY) {
+    // Check for OpenRouter API key
+    if (!process.env.OPENROUTER_API_KEY) {
       return NextResponse.json(
-        { error: "OPENAI_API_KEY is not configured" },
+        { error: "OPENROUTER_API_KEY is not configured" },
         { status: 500 }
       );
     }
