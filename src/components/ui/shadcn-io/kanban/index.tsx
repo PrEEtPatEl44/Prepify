@@ -55,12 +55,14 @@ type KanbanContextProps<
   columns: C[];
   data: T[];
   activeCardId: string | null;
+  activeColumnId: string | null;
 };
 
 const KanbanContext = createContext<KanbanContextProps>({
   columns: [],
   data: [],
   activeCardId: null,
+  activeColumnId: null,
 });
 
 export type KanbanBoardProps = {
@@ -74,20 +76,55 @@ export const KanbanBoard = ({ id, children, className }: KanbanBoardProps) => {
     id,
   });
 
+  const {
+    attributes,
+    listeners,
+    setNodeRef: setSortableNodeRef,
+    transition,
+    transform,
+    isDragging,
+  } = useSortable({
+    id,
+    data: {
+      type: "column",
+    },
+  });
+
+  const style = {
+    transition,
+    transform: CSS.Transform.toString(transform),
+  };
+
+  // Store the listeners to pass to header
+  const columnDragHandlers = { attributes, listeners };
+
   return (
-    <div
-      className={cn(
-        "flex   h-[100%] max-h-[100vh] flex-col divide-y overflow-hidden !rounded-t-xl border bg-secondary text-xs shadow-sm ring-2 transition-all",
-        isOver ? "ring-primary" : "ring-transparent",
-        className
-      )}
-      ref={setNodeRef}
-      suppressHydrationWarning={true}
-    >
-      {children}
-    </div>
+    <KanbanBoardContext.Provider value={columnDragHandlers}>
+      <div
+        className={cn(
+          "flex h-[100%] max-h-[100vh] flex-col divide-y overflow-hidden !rounded-t-xl border bg-secondary text-xs shadow-sm ring-2 transition-all",
+          isOver ? "ring-primary" : "ring-transparent",
+          isDragging && "opacity-50 cursor-grabbing",
+          className
+        )}
+        ref={(node) => {
+          setNodeRef(node);
+          setSortableNodeRef(node);
+        }}
+        style={style}
+        suppressHydrationWarning={true}
+      >
+        {children}
+      </div>
+    </KanbanBoardContext.Provider>
   );
 };
+
+// Context to pass drag handlers to the header
+const KanbanBoardContext = createContext<{
+  attributes?: ReturnType<typeof useSortable>["attributes"];
+  listeners?: ReturnType<typeof useSortable>["listeners"];
+}>({});
 
 export type KanbanCardProps<T extends KanbanItemProps = KanbanItemProps> = T & {
   children?: ReactNode;
@@ -179,9 +216,21 @@ export const KanbanCards = <T extends KanbanItemProps = KanbanItemProps>({
 
 export type KanbanHeaderProps = HTMLAttributes<HTMLDivElement>;
 
-export const KanbanHeader = ({ className, ...props }: KanbanHeaderProps) => (
-  <div className={cn("m-0 p-2 font-semibold text-sm", className)} {...props} />
-);
+export const KanbanHeader = ({ className, ...props }: KanbanHeaderProps) => {
+  const { attributes, listeners } = useContext(KanbanBoardContext);
+
+  return (
+    <div
+      className={cn(
+        "m-0 p-2 font-semibold text-sm cursor-grab active:cursor-grabbing",
+        className
+      )}
+      {...attributes}
+      {...listeners}
+      {...props}
+    />
+  );
+};
 
 export type KanbanProviderProps<
   T extends KanbanItemProps = KanbanItemProps,
@@ -192,6 +241,7 @@ export type KanbanProviderProps<
   columns: C[];
   data: T[];
   onDataChange?: (data: T[]) => void;
+  onColumnsChange?: (columns: C[]) => void;
   onDragStart?: (event: DragStartEvent) => void;
   onDragEnd?: (event: DragEndEvent) => void;
   onDragOver?: (event: DragOverEvent) => void;
@@ -209,20 +259,42 @@ export const KanbanProvider = <
   columns,
   data,
   onDataChange,
+  onColumnsChange,
   ...props
 }: KanbanProviderProps<T, C>) => {
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
+  const [activeColumnId, setActiveColumnId] = useState<string | null>(null);
 
   const sensors = useSensors(
-    useSensor(MouseSensor),
-    useSensor(TouchSensor),
+    useSensor(MouseSensor, {
+      activationConstraint: {
+        distance: 10,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
+      },
+    }),
     useSensor(KeyboardSensor)
   );
 
   const handleDragStart = (event: DragStartEvent) => {
-    const card = data.find((item) => item.id === event.active.id);
+    const { active } = event;
+    const activeData = active.data.current;
+
+    // Check if dragging a column
+    if (activeData?.type === "column") {
+      setActiveColumnId(active.id as string);
+      onDragStart?.(event);
+      return;
+    }
+
+    // Otherwise it's a card
+    const card = data.find((item) => item.id === active.id);
     if (card) {
-      setActiveCardId(event.active.id as string);
+      setActiveCardId(active.id as string);
     }
     onDragStart?.(event);
   };
@@ -231,6 +303,13 @@ export const KanbanProvider = <
     const { active, over } = event;
 
     if (!over) {
+      return;
+    }
+
+    const activeData = active.data.current;
+
+    // Don't handle card movements if dragging a column
+    if (activeData?.type === "column") {
       return;
     }
 
@@ -262,16 +341,33 @@ export const KanbanProvider = <
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
-    setActiveCardId(null);
-
-    onDragEnd?.(event);
-
     const { active, over } = event;
 
+    setActiveCardId(null);
+    setActiveColumnId(null);
+
     if (!over || active.id === over.id) {
+      onDragEnd?.(event);
       return;
     }
 
+    const activeData = active.data.current;
+
+    // Handle column reordering
+    if (activeData?.type === "column") {
+      const oldIndex = columns.findIndex((col) => col.id === active.id);
+      const newIndex = columns.findIndex((col) => col.id === over.id);
+
+      if (oldIndex !== -1 && newIndex !== -1) {
+        const newColumns = arrayMove(columns, oldIndex, newIndex);
+        onColumnsChange?.(newColumns);
+      }
+
+      onDragEnd?.(event);
+      return;
+    }
+
+    // Handle card reordering
     let newData = [...data];
 
     const oldIndex = newData.findIndex((item) => item.id === active.id);
@@ -280,6 +376,7 @@ export const KanbanProvider = <
     newData = arrayMove(newData, oldIndex, newIndex);
 
     onDataChange?.(newData);
+    onDragEnd?.(event);
   };
 
   const announcements: Announcements = {
@@ -308,7 +405,9 @@ export const KanbanProvider = <
   };
 
   return (
-    <KanbanContext.Provider value={{ columns, data, activeCardId }}>
+    <KanbanContext.Provider
+      value={{ columns, data, activeCardId, activeColumnId }}
+    >
       <DndContext
         accessibility={{ announcements }}
         collisionDetection={closestCenter}
@@ -319,15 +418,16 @@ export const KanbanProvider = <
         {...props}
       >
         {/* modified from "grid size-full auto-cols-fr grid-flow-col gap-4"  */}
-
-        <div
-          className={cn(
-            "grid h-full auto-cols-[270px] grid-flow-col gap-4  overflow-y-hidden overflow-x-auto px-1 pt-4 pb-0",
-            className
-          )}
-        >
-          {columns.map((column) => children(column))}
-        </div>
+        <SortableContext items={columns.map((col) => col.id)}>
+          <div
+            className={cn(
+              "grid h-full auto-cols-[270px] grid-flow-col gap-4  overflow-y-hidden overflow-x-auto px-1 pt-4 pb-0",
+              className
+            )}
+          >
+            {columns.map((column) => children(column))}
+          </div>
+        </SortableContext>
 
         {typeof window !== "undefined" &&
           createPortal(

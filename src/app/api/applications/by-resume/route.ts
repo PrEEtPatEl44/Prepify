@@ -4,12 +4,28 @@ import { createClient } from "@/utils/supabase/server";
 import { transformDbRowToJob } from "@/adapters/jobAdapters";
 
 /**
- * GET /api/applications
- * Retrieve all job applications
+ * GET /api/applications/by-resume?resume_id=xxx
+ * Retrieve all job applications for a specific resume
  */
-export async function GET(): Promise<NextResponse> {
+export async function GET(request: Request): Promise<NextResponse> {
   try {
-    console.log("GET /api/applications - Fetching all jobs");
+    const { searchParams } = new URL(request.url);
+    const resumeId = searchParams.get("resume_id");
+
+    if (!resumeId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Bad Request",
+          message: "resume_id query parameter is required",
+        },
+        { status: 400 }
+      );
+    }
+
+    console.log(
+      `GET /api/applications/by-resume - Fetching jobs for resume_id: ${resumeId}`
+    );
 
     const supabase = await createClient();
 
@@ -33,6 +49,7 @@ export async function GET(): Promise<NextResponse> {
       .from("job_applications")
       .select("*")
       .eq("user_id", user.id)
+      .eq("resume_id", resumeId)
       .order("created_at", { ascending: false });
 
     if (jobsError) {
@@ -46,19 +63,23 @@ export async function GET(): Promise<NextResponse> {
       );
     }
 
-    if (!jobs) {
+    if (!jobs || jobs.length === 0) {
       return NextResponse.json(
         {
-          success: false,
-          error: "No jobs found",
-          message: "No job applications found for the user",
+          success: true,
+          data: {
+            jobs: [],
+            total: 0,
+          },
+          message: `No job applications found for resume ID: ${resumeId}`,
         },
-        { status: 404 }
+        { status: 200 }
       );
     }
+
     const transformedJobs = jobs.map(transformDbRowToJob);
 
-    console.log(`Found ${jobs.length} total jobs`);
+    console.log(`Found ${jobs.length} job(s) for resume_id: ${resumeId}`);
 
     const response: GetJobsResponse = {
       success: true,
@@ -71,7 +92,7 @@ export async function GET(): Promise<NextResponse> {
 
     return NextResponse.json(response, { status: 200 });
   } catch (error) {
-    console.error("GET /api/applications error:", error);
+    console.error("GET /api/applications/by-resume error:", error);
 
     const errorResponse: ApiError = {
       success: false,

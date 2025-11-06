@@ -1,3 +1,12 @@
+/////////////////////////////////////////////////////////////////////////////
+
+// File: src/lib/services/jobService.ts
+// This service is just kept for reference
+// It is no longer used since we moved to direct queries in the API routes
+// The service can be deleted once Prisma is fully set up
+
+/////////////////////////////////////////////////////////////////////////////
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { createClient } from "@/utils/supabase/server";
