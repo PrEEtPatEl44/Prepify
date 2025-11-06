@@ -35,11 +35,25 @@ export class KeywordExtractorAgent {
     typeof StructuredOutputParser.fromZodSchema<typeof keywordSchema>
   >;
 
-  constructor(apiKey?: string, modelName: string = "gpt-4o-mini") {
+  constructor(apiKey?: string, modelName?: string) {
     this.llm = new ChatOpenAI({
-      openAIApiKey: apiKey || process.env.OPENAI_API_KEY,
-      modelName: modelName,
+      configuration: {
+        baseURL:
+          process.env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1",
+        defaultHeaders: {
+          "HTTP-Referer":
+            process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+          "X-Title": "Prepify Resume Analysis",
+        },
+      },
+
+      model:
+        modelName ||
+        process.env.OPENROUTER_MODEL_NAME ||
+        "openai/gpt-oss-20b:free",
+      apiKey: apiKey || process.env.OPENROUTER_API_KEY,
       temperature: 0.3,
+      maxRetries: 2,
     });
 
     this.parser = StructuredOutputParser.fromZodSchema(keywordSchema);
@@ -82,8 +96,8 @@ Be thorough and extract all relevant keywords. Normalize similar terms (e.g., "J
     });
 
     const response = await this.llm.invoke(input);
-    const parsed = await this.parser.parse(response.content as string);
 
+    const parsed = await this.parser.parse(response.content as string);
     return parsed;
   }
 
