@@ -133,6 +133,7 @@ const Page = () => {
             selectedFile={selectedFile}
             setSelectedFile={setSelectedFile}
             onAnalysisComplete={(result) => setAnalysisResult(result)}
+            documentType={documentType}
           />
         </div>
       )}
