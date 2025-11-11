@@ -10,10 +10,14 @@ import { Button } from "./ui/button";
 
 interface InterviewHeaderProps {
   onStartInterview?: () => void;
+  searchQuery?: string;
+  onSearchChange?: (value: string) => void;
 }
 
 export default function InterviewHeader({
   onStartInterview,
+  searchQuery,
+  onSearchChange,
 }: InterviewHeaderProps) {
   const { profile } = useUser();
 
@@ -23,7 +27,9 @@ export default function InterviewHeader({
         {/* Search Box */}
         <Input
           type="text"
-          placeholder="Search Interviews..."
+          placeholder="Search by company..."
+          value={searchQuery}
+          onChange={(e) => onSearchChange?.(e.target.value)}
           className="max-w-2xl max-h-8 bg-[#F3F4F6] !border-none"
         />
 
