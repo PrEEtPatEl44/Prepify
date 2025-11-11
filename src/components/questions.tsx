@@ -102,8 +102,12 @@ export default function Questions() {
         <Textarea
           value={answer}
           onChange={(e) => setAnswer(e.target.value)}
-          placeholder="Type your answer here..."
-          className="min-h-[216px] bg-[#f2f2fd] border-[#f2f2fd] text-[#636ae8] text-lg font-bold leading-7 p-3 resize-none focus:ring-0 focus:border-[#636ae8]"
+          placeholder={
+            answerMode === "type"
+              ? "Type your answer here..."
+              : "Your answer will appear here"
+          }
+          className="min-h-[30vh] bg-[#f2f2fd] border-[#f2f2fd] text-[#636ae8] text-lg p-3 resize-none focus:ring-0 focus:border-[#636ae8]"
         />
       </div>
 
