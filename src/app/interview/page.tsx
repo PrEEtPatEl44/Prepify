@@ -48,7 +48,6 @@ const Page = () => {
     <div className="h-screen flex flex-1 flex-col overflow-hidden">
       <div className="mt-6 px-1 max-w-[95%]">
         <InterviewHeader
-          onStartInterview={() => setIsInterviewActive(true)}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
         />
