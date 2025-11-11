@@ -4,9 +4,21 @@ import React, { useState, useEffect } from "react";
 import InterviewHeader from "@/components/interview-header";
 import Questions from "@/components/questions";
 import { JobsDataTable } from "@/components/jobs-data-table";
-import { Video } from "lucide-react";
+import { Video, Loader2 } from "lucide-react";
 import { Job } from "@/types/jobs";
 import { Skeleton } from "@/components/ui/skeleton";
+
+interface InterviewQuestion {
+  id: number;
+  text: string;
+  type: string;
+  difficulty: string;
+  topic: string;
+  purpose: string;
+  followUpQuestions: string[];
+  idealAnswerPoints: string[];
+  redFlags: string[];
+}
 
 const Page = () => {
   const [isInterviewActive, setIsInterviewActive] = useState(false);
@@ -15,6 +27,11 @@ const Page = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [interviewQuestions, setInterviewQuestions] = useState<
+    InterviewQuestion[]
+  >([]);
+  const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
+  const [questionError, setQuestionError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -39,9 +56,42 @@ const Page = () => {
     fetchJobs();
   }, []);
 
-  const handleStartInterview = (job: Job) => {
+  const handleStartInterview = async (job: Job) => {
     setSelectedJob(job);
-    setIsInterviewActive(true);
+    setQuestionError(null);
+    setIsGeneratingQuestions(true);
+
+    try {
+      // Generate interview questions
+      const response = await fetch("/api/interview/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          jobId: job.id,
+          interviewType: "standard", // Can be "quick", "standard", or "comprehensive"
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(
+          data.message || "Failed to generate interview questions"
+        );
+      }
+
+      setInterviewQuestions(data.data.questions);
+      setIsInterviewActive(true);
+    } catch (err) {
+      setQuestionError(
+        err instanceof Error ? err.message : "Failed to generate questions"
+      );
+      console.error("Error generating interview questions:", err);
+    } finally {
+      setIsGeneratingQuestions(false);
+    }
   };
 
   return (
@@ -53,7 +103,27 @@ const Page = () => {
         />
       </div>
       <div className="flex-1 overflow-auto">
-        {isInterviewActive ? (
+        {isGeneratingQuestions ? (
+          <div className="h-full flex flex-col items-center justify-center p-6 space-y-4">
+            <Loader2 className="w-16 h-16 text-[#636AE8] animate-spin" />
+            <h3 className="text-xl font-semibold text-gray-800">
+              Generating Interview Questions...
+            </h3>
+            <p className="text-gray-600 text-center max-w-md">
+              Analyzing job description and resume to create personalized
+              interview questions
+            </p>
+          </div>
+        ) : questionError ? (
+          <div className="h-full flex flex-col items-center justify-center p-6 space-y-4">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
+              <h3 className="text-lg font-semibold text-red-700 mb-2">
+                Failed to Generate Questions
+              </h3>
+              <p className="text-red-600">{questionError}</p>
+            </div>
+          </div>
+        ) : isInterviewActive ? (
           <div className="h-full flex flex-col p-6 space-y-4">
             {selectedJob && (
               <div className="bg-white rounded-lg p-4 shadow-sm border mb-4">
@@ -66,7 +136,7 @@ const Page = () => {
               </div>
             )}
             <div className="flex-1 flex items-center justify-center">
-              <Questions />
+              <Questions questions={interviewQuestions} />
             </div>
           </div>
         ) : (

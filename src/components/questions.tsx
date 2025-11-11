@@ -8,11 +8,26 @@ import { Button } from "./ui/button";
 interface Question {
   id: number;
   text: string;
+  type?: string;
+  difficulty?: string;
+  topic?: string;
+  purpose?: string;
+  followUpQuestions?: string[];
+  idealAnswerPoints?: string[];
+  redFlags?: string[];
+}
+
+interface QuestionsProps {
+  questions: Question[];
+  totalQuestions?: number;
 }
 
 type AnswerMode = "record" | "type";
 
-export default function Questions() {
+export default function Questions({
+  questions,
+  totalQuestions,
+}: QuestionsProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answer, setAnswer] = useState("");
   const [questionTime, setQuestionTime] = useState(0);
@@ -23,16 +38,7 @@ export default function Questions() {
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const dcRef = useRef<RTCDataChannel | null>(null);
 
-  // Mock questions - replace with actual data
-  const questions: Question[] = [
-    {
-      id: 1,
-      text: "Can You provide an Overview of your experience with backend systems?",
-    },
-    // Add more questions as needed
-  ];
-
-  const totalQuestions = 25;
+  const total = totalQuestions || questions.length;
   const currentQuestion = questions[currentQuestionIndex] || questions[0];
 
   useEffect(() => {
@@ -276,7 +282,7 @@ export default function Questions() {
       {/* Footer with Question Counter and Next Button */}
       <div className="flex items-center justify-end gap-6">
         <span className="text-md text-[#8c8d8b]">
-          {String(currentQuestionIndex + 1).padStart(2, "0")}/{totalQuestions}
+          {String(currentQuestionIndex + 1).padStart(2, "0")}/{total}
         </span>
         <Button
           onClick={handleNext}

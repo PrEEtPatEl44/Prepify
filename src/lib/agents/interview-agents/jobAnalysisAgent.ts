@@ -92,8 +92,6 @@ export class JobAnalysisAgent {
 
     if (useOpenAI) {
       // Primary: Use OpenAI directly
-      console.log("api key", process.env.OPENAI_API_KEY);
-      console.log("Using OpenAI LLM for Job Analysis Agent");
       this.llm = new ChatOpenAI({
         model: modelName || process.env.OPENAI_MODEL_NAME || "gpt-4o-mini",
         apiKey: apiKey || process.env.OPENAI_API_KEY,
