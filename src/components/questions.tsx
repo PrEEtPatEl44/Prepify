@@ -98,17 +98,14 @@ export default function Questions() {
         </Button>
       </div>
 
-      {/* Answer Textarea - Only shown when Type mode is active */}
-      {answerMode === "type" && (
-        <div className="relative">
-          <Textarea
-            value={answer}
-            onChange={(e) => setAnswer(e.target.value)}
-            placeholder="Type your answer here..."
-            className="min-h-[216px] bg-[#f2f2fd] border-[#f2f2fd] text-[#636ae8] text-lg font-bold leading-7 p-3 resize-none focus:ring-0 focus:border-[#636ae8]"
-          />
-        </div>
-      )}
+      <div className="relative">
+        <Textarea
+          value={answer}
+          onChange={(e) => setAnswer(e.target.value)}
+          placeholder="Type your answer here..."
+          className="min-h-[216px] bg-[#f2f2fd] border-[#f2f2fd] text-[#636ae8] text-lg font-bold leading-7 p-3 resize-none focus:ring-0 focus:border-[#636ae8]"
+        />
+      </div>
 
       {/* Footer with Question Counter and Next Button */}
       <div className="flex items-center justify-end gap-6">
