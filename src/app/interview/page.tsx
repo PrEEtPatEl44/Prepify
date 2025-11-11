@@ -22,7 +22,6 @@ interface InterviewQuestion {
 
 const Page = () => {
   const [isInterviewActive, setIsInterviewActive] = useState(false);
-  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,7 +56,6 @@ const Page = () => {
   }, []);
 
   const handleStartInterview = async (job: Job) => {
-    setSelectedJob(job);
     setQuestionError(null);
     setIsGeneratingQuestions(true);
 
@@ -124,20 +122,8 @@ const Page = () => {
             </div>
           </div>
         ) : isInterviewActive ? (
-          <div className="h-full flex flex-col p-6 space-y-4">
-            {selectedJob && (
-              <div className="bg-white rounded-lg p-4 shadow-sm border mb-4">
-                <h3 className="text-lg font-semibold text-gray-800">
-                  Interview for: {selectedJob.title}
-                </h3>
-                <p className="text-sm text-gray-600">
-                  {selectedJob.companyName}
-                </p>
-              </div>
-            )}
-            <div className="flex-1 flex items-center justify-center">
-              <Questions questions={interviewQuestions} />
-            </div>
+          <div className="flex-1 flex items-center justify-center">
+            <Questions questions={interviewQuestions} />
           </div>
         ) : (
           <div className="pl-1 pr-6 py-4 w-full">
