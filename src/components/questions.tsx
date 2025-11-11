@@ -1,7 +1,7 @@
 "use client";
 
-import { ArrowRight, Mic, Keyboard, Hourglass, AudioLines } from "lucide-react";
-import { useState, useEffect } from "react";
+import { ArrowRight, Mic, Keyboard, AudioLines, Hourglass } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
 
@@ -17,7 +17,10 @@ export default function Questions() {
   const [answer, setAnswer] = useState("");
   const [questionTime, setQuestionTime] = useState(0);
   const [answerMode, setAnswerMode] = useState<AnswerMode>("record");
-  const isRecording = true; // Will be implemented with audio recording feature
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
+  const pcRef = useRef<RTCPeerConnection | null>(null);
+  const dcRef = useRef<RTCDataChannel | null>(null);
 
   // Mock questions - replace with actual data
   const questions: Question[] = [
@@ -47,13 +50,120 @@ export default function Questions() {
       .padStart(2, "0")}`;
   };
 
+  const handleRecordClick = async () => {
+    if (isRecording) {
+      // Stop recording
+      stopRecording();
+      return;
+    }
+
+    try {
+      // Start recording
+      setIsRecording(true);
+      setAnswerMode("record");
+      setAnswer(""); // Clear previous answer
+
+      // Get ephemeral key from server
+      const tokenResponse = await fetch("/api/session");
+      const data = await tokenResponse.json();
+      const ephemeralKey = data.value;
+
+      if (!ephemeralKey) {
+        console.error("Failed to get ephemeral key");
+        setIsRecording(false);
+        return;
+      }
+
+      // Create RTCPeerConnection
+      const pc = new RTCPeerConnection();
+      pcRef.current = pc;
+
+      // Capture microphone audio
+      const localStream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+      });
+      setAudioStream(localStream);
+      localStream
+        .getTracks()
+        .forEach((track) => pc.addTrack(track, localStream));
+
+      // Create data channel for Realtime events
+      const dc = pc.createDataChannel("oai-events");
+      dc.onmessage = (evt) => {
+        const msg = JSON.parse(evt.data);
+        // Incremental transcription
+        if (msg.type === "conversation.item.input_audio_transcription.delta") {
+          setAnswer((prev) => prev + " " + msg.delta);
+        }
+        // Completed turn transcription
+        if (
+          msg.type === "conversation.item.input_audio_transcription.completed"
+        ) {
+          console.log("Turn completed:", msg.transcript);
+        }
+      };
+      dcRef.current = dc;
+
+      // Create SDP offer
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+
+      // Send offer to OpenAI Realtime API
+      const baseUrl = "https://api.openai.com/v1/realtime/calls";
+
+      const resp = await fetch(baseUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${ephemeralKey}`,
+          "Content-Type": "application/sdp",
+        },
+        body: offer.sdp,
+      });
+
+      const answerSdp = await resp.text();
+      await pc.setRemoteDescription({ type: "answer", sdp: answerSdp });
+
+      console.log("Realtime transcription session started!");
+    } catch (error) {
+      console.error("Error starting transcription:", error);
+      setIsRecording(false);
+      stopRecording();
+    }
+  };
+
+  const stopRecording = () => {
+    if (pcRef.current) {
+      pcRef.current.close();
+      pcRef.current = null;
+    }
+    if (audioStream) {
+      audioStream.getTracks().forEach((track) => track.stop());
+      setAudioStream(null);
+    }
+    dcRef.current = null;
+    setIsRecording(false);
+  };
+
   const handleNext = () => {
     if (currentQuestionIndex < questions.length - 1) {
+      // Stop recording if active
+      if (isRecording) {
+        stopRecording();
+      }
       setCurrentQuestionIndex((prev) => prev + 1);
       setAnswer("");
       setQuestionTime(0);
     }
   };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (pcRef.current) {
+        pcRef.current.close();
+      }
+    };
+  }, []);
 
   return (
     <div className="bg-white rounded-lg p-4 shadow-md gap-2 flex flex-col">
@@ -72,26 +182,36 @@ export default function Questions() {
         </div>
 
         {/* Timer with Hourglass */}
-        {/* <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <Hourglass className="w-6 h-6 text-gray-400" />
           <span className="text-[20px] font-semibold text-[#636ae8]">
             {formatTime(questionTime)} mins
           </span>
-        </div> */}
+        </div>
       </div>
 
       {/* Answer Mode Buttons */}
       <div className="flex items-center gap-2">
         <Button
-          onClick={() => setAnswerMode("record")}
-          className={`px-6 rounded-md flex items-center  bg-[#636ae8] text-white hover:bg-[#5058c9]`}
+          onClick={handleRecordClick}
+          className={`px-6 rounded-md flex items-center gap-2 ${
+            isRecording
+              ? "bg-red-500 text-white hover:bg-red-600"
+              : "bg-[#636ae8] text-white hover:bg-[#5058c9]"
+          }`}
         >
           <Mic className="w-5 h-5" />
-          Record
+          {isRecording ? "Stop Recording" : "Record"}
         </Button>
         <Button
-          onClick={() => setAnswerMode("type")}
-          className={`px-6 rounded-md flex items-center  bg-[#f2f2fd] text-[#636ae8] hover:bg-[#e9e9ff]`}
+          onClick={() => {
+            setAnswerMode("type");
+            if (isRecording) {
+              stopRecording();
+            }
+          }}
+          className={`px-6 rounded-md flex items-center gap-2 bg-[#f2f2fd] text-[#636ae8] hover:bg-[#e9e9ff]`}
+          disabled={isRecording}
         >
           <Keyboard className="w-5 h-5" />
           Type
@@ -103,12 +223,21 @@ export default function Questions() {
           value={answer}
           onChange={(e) => setAnswer(e.target.value)}
           placeholder={
-            answerMode === "type"
+            isRecording
+              ? "Speak into your microphone... transcription will appear here"
+              : answerMode === "type"
               ? "Type your answer here..."
               : "Your answer will appear here"
           }
+          readOnly={isRecording}
           className="min-h-[30vh] bg-[#f2f2fd] border-[#f2f2fd] text-[#636ae8] text-lg p-3 resize-none focus:ring-0 focus:border-[#636ae8]"
         />
+        {isRecording && (
+          <div className="absolute top-3 right-3 flex items-center gap-2">
+            <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+            <span className="text-sm text-red-500 font-medium">Recording</span>
+          </div>
+        )}
       </div>
 
       {/* Footer with Question Counter and Next Button */}
