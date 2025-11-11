@@ -18,6 +18,7 @@ export default function Questions() {
   const [questionTime, setQuestionTime] = useState(0);
   const [answerMode, setAnswerMode] = useState<AnswerMode>("record");
   const [isRecording, setIsRecording] = useState(false);
+  const [isSettingUp, setIsSettingUp] = useState(false);
   const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const dcRef = useRef<RTCDataChannel | null>(null);
@@ -26,7 +27,7 @@ export default function Questions() {
   const questions: Question[] = [
     {
       id: 1,
-      text: "Can You provide an Overview of your background and what made you interested in backend systems ?",
+      text: "Can You provide an Overview of your experience with backend systems?",
     },
     // Add more questions as needed
   ];
@@ -58,8 +59,8 @@ export default function Questions() {
     }
 
     try {
-      // Start recording
-      setIsRecording(true);
+      // Show loading state
+      setIsSettingUp(true);
       setAnswerMode("record");
       setAnswer(""); // Clear previous answer
 
@@ -70,7 +71,7 @@ export default function Questions() {
 
       if (!ephemeralKey) {
         console.error("Failed to get ephemeral key");
-        setIsRecording(false);
+        setIsSettingUp(false);
         return;
       }
 
@@ -89,11 +90,19 @@ export default function Questions() {
 
       // Create data channel for Realtime events
       const dc = pc.createDataChannel("oai-events");
+
+      // Wait for data channel to open before starting recording
+      dc.onopen = () => {
+        console.log("Data channel opened - ready to record");
+        setIsSettingUp(false);
+        setIsRecording(true);
+      };
+
       dc.onmessage = (evt) => {
         const msg = JSON.parse(evt.data);
         // Incremental transcription
         if (msg.type === "conversation.item.input_audio_transcription.delta") {
-          setAnswer((prev) => prev + " " + msg.delta);
+          setAnswer((prev) => prev + msg.delta);
         }
         // Completed turn transcription
         if (
@@ -123,9 +132,10 @@ export default function Questions() {
       const answerSdp = await resp.text();
       await pc.setRemoteDescription({ type: "answer", sdp: answerSdp });
 
-      console.log("Realtime transcription session started!");
+      console.log("Realtime transcription session setup complete!");
     } catch (error) {
       console.error("Error starting transcription:", error);
+      setIsSettingUp(false);
       setIsRecording(false);
       stopRecording();
     }
@@ -142,6 +152,7 @@ export default function Questions() {
     }
     dcRef.current = null;
     setIsRecording(false);
+    setIsSettingUp(false);
   };
 
   const handleNext = () => {
@@ -166,7 +177,7 @@ export default function Questions() {
   }, []);
 
   return (
-    <div className="bg-white rounded-lg p-4 shadow-md gap-2 flex flex-col">
+    <div className="bg-white rounded-lg p-4 shadow-md gap-2 min-w-4xl flex flex-col">
       {/* Question Header with Audio Visualization and Timer */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
@@ -184,7 +195,7 @@ export default function Questions() {
         {/* Timer with Hourglass */}
         <div className="flex items-center gap-2 flex-shrink-0">
           <Hourglass className="w-6 h-6 text-gray-400" />
-          <span className="text-[20px] font-semibold text-[#636ae8]">
+          <span className="text-[20px]  text-[#636ae8]">
             {formatTime(questionTime)} mins
           </span>
         </div>
@@ -194,14 +205,26 @@ export default function Questions() {
       <div className="flex items-center gap-2">
         <Button
           onClick={handleRecordClick}
+          disabled={isSettingUp}
           className={`px-6 rounded-md flex items-center gap-2 ${
             isRecording
               ? "bg-red-500 text-white hover:bg-red-600"
+              : isSettingUp
+              ? "bg-[#9ca3f0] text-white cursor-not-allowed"
               : "bg-[#636ae8] text-white hover:bg-[#5058c9]"
           }`}
         >
-          <Mic className="w-5 h-5" />
-          {isRecording ? "Stop Recording" : "Record"}
+          {isSettingUp ? (
+            <>
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              Setting up...
+            </>
+          ) : (
+            <>
+              <Mic className="w-5 h-5" />
+              {isRecording ? "Stop Recording" : "Record"}
+            </>
+          )}
         </Button>
         <Button
           onClick={() => {
@@ -211,7 +234,7 @@ export default function Questions() {
             }
           }}
           className={`px-6 rounded-md flex items-center gap-2 bg-[#f2f2fd] text-[#636ae8] hover:bg-[#e9e9ff]`}
-          disabled={isRecording}
+          disabled={isRecording || isSettingUp}
         >
           <Keyboard className="w-5 h-5" />
           Type
@@ -223,16 +246,26 @@ export default function Questions() {
           value={answer}
           onChange={(e) => setAnswer(e.target.value)}
           placeholder={
-            isRecording
+            isSettingUp
+              ? "Setting up audio connection..."
+              : isRecording
               ? "Speak into your microphone... transcription will appear here"
               : answerMode === "type"
               ? "Type your answer here..."
               : "Your answer will appear here"
           }
-          readOnly={isRecording}
+          readOnly={isRecording || isSettingUp}
           className="min-h-[30vh] bg-[#f2f2fd] border-[#f2f2fd] text-[#636ae8] text-lg p-3 resize-none focus:ring-0 focus:border-[#636ae8]"
         />
-        {isRecording && (
+        {isSettingUp && (
+          <div className="absolute top-3 right-3 flex items-center gap-2">
+            <div className="w-4 h-4 border-2 border-[#636ae8] border-t-transparent rounded-full animate-spin" />
+            <span className="text-sm text-[#636ae8] font-medium">
+              Connecting...
+            </span>
+          </div>
+        )}
+        {isRecording && !isSettingUp && (
           <div className="absolute top-3 right-3 flex items-center gap-2">
             <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
             <span className="text-sm text-red-500 font-medium">Recording</span>
