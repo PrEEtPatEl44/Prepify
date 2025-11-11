@@ -8,13 +8,7 @@ import { Button } from "./ui/button";
 interface Question {
   id: number;
   text: string;
-  type?: string;
-  difficulty?: string;
-  topic?: string;
-  purpose?: string;
-  followUpQuestions?: string[];
-  idealAnswerPoints?: string[];
-  redFlags?: string[];
+  topic: string;
 }
 
 interface QuestionsProps {

@@ -122,7 +122,7 @@ const Page = () => {
             </div>
           </div>
         ) : isInterviewActive ? (
-          <div className="flex-1 flex items-center justify-center">
+          <div className="flex-1 size-full flex items-center justify-center">
             <Questions questions={interviewQuestions} />
           </div>
         ) : (

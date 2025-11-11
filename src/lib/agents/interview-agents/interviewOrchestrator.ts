@@ -2,11 +2,10 @@ import { JobAnalysisAgent, JobAnalysisResult } from "./jobAnalysisAgent";
 import {
   QuestionGeneratorAgent,
   InterviewQuestionsSet,
-  InterviewQuestion,
 } from "./questionGeneratorAgent";
 
 /**
- * Complete interview preparation result
+ * Simple interview preparation result
  */
 export interface InterviewPreparationResult {
   analysis: JobAnalysisResult;
@@ -15,7 +14,6 @@ export interface InterviewPreparationResult {
   metadata: {
     generated_at: string;
     total_questions: number;
-    recommended_duration: string;
   };
 }
 
@@ -33,17 +31,11 @@ export class InterviewOrchestrator {
   }
 
   /**
-   * Prepare a complete interview package with analysis and questions
+   * Prepare a simple interview package with analysis and 5 questions
    */
   async prepareInterview(
     resumeText: string,
-    jobDescription: string,
-    questionCount?: {
-      technical?: number;
-      behavioral?: number;
-      situational?: number;
-      problemSolving?: number;
-    }
+    jobDescription: string
   ): Promise<InterviewPreparationResult> {
     // Step 1: Analyze the job and candidate
     console.log("Step 1: Analyzing job and candidate profile...");
@@ -58,29 +50,11 @@ export class InterviewOrchestrator {
       analysis
     );
 
-    // Step 3: Generate interview questions based on analysis
-    console.log("Step 3: Generating interview questions...");
+    // Step 3: Generate 5 simple interview questions
+    console.log("Step 3: Generating 5 interview questions...");
     const questions = await this.questionGeneratorAgent.generateQuestions(
-      analysis,
-      jobDescription,
-      resumeText,
-      questionCount
+      analysis
     );
-
-    // Calculate total questions and recommended duration
-    const totalQuestions =
-      questions.technical_questions.length +
-      questions.behavioral_questions.length +
-      questions.situational_questions.length +
-      questions.problem_solving_questions.length +
-      questions.role_specific_questions.length;
-
-    // Estimate 5-8 minutes per question
-    const estimatedMinutes = totalQuestions * 6.5;
-    const hours = Math.floor(estimatedMinutes / 60);
-    const minutes = Math.round(estimatedMinutes % 60);
-    const recommendedDuration =
-      hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
 
     console.log("Interview preparation complete!");
 
@@ -90,105 +64,8 @@ export class InterviewOrchestrator {
       summary,
       metadata: {
         generated_at: new Date().toISOString(),
-        total_questions: totalQuestions,
-        recommended_duration: recommendedDuration,
+        total_questions: 5,
       },
     };
-  }
-
-  /**
-   * Prepare a focused interview for specific skill gaps
-   */
-  async prepareFocusedInterview(
-    resumeText: string,
-    jobDescription: string,
-    focusAreas: string[]
-  ): Promise<{
-    analysis: JobAnalysisResult;
-    focused_questions: Array<{
-      topic: string;
-      questions: InterviewQuestion[];
-    }>;
-  }> {
-    // Analyze the job and candidate
-    const analysis = await this.jobAnalysisAgent.analyzeForInterview(
-      resumeText,
-      jobDescription
-    );
-
-    // Generate questions for each focus area
-    const focused_questions = await Promise.all(
-      focusAreas.map(async (topic) => ({
-        topic,
-        questions:
-          await this.questionGeneratorAgent.generateTopicSpecificQuestions(
-            topic,
-            analysis.interview_recommendations.difficulty_level,
-            3
-          ),
-      }))
-    );
-
-    return {
-      analysis,
-      focused_questions,
-    };
-  }
-
-  /**
-   * Generate additional questions for identified gaps
-   */
-  async generateGapQuestions(
-    analysis: JobAnalysisResult
-  ): Promise<Array<{ gap: string; questions: InterviewQuestion[] }>> {
-    const allGaps = [
-      ...analysis.skill_gaps.technical_gaps,
-      ...analysis.skill_gaps.experience_gaps,
-      ...analysis.skill_gaps.soft_skill_gaps,
-    ];
-
-    const gapQuestions = await Promise.all(
-      allGaps.slice(0, 5).map(async (gap) => ({
-        gap,
-        questions:
-          await this.questionGeneratorAgent.generateTopicSpecificQuestions(
-            gap,
-            analysis.interview_recommendations.difficulty_level,
-            2
-          ),
-      }))
-    );
-
-    return gapQuestions;
-  }
-
-  /**
-   * Quick interview prep with fewer questions
-   */
-  async prepareQuickInterview(
-    resumeText: string,
-    jobDescription: string
-  ): Promise<InterviewPreparationResult> {
-    return this.prepareInterview(resumeText, jobDescription, {
-      technical: 3,
-      behavioral: 2,
-      situational: 2,
-      problemSolving: 2,
-    });
-  }
-
-  /**
-   * Comprehensive interview prep with more questions
-   */
-  async prepareComprehensiveInterview(
-    resumeText: string,
-    jobDescription: string
-  ): Promise<InterviewPreparationResult> {
-    return this.prepareInterview(resumeText, jobDescription, {
-      technical: 8,
-      behavioral: 6,
-      situational: 5,
-      problemSolving: 5,
-    });
   }
 }

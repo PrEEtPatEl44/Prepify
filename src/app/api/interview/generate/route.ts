@@ -5,7 +5,6 @@ import { extractTextFromDOCX } from "@/lib/textExtraction";
 
 interface GenerateInterviewRequest {
   jobId: string;
-  interviewType?: "quick" | "comprehensive" | "standard";
 }
 
 interface GenerateInterviewResponse {
@@ -14,17 +13,10 @@ interface GenerateInterviewResponse {
     questions: Array<{
       id: number;
       text: string;
-      type: string;
-      difficulty: string;
       topic: string;
-      purpose: string;
-      followUpQuestions: string[];
-      idealAnswerPoints: string[];
-      redFlags: string[];
     }>;
     metadata: {
       totalQuestions: number;
-      recommendedDuration: string;
       generatedAt: string;
     };
     jobInfo: {
@@ -64,7 +56,7 @@ export async function POST(
     }
 
     const body: GenerateInterviewRequest = await request.json();
-    const { jobId, interviewType = "standard" } = body;
+    const { jobId } = body;
 
     if (!jobId) {
       return NextResponse.json(
@@ -78,7 +70,7 @@ export async function POST(
     }
 
     console.log("Request body:", jobId);
-    console.log("Interview type:", user.id);
+    console.log("User ID:", user.id);
     // Fetch job details
     const { data: jobData, error: jobError } = await supabase
       .from("job_applications")
@@ -172,62 +164,17 @@ export async function POST(
 
     const orchestrator = new InterviewOrchestrator(apiKey, modelName);
 
-    // Generate interview questions based on type
-    let result;
+    // Generate 5 simple interview questions
+    const result = await orchestrator.prepareInterview(
+      resumeText,
+      job_description
+    );
 
-    switch (interviewType) {
-      case "quick":
-        result = await orchestrator.prepareQuickInterview(
-          resumeText,
-          job_description
-        );
-        break;
-      case "comprehensive":
-        result = await orchestrator.prepareComprehensiveInterview(
-          resumeText,
-          job_description
-        );
-        break;
-      default:
-        result = await orchestrator.prepareInterview(
-          resumeText,
-          job_description
-        );
-        break;
-    }
-
-    // Flatten all questions into a single array with IDs
-    const allQuestions = [
-      ...result.questions.technical_questions.map((q) => ({
-        ...q,
-        type: "technical",
-      })),
-      ...result.questions.behavioral_questions.map((q) => ({
-        ...q,
-        type: "behavioral",
-      })),
-      ...result.questions.situational_questions.map((q) => ({
-        ...q,
-        type: "situational",
-      })),
-      ...result.questions.problem_solving_questions.map((q) => ({
-        ...q,
-        type: "problem-solving",
-      })),
-      ...result.questions.role_specific_questions.map((q) => ({
-        ...q,
-        type: "role-specific",
-      })),
-    ].map((question, index) => ({
+    // Map questions to response format with IDs
+    const allQuestions = result.questions.questions.map((q, index) => ({
       id: index + 1,
-      text: question.question,
-      type: question.type,
-      difficulty: question.difficulty,
-      topic: question.topic,
-      purpose: question.purpose,
-      followUpQuestions: question.follow_up_questions,
-      idealAnswerPoints: question.ideal_answer_points,
-      redFlags: question.red_flags,
+      text: q.question,
+      topic: q.topic,
     }));
 
     const response: GenerateInterviewResponse = {
@@ -236,7 +183,6 @@ export async function POST(
         questions: allQuestions,
         metadata: {
           totalQuestions: result.metadata.total_questions,
-          recommendedDuration: result.metadata.recommended_duration,
           generatedAt: result.metadata.generated_at,
         },
         jobInfo: {

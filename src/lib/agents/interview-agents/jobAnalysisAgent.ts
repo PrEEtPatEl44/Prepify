@@ -3,74 +3,18 @@ import { StructuredOutputParser } from "@langchain/core/output_parsers";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { z } from "zod";
 
-// Define the output schema for job analysis
+// Define the output schema for simple job analysis
 const jobAnalysisSchema = z.object({
-  role_overview: z.object({
-    position_level: z
-      .string()
-      .describe("Entry-level, Mid-level, Senior, or Lead position"),
-    key_responsibilities: z
-      .array(z.string())
-      .describe("Primary responsibilities for the role"),
-    required_qualifications: z
-      .array(z.string())
-      .describe("Must-have qualifications"),
-  }),
-  candidate_strengths: z.object({
-    matching_skills: z
-      .array(z.string())
-      .describe("Skills from resume that match job requirements"),
-    relevant_experience: z
-      .array(z.string())
-      .describe("Relevant work experience that aligns with the job"),
-    educational_fit: z
-      .string()
-      .describe("How candidate's education aligns with requirements"),
-  }),
-  skill_gaps: z.object({
-    technical_gaps: z
-      .array(z.string())
-      .describe("Technical skills mentioned in job but missing from resume"),
-    experience_gaps: z
-      .array(z.string())
-      .describe("Experience areas that need clarification or are missing"),
-    soft_skill_gaps: z
-      .array(z.string())
-      .describe("Soft skills that need assessment during interview"),
-  }),
-  focus_areas: z.object({
-    technical_topics: z
-      .array(z.string())
-      .describe("Technical areas to explore in the interview"),
-    behavioral_topics: z
-      .array(z.string())
-      .describe("Behavioral competencies to assess"),
-    scenario_topics: z
-      .array(z.string())
-      .describe("Situational scenarios to present"),
-  }),
-  red_flags: z
+  job_title: z.string().describe("The job title"),
+  key_skills: z
     .array(z.string())
-    .describe("Areas requiring special attention or clarification"),
-  interview_recommendations: z.object({
-    difficulty_level: z
-      .enum(["basic", "intermediate", "advanced", "expert"])
-      .describe("Recommended difficulty level for questions"),
-    time_allocation: z.object({
-      technical: z
-        .number()
-        .describe("Percentage of time for technical questions"),
-      behavioral: z
-        .number()
-        .describe("Percentage of time for behavioral questions"),
-      situational: z
-        .number()
-        .describe("Percentage of time for situational questions"),
-    }),
-    priority_areas: z
-      .array(z.string())
-      .describe("Top 3-5 areas to prioritize in the interview"),
-  }),
+    .describe("3-5 key skills required for the role"),
+  candidate_experience: z
+    .string()
+    .describe("Brief summary of candidate's relevant experience"),
+  focus_areas: z
+    .array(z.string())
+    .describe("2-3 main areas to focus on in interview"),
 });
 
 export type JobAnalysisResult = z.infer<typeof jobAnalysisSchema>;
@@ -137,9 +81,7 @@ export class JobAnalysisAgent {
     const formatInstructions = this.parser.getFormatInstructions();
 
     const prompt = new PromptTemplate({
-      template: `You are an expert technical recruiter and interview preparation specialist with deep knowledge of various industries and roles.
-
-Your task is to analyze the candidate's resume against the job description to prepare a comprehensive interview strategy.
+      template: `You are an interview preparation assistant. Analyze the job and candidate briefly.
 
 **Job Description:**
 {jobDescription}
@@ -147,16 +89,13 @@ Your task is to analyze the candidate's resume against the job description to pr
 **Candidate's Resume:**
 {resumeText}
 
-Perform a thorough analysis focusing on:
+Provide a simple analysis including:
+1. Job title
+2. 3-5 key skills needed for the role
+3. Brief summary of candidate's relevant experience (1-2 sentences)
+4. 2-3 main focus areas for interview questions
 
-1. **Role Overview**: Understand the position level and core requirements
-2. **Candidate Strengths**: Identify what the candidate brings that matches the role
-3. **Skill Gaps**: Pinpoint areas where the candidate may lack experience or need to demonstrate competency
-4. **Focus Areas**: Determine which topics should be explored during the interview
-5. **Red Flags**: Note any concerns or areas requiring clarification
-6. **Interview Recommendations**: Provide strategic guidance for conducting the interview
-
-Be objective and thorough. Consider both technical and behavioral aspects. The goal is to help prepare targeted interview questions that will effectively assess the candidate's fit for the role.
+Keep it concise and straightforward.
 
 {format_instructions}`,
       inputVariables: ["resumeText", "jobDescription"],
@@ -178,11 +117,12 @@ Be objective and thorough. Consider both technical and behavioral aspects. The g
    * Generate a quick summary of the analysis
    */
   async generateAnalysisSummary(analysis: JobAnalysisResult): Promise<string> {
-    const summaryPrompt = `Based on the following interview analysis, provide a concise 2-3 sentence summary of the candidate's fit for the role and key interview focus areas:
+    const summaryPrompt = `Based on the following interview analysis, provide a concise 1-2 sentence summary:
 
-Matching Skills: ${analysis.candidate_strengths.matching_skills.join(", ")}
-Technical Gaps: ${analysis.skill_gaps.technical_gaps.join(", ")}
-Priority Areas: ${analysis.interview_recommendations.priority_areas.join(", ")}
+Job: ${analysis.job_title}
+Key Skills: ${analysis.key_skills.join(", ")}
+Experience: ${analysis.candidate_experience}
+Focus Areas: ${analysis.focus_areas.join(", ")}
 
 Summary:`;
 
