@@ -47,24 +47,43 @@ export class KeywordComparatorAgent {
   >;
 
   constructor(apiKey?: string, modelName?: string) {
-    this.llm = new ChatOpenAI({
-      configuration: {
-        baseURL:
-          process.env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1",
-        defaultHeaders: {
-          "HTTP-Referer":
-            process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-          "X-Title": "Prepify Resume Analysis",
-        },
-      },
+    // Check if OpenAI API key is available, otherwise fall back to OpenRouter
+    const useOpenAI = apiKey || process.env.OPENAI_API_KEY;
+    const useOpenRouter = !useOpenAI && process.env.OPENROUTER_API_KEY;
 
-      model:
-        modelName ||
-        process.env.OPENROUTER_MODEL_NAME ||
-        "openai/gpt-oss-20b:free",
-      apiKey: apiKey || process.env.OPENROUTER_API_KEY,
-      temperature: 0.3,
-    });
+    if (useOpenAI) {
+      // Primary: Use OpenAI directly
+      this.llm = new ChatOpenAI({
+        model: modelName || process.env.OPENAI_MODEL_NAME || "gpt-4o-mini",
+        apiKey: apiKey || process.env.OPENAI_API_KEY,
+        temperature: 0.3,
+        maxRetries: 2,
+      });
+    } else if (useOpenRouter) {
+      // Fallback: Use OpenRouter
+      this.llm = new ChatOpenAI({
+        configuration: {
+          baseURL:
+            process.env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1",
+          defaultHeaders: {
+            "HTTP-Referer":
+              process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+            "X-Title": "Prepify Resume Analysis",
+          },
+        },
+        model:
+          modelName ||
+          process.env.OPENROUTER_MODEL_NAME ||
+          "openai/gpt-4o-mini",
+        apiKey: process.env.OPENROUTER_API_KEY,
+        temperature: 0.3,
+        maxRetries: 2,
+      });
+    } else {
+      throw new Error(
+        "No API key found. Please provide either OPENAI_API_KEY or OPENROUTER_API_KEY environment variable."
+      );
+    }
 
     this.parser = StructuredOutputParser.fromZodSchema(keywordComparisonSchema);
   }
