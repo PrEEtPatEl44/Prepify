@@ -5,6 +5,15 @@ import {
 } from "./questionGeneratorAgent";
 
 /**
+ * Interview settings from user configuration
+ */
+export interface InterviewSettings {
+  difficulty: "easy" | "intermediate" | "hard";
+  type: "technical" | "behavioral" | "mixed";
+  questionCount: number;
+}
+
+/**
  * Simple interview preparation result
  */
 export interface InterviewPreparationResult {
@@ -14,6 +23,8 @@ export interface InterviewPreparationResult {
   metadata: {
     generated_at: string;
     total_questions: number;
+    difficulty: string;
+    type: string;
   };
 }
 
@@ -31,11 +42,16 @@ export class InterviewOrchestrator {
   }
 
   /**
-   * Prepare a simple interview package with analysis and 5 questions
+   * Prepare an interview package with analysis and customized questions
    */
   async prepareInterview(
     resumeText: string,
-    jobDescription: string
+    jobDescription: string,
+    settings: InterviewSettings = {
+      difficulty: "intermediate",
+      type: "mixed",
+      questionCount: 5,
+    }
   ): Promise<InterviewPreparationResult> {
     // Step 1: Analyze the job and candidate
     console.log("Step 1: Analyzing job and candidate profile...");
@@ -50,10 +66,13 @@ export class InterviewOrchestrator {
       analysis
     );
 
-    // Step 3: Generate 5 simple interview questions
-    console.log("Step 3: Generating 5 interview questions...");
+    // Step 3: Generate interview questions with user settings
+    console.log(
+      `Step 3: Generating ${settings.questionCount} ${settings.difficulty} ${settings.type} interview questions...`
+    );
     const questions = await this.questionGeneratorAgent.generateQuestions(
-      analysis
+      analysis,
+      settings
     );
 
     console.log("Interview preparation complete!");
@@ -64,7 +83,9 @@ export class InterviewOrchestrator {
       summary,
       metadata: {
         generated_at: new Date().toISOString(),
-        total_questions: 5,
+        total_questions: settings.questionCount,
+        difficulty: settings.difficulty,
+        type: settings.type,
       },
     };
   }

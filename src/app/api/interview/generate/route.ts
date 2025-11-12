@@ -5,6 +5,9 @@ import { extractTextFromDOCX } from "@/lib/textExtraction";
 
 interface GenerateInterviewRequest {
   jobId: string;
+  difficulty?: "easy" | "intermediate" | "hard";
+  type?: "technical" | "behavioral" | "mixed";
+  questionCount?: number;
 }
 
 interface GenerateInterviewResponse {
@@ -56,7 +59,12 @@ export async function POST(
     }
 
     const body: GenerateInterviewRequest = await request.json();
-    const { jobId } = body;
+    const {
+      jobId,
+      difficulty = "intermediate",
+      type = "mixed",
+      questionCount = 5,
+    } = body;
 
     if (!jobId) {
       return NextResponse.json(
@@ -164,10 +172,15 @@ export async function POST(
 
     const orchestrator = new InterviewOrchestrator(apiKey, modelName);
 
-    // Generate 5 simple interview questions
+    // Generate interview questions with user settings
     const result = await orchestrator.prepareInterview(
       resumeText,
-      job_description
+      job_description,
+      {
+        difficulty,
+        type,
+        questionCount,
+      }
     );
 
     // Map questions to response format with IDs

@@ -107,7 +107,7 @@ const Page = () => {
     setIsGeneratingQuestions(true);
 
     try {
-      // Generate interview questions
+      // Generate interview questions with user settings
       const response = await fetch("/api/interview/generate", {
         method: "POST",
         headers: {
@@ -115,11 +115,9 @@ const Page = () => {
         },
         body: JSON.stringify({
           jobId: selectedJob.id,
-          interviewType: "standard", // Can be "quick", "standard", or "comprehensive"
-          // TODO: Add settings to the API call when backend is ready
-          // difficulty: settings.difficulty,
-          // type: settings.type,
-          // questionCount: settings.questionCount,
+          difficulty: settings.difficulty,
+          type: settings.type,
+          questionCount: settings.questionCount,
         }),
       });
 

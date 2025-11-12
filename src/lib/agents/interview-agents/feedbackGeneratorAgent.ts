@@ -136,6 +136,9 @@ Interview Questions and Answers:
 {format_instructions}
 
 Remember to be specific, actionable, and encouraging in your feedback. Focus on helping the candidate improve their interview skills.
+
+Make sure the response is in direct raw json format adhering to the schema provided above.
+there should not be any additional text outside the json response.
 `);
 
     const formattedPrompt = await prompt.format({
