@@ -12,9 +12,7 @@ interface InterviewHeaderProps {
   onSearchChange?: (value: string) => void;
   isInterviewActive?: boolean;
   interviewDuration?: string;
-  activeTab?: "questions" | "review";
-  onTabChange?: (tab: "questions" | "review") => void;
-  isInterviewCompleted?: boolean;
+  showingReview?: boolean;
 }
 
 export default function InterviewHeader({
@@ -22,9 +20,7 @@ export default function InterviewHeader({
   onSearchChange,
   isInterviewActive = false,
   interviewDuration = "00:00",
-  activeTab = "questions",
-  onTabChange,
-  isInterviewCompleted = false,
+  showingReview = false,
 }: InterviewHeaderProps) {
   const { profile } = useUser();
 
@@ -34,41 +30,12 @@ export default function InterviewHeader({
       <div className="flex min-h-4 items-center justify-center">
         <div className="p-2 flex justify-between items-center mt-4 min-w-2xl bg-white rounded-xl shadow-md gap-2 sm:gap-4">
           <div className="flex mr-8">
-            <div
-              className={`px-2 !m-0 font-semibold mr-4 transition duration-200 ${
-                activeTab === "questions"
-                  ? "text-[#636AE8] underline underline-offset-[95%] decoration-[#636AE8] decoration-3"
-                  : isInterviewCompleted
-                  ? "text-muted-foreground hover:text-gray-400 cursor-pointer"
-                  : "text-gray-300 cursor-not-allowed"
-              }`}
-              onClick={() => {
-                if (isInterviewCompleted) {
-                  onTabChange?.("questions");
-                }
-              }}
-            >
-              Questions
-            </div>
-            <div
-              className={`px-2 !m-0 font-semibold mr-4 transition duration-200 ${
-                activeTab === "review"
-                  ? "text-[#636AE8] underline underline-offset-[95%] decoration-[#636AE8] decoration-3"
-                  : isInterviewCompleted
-                  ? "text-muted-foreground hover:text-gray-400 cursor-pointer"
-                  : "text-gray-300 cursor-not-allowed"
-              }`}
-              onClick={() => {
-                if (isInterviewCompleted) {
-                  onTabChange?.("review");
-                }
-              }}
-            >
-              Review
-            </div>
+            <h2 className="px-2 !m-0 font-semibold text-[#171a1f] text-lg">
+              {showingReview ? "Review" : "Questions"}
+            </h2>
           </div>
           {/* Timer or Export PDF */}
-          {activeTab === "questions" ? (
+          {!showingReview ? (
             <div className="flex items-center gap-2 px-3 rounded-md">
               <Timer className="w-5 h-5 text-gray-400" />
               <span className="text-[20px] text-[#636ae8]">

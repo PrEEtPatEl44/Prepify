@@ -38,12 +38,9 @@ const Page = () => {
   const [interviewStartTime, setInterviewStartTime] = useState<number | null>(
     null
   );
-  const [activeTab, setActiveTab] = useState<"questions" | "review">(
-    "questions"
-  );
+  const [showingReview, setShowingReview] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
-  const [isInterviewCompleted, setIsInterviewCompleted] = useState(false);
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -70,12 +67,8 @@ const Page = () => {
 
   // Timer effect for interview duration
   useEffect(() => {
-    // Stop timer when on review tab or when interview is not active
-    if (
-      !isInterviewActive ||
-      interviewStartTime === null ||
-      activeTab === "review"
-    ) {
+    // Stop timer when showing review or when interview is not active
+    if (!isInterviewActive || interviewStartTime === null || showingReview) {
       return;
     }
 
@@ -91,7 +84,7 @@ const Page = () => {
     }, 1000);
 
     return () => clearInterval(intervalId);
-  }, [isInterviewActive, interviewStartTime, activeTab]);
+  }, [isInterviewActive, interviewStartTime, showingReview]);
 
   const handleOpenSettings = (job: Job) => {
     setSelectedJob(job);
@@ -142,7 +135,7 @@ const Page = () => {
       setIsInterviewActive(true);
       setInterviewStartTime(Date.now());
       setInterviewDuration("00:00");
-      setActiveTab("questions");
+      setShowingReview(false);
     } catch (err) {
       setQuestionError(
         err instanceof Error ? err.message : "Failed to generate questions"
@@ -169,9 +162,7 @@ const Page = () => {
             onSearchChange={setSearchQuery}
             isInterviewActive={isInterviewActive}
             interviewDuration={interviewDuration}
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            isInterviewCompleted={isInterviewCompleted}
+            showingReview={showingReview}
           />
         </div>
         <div className="overflow-auto ">
@@ -201,13 +192,10 @@ const Page = () => {
                 questions={interviewQuestions}
                 onBack={() => {
                   setIsInterviewActive(false);
-                  setIsInterviewCompleted(false);
+                  setShowingReview(false);
                 }}
                 onShowResults={(show) => {
-                  setActiveTab(show ? "review" : "questions");
-                  if (show) {
-                    setIsInterviewCompleted(true);
-                  }
+                  setShowingReview(show);
                 }}
               />
             </div>
