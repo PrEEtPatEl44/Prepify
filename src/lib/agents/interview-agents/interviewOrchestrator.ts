@@ -2,16 +2,8 @@ import { JobAnalysisAgent, JobAnalysisResult } from "./jobAnalysisAgent";
 import {
   QuestionGeneratorAgent,
   InterviewQuestionsSet,
+  InterviewSettings,
 } from "./questionGeneratorAgent";
-
-/**
- * Interview settings from user configuration
- */
-export interface InterviewSettings {
-  difficulty: "easy" | "intermediate" | "hard";
-  type: "technical" | "behavioral" | "mixed";
-  questionCount: number;
-}
 
 /**
  * Simple interview preparation result
