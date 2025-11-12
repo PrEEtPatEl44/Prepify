@@ -7,6 +7,9 @@ import { JobsDataTable } from "@/components/jobs-data-table";
 import { Video, Loader2 } from "lucide-react";
 import { Job } from "@/types/jobs";
 import { Skeleton } from "@/components/ui/skeleton";
+import InterviewSettingsModal, {
+  InterviewSettings,
+} from "@/components/modals/InterviewSettingsModal";
 
 interface InterviewQuestion {
   id: number;
@@ -38,6 +41,8 @@ const Page = () => {
   const [activeTab, setActiveTab] = useState<"questions" | "review">(
     "questions"
   );
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -82,7 +87,23 @@ const Page = () => {
     return () => clearInterval(intervalId);
   }, [isInterviewActive, interviewStartTime]);
 
-  const handleStartInterview = async (job: Job) => {
+  const handleOpenSettings = (job: Job) => {
+    setSelectedJob(job);
+    setIsSettingsModalOpen(true);
+  };
+
+  const handleStartInterview = async (settings: InterviewSettings) => {
+    if (!selectedJob) return;
+
+    console.log("Starting interview with settings:", {
+      jobId: selectedJob.id,
+      companyName: selectedJob.companyName,
+      jobTitle: selectedJob.title,
+      difficulty: settings.difficulty,
+      type: settings.type,
+      questionCount: settings.questionCount,
+    });
+
     setQuestionError(null);
     setIsGeneratingQuestions(true);
 
@@ -94,8 +115,12 @@ const Page = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          jobId: job.id,
+          jobId: selectedJob.id,
           interviewType: "standard", // Can be "quick", "standard", or "comprehensive"
+          // TODO: Add settings to the API call when backend is ready
+          // difficulty: settings.difficulty,
+          // type: settings.type,
+          // questionCount: settings.questionCount,
         }),
       });
 
@@ -123,79 +148,88 @@ const Page = () => {
   };
 
   return (
-    <div className="h-screen flex flex-1 flex-col overflow-hidden">
-      <div className="mt-6 px-1 max-w-[95%]">
-        <InterviewHeader
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          isInterviewActive={isInterviewActive}
-          interviewDuration={interviewDuration}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-        />
-      </div>
-      <div className="overflow-auto ">
-        {isGeneratingQuestions ? (
-          <div className="h-full flex flex-col items-center justify-center p-6 space-y-4">
-            <Loader2 className="w-16 h-16 text-[#636AE8] animate-spin" />
-            <h3 className="text-xl font-semibold text-gray-800">
-              Generating Interview Questions...
-            </h3>
-            <p className="text-gray-600 text-center max-w-md">
-              Analyzing job description and resume to create personalized
-              interview questions
-            </p>
-          </div>
-        ) : questionError ? (
-          <div className="h-full flex flex-col items-center justify-center p-6 space-y-4">
-            <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
-              <h3 className="text-lg font-semibold text-red-700 mb-2">
-                Failed to Generate Questions
+    <>
+      <InterviewSettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+        onStart={handleStartInterview}
+        companyName={selectedJob?.companyName}
+        jobTitle={selectedJob?.title}
+      />
+      <div className="h-screen flex flex-1 flex-col overflow-hidden">
+        <div className="mt-6 px-1 max-w-[95%]">
+          <InterviewHeader
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            isInterviewActive={isInterviewActive}
+            interviewDuration={interviewDuration}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+          />
+        </div>
+        <div className="overflow-auto ">
+          {isGeneratingQuestions ? (
+            <div className="h-full flex flex-col items-center justify-center p-6 space-y-4">
+              <Loader2 className="w-16 h-16 text-[#636AE8] animate-spin" />
+              <h3 className="text-xl font-semibold text-gray-800">
+                Generating Interview Questions...
               </h3>
-              <p className="text-red-600">{questionError}</p>
+              <p className="text-gray-600 text-center max-w-md">
+                Analyzing job description and resume to create personalized
+                interview questions
+              </p>
             </div>
-          </div>
-        ) : isInterviewActive ? (
-          <div className="mt-24 w-full justify-center flex-1 flex">
-            <Questions questions={interviewQuestions} />
-          </div>
-        ) : (
-          <div className="pl-1 pr-6 py-4 w-full">
-            {isLoading ? (
-              <div className="space-y-4">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-64 w-full" />
-              </div>
-            ) : error ? (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
-                {error}
-              </div>
-            ) : jobs.length > 0 ? (
-              <div className="flex size-full flex-1 justify-center items-center">
-                <JobsDataTable
-                  data={jobs}
-                  onStartInterview={handleStartInterview}
-                  searchFilter={searchQuery}
-                />
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-16 px-4 bg-white rounded-lg border">
-                <div className="bg-gray-100 rounded-full p-6 mb-4">
-                  <Video className="w-16 h-16 text-gray-400" />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                  No Job Applications Yet
+          ) : questionError ? (
+            <div className="h-full flex flex-col items-center justify-center p-6 space-y-4">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
+                <h3 className="text-lg font-semibold text-red-700 mb-2">
+                  Failed to Generate Questions
                 </h3>
-                <p className="text-gray-500 text-center max-w-md">
-                  Start adding job applications to track your progress and
-                  prepare for interviews.
-                </p>
+                <p className="text-red-600">{questionError}</p>
               </div>
-            )}
-          </div>
-        )}
+            </div>
+          ) : isInterviewActive ? (
+            <div className="mt-24 w-full justify-center flex-1 flex">
+              <Questions questions={interviewQuestions} />
+            </div>
+          ) : (
+            <div className="pl-1 pr-6 py-4 w-full">
+              {isLoading ? (
+                <div className="space-y-4">
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-64 w-full" />
+                </div>
+              ) : error ? (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+                  {error}
+                </div>
+              ) : jobs.length > 0 ? (
+                <div className="flex size-full flex-1 justify-center items-center">
+                  <JobsDataTable
+                    data={jobs}
+                    onStartInterview={handleOpenSettings}
+                    searchFilter={searchQuery}
+                  />
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-16 px-4 bg-white rounded-lg border">
+                  <div className="bg-gray-100 rounded-full p-6 mb-4">
+                    <Video className="w-16 h-16 text-gray-400" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                    No Job Applications Yet
+                  </h3>
+                  <p className="text-gray-500 text-center max-w-md">
+                    Start adding job applications to track your progress and
+                    prepare for interviews.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
