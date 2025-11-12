@@ -43,6 +43,7 @@ const Page = () => {
   );
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [isInterviewCompleted, setIsInterviewCompleted] = useState(false);
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -69,7 +70,12 @@ const Page = () => {
 
   // Timer effect for interview duration
   useEffect(() => {
-    if (!isInterviewActive || interviewStartTime === null) {
+    // Stop timer when on review tab or when interview is not active
+    if (
+      !isInterviewActive ||
+      interviewStartTime === null ||
+      activeTab === "review"
+    ) {
       return;
     }
 
@@ -85,7 +91,7 @@ const Page = () => {
     }, 1000);
 
     return () => clearInterval(intervalId);
-  }, [isInterviewActive, interviewStartTime]);
+  }, [isInterviewActive, interviewStartTime, activeTab]);
 
   const handleOpenSettings = (job: Job) => {
     setSelectedJob(job);
@@ -165,6 +171,7 @@ const Page = () => {
             interviewDuration={interviewDuration}
             activeTab={activeTab}
             onTabChange={setActiveTab}
+            isInterviewCompleted={isInterviewCompleted}
           />
         </div>
         <div className="overflow-auto ">
@@ -192,10 +199,16 @@ const Page = () => {
             <div className="mt-24 w-full px-6 justify-center flex-1 flex">
               <Questions
                 questions={interviewQuestions}
-                onBack={() => setIsInterviewActive(false)}
-                onShowResults={(show) =>
-                  setActiveTab(show ? "review" : "questions")
-                }
+                onBack={() => {
+                  setIsInterviewActive(false);
+                  setIsInterviewCompleted(false);
+                }}
+                onShowResults={(show) => {
+                  setActiveTab(show ? "review" : "questions");
+                  if (show) {
+                    setIsInterviewCompleted(true);
+                  }
+                }}
               />
             </div>
           ) : (
