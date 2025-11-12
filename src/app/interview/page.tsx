@@ -31,6 +31,13 @@ const Page = () => {
   >([]);
   const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
   const [questionError, setQuestionError] = useState<string | null>(null);
+  const [interviewDuration, setInterviewDuration] = useState("00:00");
+  const [interviewStartTime, setInterviewStartTime] = useState<number | null>(
+    null
+  );
+  const [activeTab, setActiveTab] = useState<"questions" | "review">(
+    "questions"
+  );
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -54,6 +61,26 @@ const Page = () => {
 
     fetchJobs();
   }, []);
+
+  // Timer effect for interview duration
+  useEffect(() => {
+    if (!isInterviewActive || interviewStartTime === null) {
+      return;
+    }
+
+    const intervalId = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - interviewStartTime) / 1000);
+      const minutes = Math.floor(elapsed / 60);
+      const seconds = elapsed % 60;
+      setInterviewDuration(
+        `${minutes.toString().padStart(2, "0")}:${seconds
+          .toString()
+          .padStart(2, "0")}`
+      );
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [isInterviewActive, interviewStartTime]);
 
   const handleStartInterview = async (job: Job) => {
     setQuestionError(null);
@@ -82,6 +109,9 @@ const Page = () => {
 
       setInterviewQuestions(data.data.questions);
       setIsInterviewActive(true);
+      setInterviewStartTime(Date.now());
+      setInterviewDuration("00:00");
+      setActiveTab("questions");
     } catch (err) {
       setQuestionError(
         err instanceof Error ? err.message : "Failed to generate questions"
@@ -98,9 +128,13 @@ const Page = () => {
         <InterviewHeader
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
+          isInterviewActive={isInterviewActive}
+          interviewDuration={interviewDuration}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
         />
       </div>
-      <div className="flex-1 overflow-auto">
+      <div className="overflow-auto ">
         {isGeneratingQuestions ? (
           <div className="h-full flex flex-col items-center justify-center p-6 space-y-4">
             <Loader2 className="w-16 h-16 text-[#636AE8] animate-spin" />
@@ -122,7 +156,7 @@ const Page = () => {
             </div>
           </div>
         ) : isInterviewActive ? (
-          <div className="flex-1 size-full flex items-center justify-center">
+          <div className="mt-24 w-full justify-center flex-1 flex">
             <Questions questions={interviewQuestions} />
           </div>
         ) : (
@@ -137,11 +171,13 @@ const Page = () => {
                 {error}
               </div>
             ) : jobs.length > 0 ? (
-              <JobsDataTable
-                data={jobs}
-                onStartInterview={handleStartInterview}
-                searchFilter={searchQuery}
-              />
+              <div className="flex size-full flex-1 justify-center items-center">
+                <JobsDataTable
+                  data={jobs}
+                  onStartInterview={handleStartInterview}
+                  searchFilter={searchQuery}
+                />
+              </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-16 px-4 bg-white rounded-lg border">
                 <div className="bg-gray-100 rounded-full p-6 mb-4">

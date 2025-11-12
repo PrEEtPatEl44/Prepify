@@ -184,7 +184,7 @@ export function JobsDataTable({
 
   return (
     <div className="w-full">
-      <div className="rounded-md shadow-xl border bg-white overflow-hidden">
+      <div className="rounded-xl shadow-xl border bg-white overflow-hidden">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

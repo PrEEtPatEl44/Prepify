@@ -2,6 +2,7 @@
 
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { Input } from "./ui/input";
+import { Timer } from "lucide-react";
 
 import UserDropdown from "@/components/user-dropdown";
 import { useUser } from "@/hooks/useUser";
@@ -9,14 +10,48 @@ import { useUser } from "@/hooks/useUser";
 interface InterviewHeaderProps {
   searchQuery?: string;
   onSearchChange?: (value: string) => void;
+  isInterviewActive?: boolean;
+  interviewDuration?: string;
+  activeTab?: "questions" | "review";
+  onTabChange?: (tab: "questions" | "review") => void;
 }
 
 export default function InterviewHeader({
   searchQuery,
   onSearchChange,
+  isInterviewActive = false,
+  interviewDuration = "00:00",
+  activeTab = "questions",
+  onTabChange,
 }: InterviewHeaderProps) {
   const { profile } = useUser();
 
+  // Interview mode header
+  if (isInterviewActive) {
+    return (
+      <div className="flex min-h-4 items-center justify-center">
+        <div className="p-2 flex justify-between items-center mt-4 min-w-2xl bg-white rounded-xl shadow-md gap-2 sm:gap-4">
+          <div className="flex mr-8">
+            <div className="px-2 !m-0 font-semibold mr-4 cursor-pointer transition duration-200 text-[#636AE8] underline underline-offset-[95%] decoration-[#636AE8] decoration-3">
+              Questions
+            </div>
+            <div className="px-2 !m-0 font-semibold mr-4 cursor-pointer transition duration-200 text-muted-foreground hover:text-gray-400">
+              Review
+            </div>
+          </div>
+          {/* Interview Timer */}
+          <div className="flex items-center gap-2 px-3 rounded-md">
+            <Timer className="w-5 h-5 text-gray-400" />
+            <span className="text-[20px] text-[#636ae8]">
+              {interviewDuration}
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Default mode header (job selection)
   return (
     <>
       <div className="p-2 flex justify-between items-center bg-white rounded-xl shadow-md gap-2 sm:gap-4">
