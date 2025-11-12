@@ -29,11 +29,14 @@ export default function Questions({
   const [isRecording, setIsRecording] = useState(false);
   const [isSettingUp, setIsSettingUp] = useState(false);
   const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
+  const [answers, setAnswers] = useState<Record<number, string>>({});
+  const [showResults, setShowResults] = useState(false);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const dcRef = useRef<RTCDataChannel | null>(null);
 
   const total = totalQuestions || questions.length;
   const currentQuestion = questions[currentQuestionIndex] || questions[0];
+  const isLastQuestion = currentQuestionIndex == questions.length - 1;
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -156,15 +159,48 @@ export default function Questions({
   };
 
   const handleNext = () => {
+    // Save the current answer
+    setAnswers((prev) => ({
+      ...prev,
+      [currentQuestion.id]: answer,
+    }));
+
     if (currentQuestionIndex < questions.length - 1) {
       // Stop recording if active
       if (isRecording) {
         stopRecording();
       }
-      setCurrentQuestionIndex((prev) => prev + 1);
-      setAnswer("");
+      const nextIndex = currentQuestionIndex + 1;
+      setCurrentQuestionIndex(nextIndex);
+      // Load the answer for the next question if it exists
+      setAnswer(answers[questions[nextIndex].id] || "");
       setQuestionTime(0);
     }
+  };
+
+  const handleFinish = () => {
+    // Save the final answer
+    const finalAnswers = {
+      ...answers,
+      [currentQuestion.id]: answer,
+    };
+    setAnswers(finalAnswers);
+
+    // Stop recording if active
+    if (isRecording) {
+      stopRecording();
+    }
+
+    // Show results
+    setShowResults(true);
+  };
+
+  const handleBack = () => {
+    setShowResults(false);
+    setCurrentQuestionIndex(0);
+    setAnswer("");
+    setAnswers({});
+    setQuestionTime(0);
   };
 
   // Cleanup on unmount
@@ -175,6 +211,40 @@ export default function Questions({
       }
     };
   }, []);
+
+  // Results view
+  if (showResults) {
+    const resultsData = questions.map((q) => ({
+      questionId: q.id,
+      question: q.text,
+      answer: answers[q.id] || "",
+    }));
+
+    return (
+      <div className="bg-white rounded-lg p-6 shadow-md gap-4 min-w-4xl flex flex-col">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-bold text-[#171a1f]">
+            Interview Results
+          </h2>
+          <Button
+            onClick={handleBack}
+            className="bg-[#636ae8] text-white hover:bg-[#5058c9] px-6 py-2 rounded-md"
+          >
+            Back
+          </Button>
+        </div>
+
+        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-700 mb-3">
+            Raw JSON Data:
+          </h3>
+          <pre className="bg-white p-4 rounded border border-gray-300 overflow-auto max-h-[60vh] text-sm">
+            {JSON.stringify(resultsData, null, 2)}
+          </pre>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-lg p-4 shadow-md gap-2 min-w-4xl flex flex-col">
@@ -278,13 +348,23 @@ export default function Questions({
         <span className="text-md text-[#8c8d8b]">
           {String(currentQuestionIndex + 1).padStart(2, "0")}/{total}
         </span>
-        <Button
-          onClick={handleNext}
-          className="bg-[#f2f2fd] text-[#636ae8] hover:bg-[#e9e9ff] hover:text-[#4e57c1] px-6 py-2 rounded-md flex items-center gap-2"
-        >
-          Next
-          <ArrowRight className="w-4 h-4" />
-        </Button>
+        {isLastQuestion ? (
+          <Button
+            onClick={handleFinish}
+            className="bg-[#636ae8] text-white hover:bg-[#5058c9] px-6 py-2 rounded-md flex items-center gap-2"
+          >
+            Finish
+            <ArrowRight className="w-4 h-4" />
+          </Button>
+        ) : (
+          <Button
+            onClick={handleNext}
+            className="bg-[#f2f2fd] text-[#636ae8] hover:bg-[#e9e9ff] hover:text-[#4e57c1] px-6 py-2 rounded-md flex items-center gap-2"
+          >
+            Next
+            <ArrowRight className="w-4 h-4" />
+          </Button>
+        )}
       </div>
     </div>
   );
