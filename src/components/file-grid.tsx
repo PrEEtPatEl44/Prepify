@@ -15,6 +15,8 @@ interface FileGridProps {
   onFileSelect: (file: DocumentBasicInfo) => void;
   selectedFile?: DocumentBasicInfo | null;
   searchTerm?: string;
+  shouldShowUploadModal?: boolean;
+  onModalClose?: () => void;
 }
 
 const FileGrid = ({
@@ -22,9 +24,12 @@ const FileGrid = ({
   onFileSelect,
   selectedFile,
   searchTerm,
+  shouldShowUploadModal = false,
+  onModalClose,
 }: FileGridProps) => {
   const [files, setFiles] = useState<DocumentBasicInfo[]>();
   const [isLoading, setIsLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchDocuments = useCallback(async () => {
     setIsLoading(true);
@@ -51,6 +56,13 @@ const FileGrid = ({
     fetchDocuments();
   }, [fetchDocuments]);
 
+  // Trigger modal when shouldShowUploadModal is true
+  useEffect(() => {
+    if (shouldShowUploadModal && !isLoading && files) {
+      setIsModalOpen(true);
+    }
+  }, [shouldShowUploadModal, isLoading, files]);
+
   const handleFileUpload = () => {
     fetchDocuments();
   };
@@ -64,6 +76,13 @@ const FileGrid = ({
     } else {
       console.error("Failed to delete document:", result.error);
       // You could add a toast notification here to show the error to the user
+    }
+  };
+
+  const handleModalClose = (isOpen: boolean) => {
+    setIsModalOpen(isOpen);
+    if (!isOpen && onModalClose) {
+      onModalClose();
     }
   };
 
@@ -101,6 +120,8 @@ const FileGrid = ({
           <CreateFileModal
             documentType={documentType}
             onSubmit={handleFileUpload}
+            open={isModalOpen}
+            onOpenChange={handleModalClose}
           >
             <Card className="max-w-[170px] group hover:shadow-md transition-all duration-200 cursor-pointer bg-white border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50/30">
               <CardContent className="p-0 size-full">
@@ -145,6 +166,8 @@ const FileGrid = ({
             <CreateFileModal
               documentType={documentType}
               onSubmit={handleFileUpload}
+              open={isModalOpen}
+              onOpenChange={handleModalClose}
             >
               <Button className="flex items-center gap-2 px-6 py-3 bg-[#636AE8] hover:bg-[#4e57c1] text-white rounded-lg transition-colors font-medium">
                 <Plus className="w-5 h-5" />

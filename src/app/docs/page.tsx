@@ -69,9 +69,13 @@ const Page = () => {
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
     null
   );
+  const [shouldShowUploadModal, setShouldShowUploadModal] = useState(false);
+
   useEffect(() => {
     setFileFromSession();
+    checkUploadModalFlag();
   }, []);
+
   const setFileFromSession = () => {
     const fileData = sessionStorage.getItem("selectedFile");
     if (fileData) {
@@ -86,6 +90,14 @@ const Page = () => {
           error
         );
       }
+    }
+  };
+
+  const checkUploadModalFlag = () => {
+    const showModal = sessionStorage.getItem("showUploadModal");
+    if (showModal === "true") {
+      setShouldShowUploadModal(true);
+      sessionStorage.removeItem("showUploadModal"); // Clear after reading
     }
   };
 
@@ -123,6 +135,8 @@ const Page = () => {
               onFileSelect={(file: DocumentBasicInfo) => setSelectedFile(file)}
               selectedFile={selectedFile}
               searchTerm={searchTerm}
+              shouldShowUploadModal={shouldShowUploadModal}
+              onModalClose={() => setShouldShowUploadModal(false)}
             />
           )}
         </div>
@@ -133,6 +147,7 @@ const Page = () => {
             selectedFile={selectedFile}
             setSelectedFile={setSelectedFile}
             onAnalysisComplete={(result) => setAnalysisResult(result)}
+            documentType={documentType}
           />
         </div>
       )}

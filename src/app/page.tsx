@@ -4,13 +4,19 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CloudUpload, BookOpen, Mic, ChevronRight } from "lucide-react";
 import Calender from "@/components/github-activity-calender";
 import StatsCard from "@/components/stats-card";
+import { useRouter } from "next/navigation";
+import { useUser } from "@/hooks/useUser";
 
 export default function Home() {
+  const router = useRouter();
+  const { profile, loading } = useUser();
+
   const actionButtons = [
     {
       icon: <CloudUpload size={40} />,
       title: "Upload Your Resume",
-      url: "/upload",
+      url: "/docs",
+      action: "upload-resume",
     },
     {
       icon: <Mic size={40} />,
@@ -20,14 +26,25 @@ export default function Home() {
     {
       icon: <BookOpen size={40} />,
       title: "Get ATS Score",
-      url: "/ats",
+      url: "/docs",
     },
   ];
+
+  const handleCardClick = (button: (typeof actionButtons)[0]) => {
+    if (button.action === "upload-resume") {
+      // Set session storage flag to show modal
+      sessionStorage.setItem("showUploadModal", "true");
+    }
+    // Navigate to the URL
+    router.push(button.url);
+  };
   return (
     <div className="flex flex-col gap-8 mt-10 p-6 w-full">
       {/* Welcome Section */}
       <div>
-        <h1 className="text-3xl font-bold">Welcome, Amanda</h1>
+        <h1 className="text-3xl font-bold">
+          Welcome, {loading ? "..." : profile?.name || "Guest"}
+        </h1>
         <p className="text-gray-600">
           Get started with your job application journey
         </p>
@@ -38,7 +55,8 @@ export default function Home() {
         {actionButtons.map((button) => (
           <Card
             key={button.title}
-            className="shadow-lg transition-all duration-300 py-4 !border-none hover:shadow-xl hover:translate-y-[-2px]"
+            className="shadow-lg transition-all duration-300 py-4 !border-none hover:shadow-xl hover:translate-y-[-2px] cursor-pointer"
+            onClick={() => handleCardClick(button)}
           >
             <CardContent className="flex justify-between items-center p-4 group">
               <div className="bg-[#CED0F8] text-[#161D96] p-4 rounded-md transition-all duration-300">

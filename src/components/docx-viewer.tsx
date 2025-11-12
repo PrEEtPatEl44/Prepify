@@ -62,12 +62,14 @@ interface ViewerProps {
   selectedFile: DocumentBasicInfo | null;
   setSelectedFile: (file: DocumentBasicInfo | null) => void;
   onAnalysisComplete: (result: AnalysisResult) => void;
+  documentType: "resumes" | "coverLetters";
 }
 
 const DocxViewer = ({
   selectedFile,
   setSelectedFile,
   onAnalysisComplete,
+  documentType,
 }: ViewerProps) => {
   const editorRef = useRef<DocumentEditorContainerComponent>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -314,7 +316,7 @@ const DocxViewer = ({
           )}
 
           {/* Get Score Button Overlay */}
-          {!isLoading && (
+          {!isLoading && documentType === "resumes" && (
             <div className="absolute bottom-12 bg-black/50 right-0 z-40 p-2 rounded-l-lg">
               <Button
                 size="sm"
