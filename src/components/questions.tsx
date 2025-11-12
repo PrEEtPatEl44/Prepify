@@ -11,6 +11,20 @@ interface Question {
   topic: string;
 }
 
+interface QuestionFeedback {
+  question: string;
+  userAnswer: string;
+  areasOfImprovement: string[];
+  suggestedAnswer: string;
+  score: number;
+}
+
+interface InterviewFeedback {
+  overallScore: number;
+  questionsFeedback: QuestionFeedback[];
+  generalComments: string;
+}
+
 interface QuestionsProps {
   questions: Question[];
   totalQuestions?: number;
@@ -35,6 +49,9 @@ export default function Questions({
   const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [showResults, setShowResults] = useState(false);
+  const [isGeneratingFeedback, setIsGeneratingFeedback] = useState(false);
+  const [feedback, setFeedback] = useState<InterviewFeedback | null>(null);
+  const [feedbackError, setFeedbackError] = useState<string | null>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const dcRef = useRef<RTCDataChannel | null>(null);
 
@@ -182,7 +199,7 @@ export default function Questions({
     }
   };
 
-  const handleFinish = () => {
+  const handleFinish = async () => {
     // Save the final answer
     const finalAnswers = {
       ...answers,
@@ -201,6 +218,41 @@ export default function Questions({
     // Notify parent that results are being shown
     if (onShowResults) {
       onShowResults(true);
+    }
+
+    // Generate feedback
+    setIsGeneratingFeedback(true);
+    setFeedbackError(null);
+
+    try {
+      const interviewData = questions.map((q) => ({
+        questionId: q.id,
+        question: q.text,
+        answer: finalAnswers[q.id] || "",
+      }));
+
+      const response = await fetch("/api/interview/feedback", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ interviewData }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Failed to generate feedback");
+      }
+
+      setFeedback(data.data);
+    } catch (error) {
+      console.error("Error generating feedback:", error);
+      setFeedbackError(
+        error instanceof Error ? error.message : "Failed to generate feedback"
+      );
+    } finally {
+      setIsGeneratingFeedback(false);
     }
   };
 
@@ -234,18 +286,30 @@ export default function Questions({
 
   // Results view
   if (showResults) {
-    const resultsData = questions.map((q) => ({
-      questionId: q.id,
-      question: q.text,
-      answer: answers[q.id] || "",
-    }));
-
     return (
-      <div className="bg-white rounded-lg p-6 shadow-md gap-4 min-w-4xl flex flex-col">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-[#171a1f]">
-            Interview Results
-          </h2>
+      <div className="bg-white rounded-lg p-6 shadow-md gap-6 min-w-4xl flex flex-col max-h-[80vh] overflow-auto">
+        <div className="flex items-center justify-between mb-2 sticky top-0 bg-white z-10 pb-4">
+          <div>
+            <h2 className="text-2xl font-bold text-[#171a1f]">
+              Interview Feedback
+            </h2>
+            {feedback && (
+              <div className="flex items-center gap-2 mt-2">
+                <span className="text-lg text-gray-600">Overall Score:</span>
+                <span
+                  className={`text-2xl font-bold ${
+                    feedback.overallScore >= 80
+                      ? "text-green-600"
+                      : feedback.overallScore >= 60
+                      ? "text-yellow-600"
+                      : "text-red-600"
+                  }`}
+                >
+                  {feedback.overallScore}/100
+                </span>
+              </div>
+            )}
+          </div>
           <Button
             onClick={handleBack}
             className="bg-[#636ae8] text-white hover:bg-[#5058c9] px-6 py-2 rounded-md"
@@ -254,20 +318,125 @@ export default function Questions({
           </Button>
         </div>
 
-        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-700 mb-3">
-            Raw JSON Data:
-          </h3>
-          <pre className="bg-white p-4 rounded border border-gray-300 overflow-auto max-h-[60vh] text-sm">
-            {JSON.stringify(resultsData, null, 2)}
-          </pre>
-        </div>
+        {isGeneratingFeedback ? (
+          <div className="flex flex-col items-center justify-center py-16 space-y-4">
+            <div className="w-16 h-16 border-4 border-[#636ae8] border-t-transparent rounded-full animate-spin" />
+            <h3 className="text-xl font-semibold text-gray-800">
+              Generating Your Feedback...
+            </h3>
+            <p className="text-gray-600 text-center max-w-md">
+              Our AI is analyzing your responses and preparing detailed feedback
+              to help you improve
+            </p>
+          </div>
+        ) : feedbackError ? (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-red-700 mb-2">
+              Failed to Generate Feedback
+            </h3>
+            <p className="text-red-600">{feedbackError}</p>
+          </div>
+        ) : feedback ? (
+          <div className="space-y-6">
+            {/* General Comments */}
+            {feedback.generalComments && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-5">
+                <h3 className="text-lg font-semibold text-blue-900 mb-2">
+                  General Comments
+                </h3>
+                <p className="text-blue-800 leading-relaxed">
+                  {feedback.generalComments}
+                </p>
+              </div>
+            )}
+
+            {/* Question-by-Question Feedback */}
+            <div className="space-y-6">
+              {feedback.questionsFeedback.map((qf, index) => (
+                <div
+                  key={index}
+                  className="border border-gray-200 rounded-lg p-5 bg-gray-50"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <h3 className="text-lg font-semibold text-gray-900 flex-1">
+                      Question {index + 1}
+                    </h3>
+                    <span
+                      className={`text-lg font-bold px-3 py-1 rounded-full ${
+                        qf.score >= 80
+                          ? "bg-green-100 text-green-700"
+                          : qf.score >= 60
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-red-100 text-red-700"
+                      }`}
+                    >
+                      {qf.score}/100
+                    </span>
+                  </div>
+
+                  {/* Question */}
+                  <div className="mb-4">
+                    <p className="text-[#636ae8] font-medium text-base">
+                      {qf.question}
+                    </p>
+                  </div>
+
+                  {/* User's Answer */}
+                  <div className="mb-4">
+                    <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                      Your Answer:
+                    </h4>
+                    <div className="bg-white border border-gray-200 rounded p-3">
+                      <p className="text-gray-700 text-sm leading-relaxed">
+                        {qf.userAnswer || "No answer provided"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Areas of Improvement */}
+                  {qf.areasOfImprovement.length > 0 && (
+                    <div className="mb-4">
+                      <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                        Areas of Improvement:
+                      </h4>
+                      <ul className="space-y-2">
+                        {qf.areasOfImprovement.map((area, i) => (
+                          <li
+                            key={i}
+                            className="flex items-start gap-2 text-sm text-gray-700"
+                          >
+                            <span className="text-[#636ae8] mt-1">•</span>
+                            <span>{area}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Suggested Answer */}
+                  {qf.suggestedAnswer && (
+                    <div>
+                      <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                        Suggested Answer:
+                      </h4>
+                      <div className="bg-green-50 border border-green-200 rounded p-3">
+                        <p className="text-gray-800 text-sm leading-relaxed">
+                          {qf.suggestedAnswer}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg p-4 shadow-md gap-2 min-w-4xl flex flex-col">
+    <div className="bg-white rounded-lg p-4 shadow-xl rounded-xl gap-2 w-full flex flex-1 flex-col">
       {/* Question Header with Audio Visualization and Timer */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">

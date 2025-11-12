@@ -189,7 +189,7 @@ const Page = () => {
               </div>
             </div>
           ) : isInterviewActive ? (
-            <div className="mt-24 w-full justify-center flex-1 flex">
+            <div className="mt-24 w-full px-6 justify-center flex-1 flex">
               <Questions
                 questions={interviewQuestions}
                 onBack={() => setIsInterviewActive(false)}
