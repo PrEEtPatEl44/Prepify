@@ -14,6 +14,8 @@ interface Question {
 interface QuestionsProps {
   questions: Question[];
   totalQuestions?: number;
+  onBack?: () => void;
+  onShowResults?: (show: boolean) => void;
 }
 
 type AnswerMode = "record" | "type";
@@ -21,6 +23,8 @@ type AnswerMode = "record" | "type";
 export default function Questions({
   questions,
   totalQuestions,
+  onBack,
+  onShowResults,
 }: QuestionsProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answer, setAnswer] = useState("");
@@ -193,14 +197,30 @@ export default function Questions({
 
     // Show results
     setShowResults(true);
+
+    // Notify parent that results are being shown
+    if (onShowResults) {
+      onShowResults(true);
+    }
   };
 
   const handleBack = () => {
+    // Reset all state
     setShowResults(false);
     setCurrentQuestionIndex(0);
     setAnswer("");
     setAnswers({});
     setQuestionTime(0);
+
+    // Notify parent that results are no longer being shown
+    if (onShowResults) {
+      onShowResults(false);
+    }
+
+    // Call the parent's onBack callback if provided
+    if (onBack) {
+      onBack();
+    }
   };
 
   // Cleanup on unmount

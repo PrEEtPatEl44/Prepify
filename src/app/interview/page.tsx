@@ -190,7 +190,13 @@ const Page = () => {
             </div>
           ) : isInterviewActive ? (
             <div className="mt-24 w-full justify-center flex-1 flex">
-              <Questions questions={interviewQuestions} />
+              <Questions
+                questions={interviewQuestions}
+                onBack={() => setIsInterviewActive(false)}
+                onShowResults={(show) =>
+                  setActiveTab(show ? "review" : "questions")
+                }
+              />
             </div>
           ) : (
             <div className="pl-1 pr-6 py-4 w-full">

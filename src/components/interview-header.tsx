@@ -32,10 +32,24 @@ export default function InterviewHeader({
       <div className="flex min-h-4 items-center justify-center">
         <div className="p-2 flex justify-between items-center mt-4 min-w-2xl bg-white rounded-xl shadow-md gap-2 sm:gap-4">
           <div className="flex mr-8">
-            <div className="px-2 !m-0 font-semibold mr-4 cursor-pointer transition duration-200 text-[#636AE8] underline underline-offset-[95%] decoration-[#636AE8] decoration-3">
+            <div
+              className={`px-2 !m-0 font-semibold mr-4 cursor-pointer transition duration-200 ${
+                activeTab === "questions"
+                  ? "text-[#636AE8] underline underline-offset-[95%] decoration-[#636AE8] decoration-3"
+                  : "text-muted-foreground hover:text-gray-400"
+              }`}
+              onClick={() => onTabChange?.("questions")}
+            >
               Questions
             </div>
-            <div className="px-2 !m-0 font-semibold mr-4 cursor-pointer transition duration-200 text-muted-foreground hover:text-gray-400">
+            <div
+              className={`px-2 !m-0 font-semibold mr-4 cursor-pointer transition duration-200 ${
+                activeTab === "review"
+                  ? "text-[#636AE8] underline underline-offset-[95%] decoration-[#636AE8] decoration-3"
+                  : "text-muted-foreground hover:text-gray-400"
+              }`}
+              onClick={() => onTabChange?.("review")}
+            >
               Review
             </div>
           </div>
