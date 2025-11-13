@@ -37,7 +37,8 @@ export async function createJob(
     let columnId = data.columnId;
     if (!columnId) {
       try {
-        const cookieHeader = cookies().toString();
+        const cookieStore = await cookies();
+        const cookieHeader = cookieStore.toString();
         const response = await fetch(
           `${
             process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
