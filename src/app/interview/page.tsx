@@ -225,15 +225,22 @@ const Page = () => {
       />
       <div className="h-screen flex flex-1 flex-col overflow-hidden">
         <div className="mt-6 px-1 max-w-[95%]">
-          <InterviewHeader
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            isInterviewActive={isInterviewActive || !!viewingInterview}
-            interviewDuration={interviewDuration}
-            showingReview={showingReview || !!viewingInterview}
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-          />
+          {isLoading ? (
+            <div className="flex items-center justify-between gap-4 bg-white p-2 rounded-xl">
+              <Skeleton className="h-10 w-128" />
+              <Skeleton className="h-10 w-10  rounded-full" />
+            </div>
+          ) : (
+            <InterviewHeader
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              isInterviewActive={isInterviewActive || !!viewingInterview}
+              interviewDuration={interviewDuration}
+              showingReview={showingReview || !!viewingInterview}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+            />
+          )}
         </div>
         <div className="overflow-auto ">
           {isGeneratingQuestions ? (
@@ -290,9 +297,33 @@ const Page = () => {
               {activeTab === "jobs" ? (
                 // Jobs Tab
                 isLoading ? (
-                  <div className="space-y-4">
-                    <Skeleton className="h-12 w-full" />
-                    <Skeleton className="h-64 w-full" />
+                  <div className="flex size-full flex-1 justify-center items-center pl-1 pr-6 mt-4">
+                    <div className="w-full space-y-6">
+                      <div className="space-y-4">
+                        {[1, 2, 3].map((i) => (
+                          <div
+                            key={i}
+                            className="p-4 border border-gray-200 rounded-lg bg-white"
+                          >
+                            <div className="flex items-center justify-between gap-4">
+                              <div className="flex items-center gap-3 flex-1">
+                                <Skeleton className="h-5 w-5 rounded" />
+                                <Skeleton className="h-10 w-10 rounded-lg" />
+                                <div className="flex-1 space-y-2">
+                                  <Skeleton className="h-5 w-48" />
+                                  <Skeleton className="h-4 w-32" />
+                                </div>
+                              </div>
+                              <div className="flex gap-3">
+                                <Skeleton className="h-10 w-40" />
+                                <Skeleton className="h-10 w-36" />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <Skeleton className="h-10 w-64" />
+                    </div>
                   </div>
                 ) : error ? (
                   <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
@@ -326,9 +357,34 @@ const Page = () => {
                 )
               ) : // Interviews Tab
               isLoadingInterviews ? (
-                <div className="space-y-4">
-                  <Skeleton className="h-12 w-full" />
-                  <Skeleton className="h-64 w-full" />
+                <div className="flex size-full flex-1 justify-center items-center pl-1 pr-6 mt-4">
+                  <div className="w-full space-y-6">
+                    <div className="space-y-4">
+                      {[1, 2, 3].map((i) => (
+                        <div
+                          key={i}
+                          className="p-4 border border-gray-200 rounded-lg bg-white"
+                        >
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-3 flex-1">
+                              <Skeleton className="h-10 w-10 rounded-lg" />
+                              <div className="flex-1 space-y-2">
+                                <Skeleton className="h-5 w-48" />
+                                <Skeleton className="h-4 w-32" />
+                              </div>
+                              <div className="flex gap-2">
+                                <Skeleton className="h-6 w-16 rounded-full" />
+                                <Skeleton className="h-6 w-20 rounded-full" />
+                                <Skeleton className="h-6 w-24 rounded-full" />
+                              </div>
+                            </div>
+                            <Skeleton className="h-9 w-32" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <Skeleton className="h-10 w-64" />
+                  </div>
                 </div>
               ) : interviews.length > 0 ? (
                 <div className="flex size-full flex-1 justify-center items-center pl-1 pr-6 mt-4">
