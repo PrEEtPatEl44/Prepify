@@ -24,6 +24,18 @@ interface JobSuggestResponse {
   message?: string;
 }
 
+interface JSearchJob {
+  job_id: string;
+  job_title: string;
+  employer_name: string;
+  job_city?: string;
+  job_state?: string;
+  job_country?: string;
+  job_description?: string;
+  job_apply_link?: string;
+  job_google_link?: string;
+}
+
 /**
  * POST /api/jobs/suggest
  * Extract keywords from resume and suggest matching jobs
@@ -323,32 +335,50 @@ async function searchJobs(
   limit: number
 ): Promise<JobSuggestion[]> {
   try {
-    // Check if API key exists
-    if (!process.env.RAPIDAPI_KEY) {
+    // Ensure API key is a string before using it in headers
+    const apiKey = process.env.RAPIDAPI_KEY || "";
+    if (!apiKey) {
       console.warn("RapidAPI key not found, using mock data");
       return searchJobsMock(searchTerms, limit);
     }
 
-    // Create search query from top keywords
-    const query = searchTerms.slice(0, 3).join(" "); // Use top 3 terms
+    // Prioritize job titles and use the FIRST one found
+    const jobTitles = searchTerms.filter((term) =>
+      term.includes("developer") ||
+      term.includes("engineer") ||
+      term.includes("scientist") ||
+      term.includes("designer") ||
+      term.includes("analyst") ||
+      term.includes("manager")
+    );
+
+    // Use the most specific job title, or fallback to top 2 skills combined
+    let query = "";
+    if (jobTitles.length > 0) {
+      query = jobTitles[0];
+    } else {
+      query = searchTerms.slice(0, 2).join(" ");
+    }
 
     console.log("Searching JSearch API for:", query);
+    console.log("All extracted terms:", searchTerms);
 
     const response = await fetch(
       `https://jsearch.p.rapidapi.com/search?query=${encodeURIComponent(
         query
-      )}&page=1&num_pages=1`,
+      )}&page=1&num_pages=1&date_posted=all`,
       {
         method: "GET",
         headers: {
-          "X-RapidAPI-Key": process.env.RAPIDAPI_KEY,
+          "X-RapidAPI-Key": apiKey,
           "X-RapidAPI-Host": "jsearch.p.rapidapi.com",
         },
       }
     );
 
     if (!response.ok) {
-      console.error(`JSearch API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error(`JSearch API error: ${response.status} - ${errorText}`);
       return searchJobsMock(searchTerms, limit);
     }
 
@@ -362,49 +392,52 @@ async function searchJobs(
     console.log(`Found ${data.data.length} jobs from JSearch API`);
 
     // Transform JSearch results to our format
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const jobs = data.data.slice(0, limit * 2).map((job: any) => {
-      // Extract job requirements/skills from description
-      const description = job.job_description || "";
-      const lowerDescription = description.toLowerCase();
+    const jobs: JobSuggestion[] = (data.data as JSearchJob[])
+      .slice(0, limit * 3) // Get more jobs to filter from
+      .map((job: JSearchJob) => {
+        const description = job.job_description || "";
+        const lowerDescription = description.toLowerCase();
+        const lowerTitle = job.job_title.toLowerCase();
 
-      // Calculate match score based on how many search terms appear in the job
-      const matchedKeywords = searchTerms.filter(
-        (term) =>
-          lowerDescription.includes(term.toLowerCase()) ||
-          job.job_title.toLowerCase().includes(term.toLowerCase())
-      );
+        // Calculate match score based on how many search terms appear
+        const matchedKeywords = searchTerms.filter(
+          (term) =>
+            lowerDescription.includes(term.toLowerCase()) ||
+            lowerTitle.includes(term.toLowerCase())
+        );
 
-      const matchScore =
-        matchedKeywords.length > 0
-          ? Math.min(
-              100,
-              Math.round((matchedKeywords.length / searchTerms.length) * 100)
-            )
+        // Give a base score to all jobs from the search, then boost based on matches
+        const baseScore = 40; // Jobs returned by API are at least somewhat relevant
+        const matchBonus = matchedKeywords.length > 0
+          ? Math.round((matchedKeywords.length / Math.min(searchTerms.length, 10)) * 60)
           : 0;
 
-      return {
-        id: job.job_id,
-        title: job.job_title,
-        company: job.employer_name,
-        location:
-          job.job_city && job.job_state
-            ? `${job.job_city}, ${job.job_state}`
-            : job.job_country || "Remote",
-        description: job.job_description
-          ? job.job_description.substring(0, 300) + "..."
-          : "No description available",
-        url: job.job_apply_link || job.job_google_link || "#",
-        matchScore,
-        matchedKeywords: matchedKeywords.slice(0, 5),
-      };
-    });
+        const matchScore = Math.min(100, baseScore + matchBonus);
+
+        return {
+          id: job.job_id,
+          title: job.job_title,
+          company: job.employer_name,
+          location:
+            job.job_city && job.job_state
+              ? `${job.job_city}, ${job.job_state}`
+              : job.job_country || "Remote",
+          description: job.job_description
+            ? job.job_description.substring(0, 250) + "..."
+            : "No description available",
+          url: job.job_apply_link || job.job_google_link || "#",
+          matchScore,
+          matchedKeywords: matchedKeywords.slice(0, 5),
+        };
+      });
 
     // Sort by match score and return top results
-    return jobs
-      .filter((job: JobSuggestion) => job.matchScore > 0)
+    const topJobs = jobs
       .sort((a: JobSuggestion, b: JobSuggestion) => b.matchScore - a.matchScore)
       .slice(0, limit);
+
+    // If we got jobs, return them; otherwise fallback to mock
+    return topJobs.length > 0 ? topJobs : searchJobsMock(searchTerms, limit);
   } catch (error) {
     console.error("Error searching jobs with JSearch API:", error);
     return searchJobsMock(searchTerms, limit);
@@ -501,6 +534,7 @@ function searchJobsMock(
     },
   ];
 
+
   // Calculate match scores
   const jobsWithScores = mockJobs.map((job) => {
     const matchedKeywords = job.keywords.filter((keyword) =>
@@ -534,6 +568,7 @@ function searchJobsMock(
       matchedKeywords,
     };
   });
+
 
   return jobsWithScores
     .filter((job) => job.matchScore > 0)
