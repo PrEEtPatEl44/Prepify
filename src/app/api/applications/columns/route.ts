@@ -61,6 +61,7 @@ export async function GET(): Promise<NextResponse> {
       },
       message: "Columns retrieved successfully",
     };
+    console.log("GET /api/applications/columns - Columns retrieved:", columns);
     return NextResponse.json(response, { status: 200 });
   } catch (error) {
     console.error("GET /api/applications/columns error:", error);

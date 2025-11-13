@@ -5,7 +5,7 @@ interface Job {
   id: string;
   title: string;
   description: string;
-  columnId: string;
+  columnId?: string;
   createdAt: Date;
   updatedAt: Date;
   applicationLink: string;

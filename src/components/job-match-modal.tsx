@@ -8,8 +8,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, ChevronDown, ExternalLink } from "lucide-react";
+import { ChevronRight, ChevronDown, ExternalLink, Check } from "lucide-react";
 import Image from "next/image";
+import { createJob } from "@/app/jobs/actions";
+import { toast } from "sonner";
 
 interface JobMatch {
   id: string;
@@ -28,6 +30,7 @@ interface JobMatchModalProps {
   onOpenChange: (open: boolean) => void;
   jobs: JobMatch[];
   loading?: boolean;
+  selectedFile?: { id: string } | null;
 }
 
 export default function JobMatchModal({
@@ -35,8 +38,11 @@ export default function JobMatchModal({
   onOpenChange,
   jobs,
   loading = false,
+  selectedFile,
 }: JobMatchModalProps) {
   const [expandedJobs, setExpandedJobs] = useState<Set<string>>(new Set());
+  const [addingJobs, setAddingJobs] = useState<Set<string>>(new Set());
+  const [addedJobs, setAddedJobs] = useState<Set<string>>(new Set());
 
   const toggleExpanded = (jobId: string) => {
     const newExpanded = new Set(expandedJobs);
@@ -58,6 +64,43 @@ export default function JobMatchModal({
     if (score >= 80) return "#16a34a"; // green-600
     if (score >= 60) return "#f1ab13ff"; // yellow-400
     return "#dc2626"; // red-600
+  };
+
+  const handleAddJob = async (job: JobMatch) => {
+    setAddingJobs((prev) => new Set(prev).add(job.id));
+
+    try {
+      // Extract company domain from the Brandfetch URL or use company name
+      const companyDomain = job.companyIconUrl.includes("brandfetch.io")
+        ? job.companyIconUrl.split("/")[3]?.split("?")[0]
+        : undefined;
+
+      const result = await createJob({
+        title: job.title,
+        companyName: job.company,
+        description: job.description,
+        applicationLink: job.url,
+        companyDomain: companyDomain,
+        resumeId: selectedFile?.id,
+        // columnId is optional, will use first column as default
+      });
+
+      if (result.success) {
+        setAddedJobs((prev) => new Set(prev).add(job.id));
+        toast.success(`Added ${job.title} to your jobs!`);
+      } else {
+        toast.error(result.error || "Failed to add job");
+      }
+    } catch (error) {
+      console.error("Error adding job:", error);
+      toast.error("An unexpected error occurred");
+    } finally {
+      setAddingJobs((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(job.id);
+        return newSet;
+      });
+    }
   };
 
   return (
@@ -199,9 +242,29 @@ export default function JobMatchModal({
                         <Button
                           size="default"
                           variant="outline"
-                          className="bg-[#636AE8] hover:bg-[#4B54C8] hover:text-white text-white text-md"
+                          className={`text-md ${
+                            addedJobs.has(job.id)
+                              ? "bg-green-600 hover:bg-green-700 text-white border-green-600"
+                              : "bg-[#636AE8] hover:bg-[#4B54C8] hover:text-white text-white"
+                          }`}
+                          onClick={() => handleAddJob(job)}
+                          disabled={
+                            addingJobs.has(job.id) || addedJobs.has(job.id)
+                          }
                         >
-                          Add Job to Prepify
+                          {addingJobs.has(job.id) ? (
+                            <>
+                              <div className="mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                              Adding...
+                            </>
+                          ) : addedJobs.has(job.id) ? (
+                            <>
+                              <Check className="mr-2 h-4 w-4" />
+                              Added to Prepify
+                            </>
+                          ) : (
+                            "Add Job to Prepify"
+                          )}
                         </Button>
 
                         <Button

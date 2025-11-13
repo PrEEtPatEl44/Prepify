@@ -482,6 +482,7 @@ const DocxViewer = ({
         onOpenChange={setShowJobModal}
         jobs={jobMatches}
         loading={loadingJobs}
+        selectedFile={selectedFile}
       />
     </>
   );
