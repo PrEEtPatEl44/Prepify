@@ -5,7 +5,7 @@ interface Job {
   id: string;
   title: string;
   description: string;
-  columnId?: string;
+  columnId: string;
   createdAt: Date;
   updatedAt: Date;
   applicationLink: string;
@@ -16,7 +16,12 @@ interface Job {
   companyDomain?: string;
 }
 
-type CreateJob = Omit<Job, "id" | "createdAt" | "updatedAt" | "companyIconUrl">;
+type CreateJob = Omit<
+  Job,
+  "id" | "createdAt" | "updatedAt" | "companyIconUrl" | "columnId"
+> & {
+  columnId?: string;
+};
 
 interface JobDbRow {
   id: string;

@@ -50,15 +50,9 @@ export async function createJob(
             cache: "no-store",
           }
         );
-        console.log("Fetched columns response:", response);
         if (response.ok) {
           const result = await response.json();
-          console.log("Fetched columns data:", result);
           if (result.success && result.data?.columns?.length > 0) {
-            console.log(
-              "Using first column ID as default:",
-              result.data.columns[0].id
-            );
             columnId = result.data.columns[0].id;
           } else {
             return {
