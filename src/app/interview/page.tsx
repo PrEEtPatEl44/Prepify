@@ -41,6 +41,10 @@ const Page = () => {
   const [showingReview, setShowingReview] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [interviewSettings, setInterviewSettings] = useState<{
+    difficulty: "easy" | "intermediate" | "hard";
+    type: "technical" | "behavioral" | "mixed";
+  } | null>(null);
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -130,6 +134,10 @@ const Page = () => {
       }
 
       setInterviewQuestions(data.data.questions);
+      setInterviewSettings({
+        difficulty: settings.difficulty,
+        type: settings.type,
+      });
       setIsInterviewActive(true);
       setInterviewStartTime(Date.now());
       setInterviewDuration("00:00");
@@ -195,6 +203,10 @@ const Page = () => {
                 onShowResults={(show) => {
                   setShowingReview(show);
                 }}
+                jobId={selectedJob?.id}
+                interviewStartTime={interviewStartTime}
+                difficulty={interviewSettings?.difficulty}
+                type={interviewSettings?.type}
               />
             </div>
           ) : (
