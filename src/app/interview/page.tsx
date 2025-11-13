@@ -5,12 +5,21 @@ import InterviewHeader from "@/components/interview-header";
 import Questions from "@/components/questions";
 import { JobsListView } from "@/components/jobs-list-view";
 import { InterviewsListView } from "@/components/interviews-list-view";
+import InterviewFeedback from "@/components/interview-feedback";
 import { Video, Loader2, Award } from "lucide-react";
 import { Job } from "@/types/jobs";
 import { Skeleton } from "@/components/ui/skeleton";
 import InterviewSettingsModal, {
   InterviewSettings,
 } from "@/components/modals/InterviewSettingsModal";
+
+interface QuestionFeedback {
+  question: string;
+  userAnswer: string;
+  areasOfImprovement: string[];
+  suggestedAnswer: string;
+  score: number;
+}
 
 interface JobApplication {
   id: string;
@@ -30,6 +39,8 @@ interface Interview {
   interview_duration: number;
   created_at: string;
   job_applications: JobApplication;
+  questions_feedback: QuestionFeedback[];
+  general_comments?: string;
 }
 
 interface InterviewQuestion {
@@ -69,6 +80,9 @@ const Page = () => {
   const [activeTab, setActiveTab] = useState<"jobs" | "interviews">("jobs");
   const [interviews, setInterviews] = useState<Interview[]>([]);
   const [isLoadingInterviews, setIsLoadingInterviews] = useState(false);
+  const [viewingInterview, setViewingInterview] = useState<Interview | null>(
+    null
+  );
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -214,9 +228,9 @@ const Page = () => {
           <InterviewHeader
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
-            isInterviewActive={isInterviewActive}
+            isInterviewActive={isInterviewActive || !!viewingInterview}
             interviewDuration={interviewDuration}
-            showingReview={showingReview}
+            showingReview={showingReview || !!viewingInterview}
             activeTab={activeTab}
             onTabChange={setActiveTab}
           />
@@ -241,6 +255,18 @@ const Page = () => {
                 </h3>
                 <p className="text-red-600">{questionError}</p>
               </div>
+            </div>
+          ) : viewingInterview ? (
+            <div className="mt-6 w-full px-6 justify-center flex-1 flex">
+              <InterviewFeedback
+                feedback={{
+                  overallScore: viewingInterview.overall_score,
+                  questionsFeedback: viewingInterview.questions_feedback,
+                  generalComments: viewingInterview.general_comments || "",
+                }}
+                onBack={() => setViewingInterview(null)}
+                viewMode="history"
+              />
             </div>
           ) : isInterviewActive ? (
             <div className="mt-24 w-full px-6 justify-center flex-1 flex">
@@ -308,8 +334,7 @@ const Page = () => {
                     searchFilter={searchQuery}
                     onSearchChange={setSearchQuery}
                     onViewDetails={(interview) => {
-                      console.log("View interview details:", interview);
-                      // TODO: Implement view details functionality
+                      setViewingInterview(interview);
                     }}
                   />
                 </div>

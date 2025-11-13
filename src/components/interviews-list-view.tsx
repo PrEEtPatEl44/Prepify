@@ -23,6 +23,14 @@ interface JobApplication {
   application_link: string;
 }
 
+interface QuestionFeedback {
+  question: string;
+  userAnswer: string;
+  areasOfImprovement: string[];
+  suggestedAnswer: string;
+  score: number;
+}
+
 interface Interview {
   id: string;
   job_id: string;
@@ -32,6 +40,8 @@ interface Interview {
   interview_duration: number;
   created_at: string;
   job_applications: JobApplication;
+  questions_feedback: QuestionFeedback[];
+  general_comments?: string;
 }
 
 interface InterviewsListViewProps {
@@ -200,7 +210,7 @@ export function InterviewsListView({
                     }}
                   >
                     <Eye className="mr-2 h-4 w-4" />
-                    View Details
+                    View Feedback
                   </Button>
                 </div>
               </div>
