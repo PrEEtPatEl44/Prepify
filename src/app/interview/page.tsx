@@ -4,12 +4,33 @@ import React, { useState, useEffect } from "react";
 import InterviewHeader from "@/components/interview-header";
 import Questions from "@/components/questions";
 import { JobsListView } from "@/components/jobs-list-view";
-import { Video, Loader2 } from "lucide-react";
+import { InterviewsListView } from "@/components/interviews-list-view";
+import { Video, Loader2, Award } from "lucide-react";
 import { Job } from "@/types/jobs";
 import { Skeleton } from "@/components/ui/skeleton";
 import InterviewSettingsModal, {
   InterviewSettings,
 } from "@/components/modals/InterviewSettingsModal";
+
+interface JobApplication {
+  id: string;
+  job_title: string;
+  company_name: string;
+  company_icon_url: string;
+  company_domain?: string;
+  application_link: string;
+}
+
+interface Interview {
+  id: string;
+  job_id: string;
+  overall_score: number;
+  difficulty: "easy" | "intermediate" | "hard";
+  type: "technical" | "behavioral" | "mixed";
+  interview_duration: number;
+  created_at: string;
+  job_applications: JobApplication;
+}
 
 interface InterviewQuestion {
   id: number;
@@ -45,6 +66,9 @@ const Page = () => {
     difficulty: "easy" | "intermediate" | "hard";
     type: "technical" | "behavioral" | "mixed";
   } | null>(null);
+  const [activeTab, setActiveTab] = useState<"jobs" | "interviews">("jobs");
+  const [interviews, setInterviews] = useState<Interview[]>([]);
+  const [isLoadingInterviews, setIsLoadingInterviews] = useState(false);
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -68,6 +92,30 @@ const Page = () => {
 
     fetchJobs();
   }, []);
+
+  useEffect(() => {
+    const fetchInterviews = async () => {
+      if (activeTab !== "interviews") return;
+
+      try {
+        setIsLoadingInterviews(true);
+        const response = await fetch("/api/interview/history");
+        const data = await response.json();
+
+        if (data.success && data.data?.interviews) {
+          setInterviews(data.data.interviews);
+        } else {
+          console.error(data.message || "Failed to fetch interviews");
+        }
+      } catch (err) {
+        console.error("Error fetching interviews:", err);
+      } finally {
+        setIsLoadingInterviews(false);
+      }
+    };
+
+    fetchInterviews();
+  }, [activeTab]);
 
   // Timer effect for interview duration
   useEffect(() => {
@@ -169,6 +217,8 @@ const Page = () => {
             isInterviewActive={isInterviewActive}
             interviewDuration={interviewDuration}
             showingReview={showingReview}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
           />
         </div>
         <div className="overflow-auto ">
@@ -211,35 +261,69 @@ const Page = () => {
             </div>
           ) : (
             <div className="py-4 w-full">
-              {isLoading ? (
+              {activeTab === "jobs" ? (
+                // Jobs Tab
+                isLoading ? (
+                  <div className="space-y-4">
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-64 w-full" />
+                  </div>
+                ) : error ? (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+                    {error}
+                  </div>
+                ) : jobs.length > 0 ? (
+                  <div className="flex size-full flex-1 justify-center items-center pl-1 pr-6 mt-4">
+                    <JobsListView
+                      data={jobs}
+                      onStartInterview={handleOpenSettings}
+                      searchFilter={searchQuery}
+                      onSearchChange={setSearchQuery}
+                    />
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-16 px-4 bg-white rounded-lg border">
+                    <div className="bg-gray-100 rounded-full p-6 mb-4">
+                      <Video className="w-16 h-16 text-gray-400" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                      No Job Applications Yet
+                    </h3>
+                    <p className="text-gray-500 text-center max-w-md">
+                      Start adding job applications to track your progress and
+                      prepare for interviews.
+                    </p>
+                  </div>
+                )
+              ) : // Interviews Tab
+              isLoadingInterviews ? (
                 <div className="space-y-4">
                   <Skeleton className="h-12 w-full" />
                   <Skeleton className="h-64 w-full" />
                 </div>
-              ) : error ? (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
-                  {error}
-                </div>
-              ) : jobs.length > 0 ? (
+              ) : interviews.length > 0 ? (
                 <div className="flex size-full flex-1 justify-center items-center pl-1 pr-6 mt-4">
-                  <JobsListView
-                    data={jobs}
-                    onStartInterview={handleOpenSettings}
+                  <InterviewsListView
+                    data={interviews}
                     searchFilter={searchQuery}
                     onSearchChange={setSearchQuery}
+                    onViewDetails={(interview) => {
+                      console.log("View interview details:", interview);
+                      // TODO: Implement view details functionality
+                    }}
                   />
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-16 px-4 bg-white rounded-lg border">
                   <div className="bg-gray-100 rounded-full p-6 mb-4">
-                    <Video className="w-16 h-16 text-gray-400" />
+                    <Award className="w-16 h-16 text-gray-400" />
                   </div>
                   <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                    No Job Applications Yet
+                    No Interviews Yet
                   </h3>
                   <p className="text-gray-500 text-center max-w-md">
-                    Start adding job applications to track your progress and
-                    prepare for interviews.
+                    Complete your first mock interview to see your history and
+                    feedback here.
                   </p>
                 </div>
               )}

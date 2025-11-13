@@ -13,6 +13,8 @@ interface InterviewHeaderProps {
   isInterviewActive?: boolean;
   interviewDuration?: string;
   showingReview?: boolean;
+  activeTab?: "jobs" | "interviews";
+  onTabChange?: (tab: "jobs" | "interviews") => void;
 }
 
 export default function InterviewHeader({
@@ -21,6 +23,8 @@ export default function InterviewHeader({
   isInterviewActive = false,
   interviewDuration = "00:00",
   showingReview = false,
+  activeTab = "jobs",
+  onTabChange,
 }: InterviewHeaderProps) {
   const { profile } = useUser();
 
@@ -66,12 +70,26 @@ export default function InterviewHeader({
         />
 
         <div className="flex items-center gap-6 mr-4">
-          {/* Start interview button*/}
+          {/* Tabs */}
           <div className="flex mr-8">
-            <div className="px-2 !m-0 font-semibold mr-4 cursor-pointer transition duration-200 text-[#636AE8] underline underline-offset-[95%] decoration-[#636AE8] decoration-3">
+            <div
+              className={`px-2 !m-0 font-semibold mr-4 cursor-pointer transition duration-200 ${
+                activeTab === "jobs"
+                  ? "text-[#636AE8] underline underline-offset-[95%] decoration-[#636AE8] decoration-3"
+                  : "text-muted-foreground hover:text-gray-400"
+              }`}
+              onClick={() => onTabChange?.("jobs")}
+            >
               Jobs
             </div>
-            <div className="px-2 !m-0 font-semibold mr-4 cursor-pointer transition duration-200 text-muted-foreground hover:text-gray-400">
+            <div
+              className={`px-2 !m-0 font-semibold mr-4 cursor-pointer transition duration-200 ${
+                activeTab === "interviews"
+                  ? "text-[#636AE8] underline underline-offset-[95%] decoration-[#636AE8] decoration-3"
+                  : "text-muted-foreground hover:text-gray-400"
+              }`}
+              onClick={() => onTabChange?.("interviews")}
+            >
               Interviews
             </div>
           </div>
