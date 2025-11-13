@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import InterviewHeader from "@/components/interview-header";
 import Questions from "@/components/questions";
-import { JobsDataTable } from "@/components/jobs-data-table";
+import { JobsListView } from "@/components/jobs-list-view";
 import { Video, Loader2 } from "lucide-react";
 import { Job } from "@/types/jobs";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -198,7 +198,7 @@ const Page = () => {
               />
             </div>
           ) : (
-            <div className="pl-1 pr-6 py-4 w-full">
+            <div className="py-4 w-full">
               {isLoading ? (
                 <div className="space-y-4">
                   <Skeleton className="h-12 w-full" />
@@ -209,11 +209,12 @@ const Page = () => {
                   {error}
                 </div>
               ) : jobs.length > 0 ? (
-                <div className="flex size-full flex-1 justify-center items-center">
-                  <JobsDataTable
+                <div className="flex size-full flex-1 justify-center items-center pl-1 pr-6 mt-4">
+                  <JobsListView
                     data={jobs}
                     onStartInterview={handleOpenSettings}
                     searchFilter={searchQuery}
+                    onSearchChange={setSearchQuery}
                   />
                 </div>
               ) : (
