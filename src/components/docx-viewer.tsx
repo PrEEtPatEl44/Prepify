@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
-import { File, Download, X, Sparkles, FileText } from "lucide-react";
+import { File, Download, X, Sparkles } from "lucide-react";
 import {
   DocumentEditorContainerComponent,
   Toolbar,
@@ -416,23 +416,24 @@ const DocxViewer = ({
 
           {/* Get Score Button Overlay */}
           {!isLoading && documentType === "resumes" && (
-            <div className="absolute bottom-12 bg-black/50 right-0 z-40 p-2 rounded-l-lg">
+            <div className="absolute bottom-12 bg-black/50 right-0 z-40 p-2 rounded-l-lg flex gap-2">
               <Button
                 size="sm"
-                className="bg-[#636AE8] hover:bg-[#4f56d4] text-white shadow-lg transition-all duration-200 mr-5"
-                onClick={handleGetATSScore}
-                disabled={isAnalyzing}
-              >
-                <Sparkles className="h-4 w-4 mr-2" />
-                Get ATS Score
-              </Button>
-              <Button
                 onClick={handleGetJobSuggestions}
                 className="bg-[#636AE8] hover:bg-[#4e57c1] text-white gap-2"
                 disabled={loadingJobs}
               >
-                <Sparkles className="h-4 w-4" />
+                <Sparkles className="h-4 w-4 " />
                 Get Job Suggestions
+              </Button>
+              <Button
+                size="sm"
+                className="bg-[#F2F2FD] hover:bg-[#E0E0F8] text-[#636AE8] shadow-lg transition-all duration-200 mr-5"
+                onClick={handleGetATSScore}
+                disabled={isAnalyzing}
+              >
+                <File className="h-4 w-4" />
+                Get ATS Score
               </Button>
             </div>
           )}

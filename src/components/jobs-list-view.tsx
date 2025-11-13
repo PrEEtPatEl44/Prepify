@@ -76,6 +76,9 @@ export function JobsListView({
   const [jobInterviews, setJobInterviews] = React.useState<
     Record<string, Interview[]>
   >({});
+  const [filterTab, setFilterTab] = React.useState<
+    "all" | "with-interviews" | "without-interviews"
+  >("all");
 
   React.useEffect(() => {
     setLocalSearch(searchFilter);
@@ -163,18 +166,70 @@ export function JobsListView({
   };
 
   const filteredJobs = React.useMemo(() => {
-    if (!localSearch) return data;
+    let filtered = data;
 
-    const searchLower = localSearch.toLowerCase();
-    return data.filter(
-      (job) =>
-        job.companyName.toLowerCase().includes(searchLower) ||
-        job.title.toLowerCase().includes(searchLower)
-    );
-  }, [data, localSearch]);
+    // Apply filter tab
+    if (filterTab === "with-interviews") {
+      filtered = filtered.filter((job) => {
+        const interviews = jobInterviews[job.id] || [];
+        return interviews.length > 0;
+      });
+    } else if (filterTab === "without-interviews") {
+      filtered = filtered.filter((job) => {
+        const interviews = jobInterviews[job.id] || [];
+        return interviews.length === 0;
+      });
+    }
+
+    // Apply search filter
+    if (localSearch) {
+      const searchLower = localSearch.toLowerCase();
+      filtered = filtered.filter(
+        (job) =>
+          job.companyName.toLowerCase().includes(searchLower) ||
+          job.title.toLowerCase().includes(searchLower)
+      );
+    }
+
+    return filtered;
+  }, [data, localSearch, filterTab, jobInterviews]);
 
   return (
     <div className="w-full space-y-6">
+      {/* Filter Tabs */}
+      <div className="flex gap-2 border-b border-gray-200">
+        <button
+          onClick={() => setFilterTab("all")}
+          className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 ${
+            filterTab === "all"
+              ? "border-[#636AE8] text-[#636AE8]"
+              : "border-transparent text-gray-600 hover:text-gray-900"
+          }`}
+        >
+          All Jobs
+        </button>
+        <button
+          onClick={() => setFilterTab("with-interviews")}
+          className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 ${
+            filterTab === "with-interviews"
+              ? "border-[#636AE8] text-[#636AE8]"
+              : "border-transparent text-gray-600 hover:text-gray-900"
+          }`}
+        >
+          With Interviews
+        </button>
+        <button
+          onClick={() => setFilterTab("without-interviews")}
+          className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 ${
+            filterTab === "without-interviews"
+              ? "border-[#636AE8] text-[#636AE8]"
+              : "border-transparent text-gray-600 hover:text-gray-900"
+          }`}
+        >
+          Without Interviews
+        </button>
+      </div>
+
       {/* Jobs List */}
       <div className="space-y-4">
         {filteredJobs.length > 0 ? (
