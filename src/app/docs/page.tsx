@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useEffect } from "react";
 import { useState } from "react";
@@ -70,9 +69,13 @@ const Page = () => {
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
     null
   );
+  const [shouldShowUploadModal, setShouldShowUploadModal] = useState(false);
+
   useEffect(() => {
     setFileFromSession();
+    checkUploadModalFlag();
   }, []);
+
   const setFileFromSession = () => {
     const fileData = sessionStorage.getItem("selectedFile");
     if (fileData) {
@@ -87,6 +90,14 @@ const Page = () => {
           error
         );
       }
+    }
+  };
+
+  const checkUploadModalFlag = () => {
+    const showModal = sessionStorage.getItem("showUploadModal");
+    if (showModal === "true") {
+      setShouldShowUploadModal(true);
+      sessionStorage.removeItem("showUploadModal"); // Clear after reading
     }
   };
 
@@ -124,17 +135,20 @@ const Page = () => {
               onFileSelect={(file: DocumentBasicInfo) => setSelectedFile(file)}
               selectedFile={selectedFile}
               searchTerm={searchTerm}
+              shouldShowUploadModal={shouldShowUploadModal}
+              onModalClose={() => setShouldShowUploadModal(false)}
             />
           )}
         </div>
       </div>
       {selectedFile && (
         <div className="flex-1 flex-shrink-0 animate-in slide-in-from-right duration-300">
-          {React.createElement(DocxViewer as any, {
-            selectedFile: selectedFile,
-            setSelectedFile: setSelectedFile,
-            onAnalysisComplete: (result: AnalysisResult) => setAnalysisResult(result),
-          })}
+          <DocxViewer
+            selectedFile={selectedFile}
+            setSelectedFile={setSelectedFile}
+            onAnalysisComplete={(result) => setAnalysisResult(result)}
+            documentType={documentType}
+          />
         </div>
       )}
     </div>

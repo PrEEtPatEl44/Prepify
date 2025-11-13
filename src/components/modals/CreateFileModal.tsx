@@ -19,23 +19,33 @@ interface CreateFileModalProps {
   documentType: "resumes" | "coverLetters";
   children: React.ReactNode;
   onSubmit?: (data: { fileName: string; file: File; url?: string }) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function CreateFileModal({
   children,
   onSubmit,
   documentType,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
 }: CreateFileModalProps) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
   const [fileName, setFileName] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Use controlled or internal state
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setOpen = controlledOnOpenChange || setInternalOpen;
+
   // Reset form when modal opens/closes
   const handleOpenChange = (isOpen: boolean) => {
     setOpen(isOpen);
-    resetForm();
+    if (!isOpen) {
+      resetForm();
+    }
   };
 
   const resetForm = () => {
