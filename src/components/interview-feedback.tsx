@@ -18,15 +18,16 @@ interface InterviewFeedback {
 
 interface InterviewFeedbackProps {
   feedback: InterviewFeedback | null;
-  isGenerating: boolean;
-  error: string | null;
+  isGenerating?: boolean;
+  error?: string | null;
   onBack: () => void;
+  viewMode?: "review" | "history";
 }
 
 export default function InterviewFeedback({
   feedback,
-  isGenerating,
-  error,
+  isGenerating = false,
+  error = null,
   onBack,
 }: InterviewFeedbackProps) {
   return (
