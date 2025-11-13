@@ -305,6 +305,9 @@ const Page = () => {
                       onStartInterview={handleOpenSettings}
                       searchFilter={searchQuery}
                       onSearchChange={setSearchQuery}
+                      onViewInterviewDetails={(interview) => {
+                        setViewingInterview(interview);
+                      }}
                     />
                   </div>
                 ) : (
