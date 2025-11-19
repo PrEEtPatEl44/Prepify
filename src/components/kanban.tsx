@@ -279,13 +279,12 @@ const Kanban = ({
                               <DropdownMenuItem
                                 className="cursor-pointer"
                                 onSelect={() => {
-                                  window.open(
-                                    jobData.applicationLink,
-                                    "_blank"
+                                  console.log(
+                                    "Going to link " + jobData.applicationLink
                                   );
                                 }}
                               >
-                                View Posting
+                                Go to link
                               </DropdownMenuItem>
                               <DeleteJobModal
                                 onConfirm={() => {

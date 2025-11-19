@@ -8,10 +8,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, ChevronDown, ExternalLink, Check } from "lucide-react";
+import { X, ChevronDown, ChevronUp } from "lucide-react";
 import Image from "next/image";
-import { createJob } from "@/app/jobs/actions";
-import { toast } from "sonner";
 
 interface JobMatch {
   id: string;
@@ -30,7 +28,6 @@ interface JobMatchModalProps {
   onOpenChange: (open: boolean) => void;
   jobs: JobMatch[];
   loading?: boolean;
-  selectedFile?: { id: string } | null;
 }
 
 export default function JobMatchModal({
@@ -38,11 +35,8 @@ export default function JobMatchModal({
   onOpenChange,
   jobs,
   loading = false,
-  selectedFile,
 }: JobMatchModalProps) {
   const [expandedJobs, setExpandedJobs] = useState<Set<string>>(new Set());
-  const [addingJobs, setAddingJobs] = useState<Set<string>>(new Set());
-  const [addedJobs, setAddedJobs] = useState<Set<string>>(new Set());
 
   const toggleExpanded = (jobId: string) => {
     const newExpanded = new Set(expandedJobs);
@@ -55,59 +49,16 @@ export default function JobMatchModal({
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return "text-green-600";
-    if (score >= 60) return "text-yellow-400";
-    return "text-red-600";
-  };
-
-  const getScoreStrokeColor = (score: number) => {
-    if (score >= 80) return "#16a34a"; // green-600
-    if (score >= 60) return "#f1ab13ff"; // yellow-400
-    return "#dc2626"; // red-600
-  };
-
-  const handleAddJob = async (job: JobMatch) => {
-    setAddingJobs((prev) => new Set(prev).add(job.id));
-
-    try {
-      // Extract company domain from the Brandfetch URL or use company name
-      const companyDomain = job.companyIconUrl.includes("brandfetch.io")
-        ? job.companyIconUrl.split("/")[3]?.split("?")[0]
-        : undefined;
-
-      const result = await createJob({
-        title: job.title,
-        companyName: job.company,
-        description: job.description,
-        applicationLink: job.url,
-        companyDomain: companyDomain,
-        resumeId: selectedFile?.id,
-        // columnId is optional, will use first column as default
-      });
-
-      if (result.success) {
-        setAddedJobs((prev) => new Set(prev).add(job.id));
-        toast.success(`Added ${job.title} to your jobs!`);
-      } else {
-        toast.error(result.error || "Failed to add job");
-      }
-    } catch (error) {
-      console.error("Error adding job:", error);
-      toast.error("An unexpected error occurred");
-    } finally {
-      setAddingJobs((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(job.id);
-        return newSet;
-      });
-    }
+    if (score >= 70) return "text-[#636AE8]";
+    if (score >= 50) return "text-blue-500";
+    return "text-gray-500";
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className="max-h-[80vh] p-0 gap-0 flex flex-col min-w-fit rounded-xl"
-        showCloseButton={true}
+      <DialogContent 
+        className="w-[200vw] max-w-[900px] max-h-[80vh] p-0 gap-0 flex flex-col"
+        showCloseButton={false}
       >
         {/* Fixed Header */}
         <DialogHeader className="px-7 pt-5 pb-4 border-b shrink-0">
@@ -115,14 +66,14 @@ export default function JobMatchModal({
             <DialogTitle className="text-2xl font-semibold">
               Job Match Results
             </DialogTitle>
-            {/* <Button
+            <Button
               variant="ghost"
               size="icon"
               onClick={() => onOpenChange(false)}
               className="h-8 w-8 hover:bg-gray-100 rounded-full"
             >
               <X className="h-5 w-5" />
-            </Button> */}
+            </Button>
           </div>
         </DialogHeader>
 
@@ -145,23 +96,25 @@ export default function JobMatchModal({
               {jobs.map((job) => (
                 <div
                   key={job.id}
-                  className="border rounded-xl p-6 hover:shadow-md transition-all duration-300 bg-white overflow-hidden"
+                  className="border rounded-lg p-6 hover:shadow-md transition-shadow bg-white"
                 >
                   <div className="flex items-start justify-between gap-6">
                     {/* Left Section - Job Info */}
-                    <div className="flex items-center gap-4 flex-1 min-w-0">
-                      <button
+                    <div className="flex items-start gap-4 flex-1 min-w-0">
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => toggleExpanded(job.id)}
-                        className="p-1 hover:bg-gray-100 rounded transition-colors"
+                        className="mt-1 h-8 w-8 shrink-0 hover:bg-gray-100"
                       >
                         {expandedJobs.has(job.id) ? (
-                          <ChevronDown className="h-8 w-8 transition-transform duration-300" />
+                          <ChevronUp className="h-5 w-5" />
                         ) : (
-                          <ChevronRight className="h-8 w-8 transition-transform duration-300" />
+                          <ChevronDown className="h-5 w-5" />
                         )}
-                      </button>
+                      </Button>
 
-                      <div className="flex items-center gap-4 flex-1 min-w-0">
+                      <div className="flex items-start gap-4 flex-1 min-w-0">
                         {/* Company Logo */}
                         <div className="w-14 h-14 shrink-0 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center border">
                           <Image
@@ -201,7 +154,7 @@ export default function JobMatchModal({
                     </div>
 
                     {/* Right Section - Score & Apply */}
-                    <div className="flex  items-center gap-4 shrink-0">
+                    <div className="flex flex-col items-center gap-4 shrink-0">
                       {/* Circular Progress */}
                       <div className="relative w-24 h-24">
                         <svg className="w-24 h-24 transform -rotate-90">
@@ -217,7 +170,7 @@ export default function JobMatchModal({
                             cx="48"
                             cy="48"
                             r="40"
-                            stroke={getScoreStrokeColor(job.matchScore)}
+                            stroke="#636AE8"
                             strokeWidth="8"
                             fill="none"
                             strokeDasharray={`${
@@ -238,57 +191,18 @@ export default function JobMatchModal({
                       </div>
 
                       {/* Apply Button */}
-                      <div className="flex flex-col gap-2">
-                        <Button
-                          size="default"
-                          variant="outline"
-                          className={`text-md ${
-                            addedJobs.has(job.id)
-                              ? "bg-green-600 hover:bg-green-700 text-white border-green-600"
-                              : "bg-[#636AE8] hover:bg-[#4B54C8] hover:text-white text-white"
-                          }`}
-                          onClick={() => handleAddJob(job)}
-                          disabled={
-                            addingJobs.has(job.id) || addedJobs.has(job.id)
-                          }
-                        >
-                          {addingJobs.has(job.id) ? (
-                            <>
-                              <div className="mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                              Adding...
-                            </>
-                          ) : addedJobs.has(job.id) ? (
-                            <>
-                              <Check className="mr-2 h-4 w-4" />
-                              Added to Prepify
-                            </>
-                          ) : (
-                            "Add Job to Prepify"
-                          )}
-                        </Button>
-
-                        <Button
-                          onClick={() => window.open(job.url, "_blank")}
-                          size="default"
-                          variant="outline"
-                          className="border-gray-300 hover:bg-gray-50 text-md"
-                        >
-                          <ExternalLink className="mr-2 h-4 w-4" />
-                          view posting
-                        </Button>
-                      </div>
+                      <Button
+                        onClick={() => window.open(job.url, "_blank")}
+                        className="bg-[#636AE8] hover:bg-[#4e57c1] text-white px-5 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap"
+                      >
+                        Apply for this Job
+                      </Button>
                     </div>
                   </div>
 
                   {/* Expanded Content */}
-                  <div
-                    className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                      expandedJobs.has(job.id)
-                        ? "max-h-[1000px] opacity-100 mt-5 pt-5 border-t"
-                        : "max-h-0 opacity-0"
-                    }`}
-                  >
-                    <div className="space-y-4">
+                  {expandedJobs.has(job.id) && (
+                    <div className="mt-5 pt-5 border-t space-y-4 animate-in slide-in-from-top-2 duration-200">
                       {/* Description */}
                       {job.description && (
                         <div>
@@ -320,7 +234,7 @@ export default function JobMatchModal({
                         </div>
                       )}
                     </div>
-                  </div>
+                  )}
                 </div>
               ))}
             </div>

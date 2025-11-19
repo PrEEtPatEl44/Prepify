@@ -16,12 +16,7 @@ interface Job {
   companyDomain?: string;
 }
 
-type CreateJob = Omit<
-  Job,
-  "id" | "createdAt" | "updatedAt" | "companyIconUrl" | "columnId"
-> & {
-  columnId?: string;
-};
+type CreateJob = Omit<Job, "id" | "createdAt" | "updatedAt" | "companyIconUrl">;
 
 interface JobDbRow {
   id: string;

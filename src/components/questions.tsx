@@ -5,7 +5,6 @@ import { useState, useEffect, useRef } from "react";
 import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
 import InterviewFeedback from "./interview-feedback";
-import { uploadInterview } from "@/app/interview/actions";
 
 interface Question {
   id: number;
@@ -32,10 +31,6 @@ interface QuestionsProps {
   totalQuestions?: number;
   onBack?: () => void;
   onShowResults?: (show: boolean) => void;
-  jobId?: string;
-  interviewStartTime?: number | null;
-  difficulty?: "easy" | "intermediate" | "hard";
-  type?: "technical" | "behavioral" | "mixed";
 }
 
 type AnswerMode = "record" | "type";
@@ -45,10 +40,6 @@ export default function Questions({
   totalQuestions,
   onBack,
   onShowResults,
-  jobId,
-  interviewStartTime,
-  difficulty = "easy",
-  type = "technical",
 }: QuestionsProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answer, setAnswer] = useState("");
@@ -256,31 +247,6 @@ export default function Questions({
       }
 
       setFeedback(data.data);
-
-      // Save interview feedback to database
-      if (jobId && interviewStartTime) {
-        const interviewDuration = Math.floor(
-          (Date.now() - interviewStartTime) / 1000
-        );
-
-        const uploadResult = await uploadInterview({
-          jobId,
-          overallScore: data.data.overallScore,
-          generalComments: data.data.generalComments,
-          questionsFeedback: data.data.questionsFeedback,
-          interviewDuration,
-          difficulty,
-          type,
-        });
-
-        if (!uploadResult.success) {
-          console.error(
-            "Failed to save interview feedback:",
-            uploadResult.error
-          );
-          // Note: We don't show this error to the user since feedback was generated successfully
-        }
-      }
     } catch (error) {
       console.error("Error generating feedback:", error);
       setFeedbackError(

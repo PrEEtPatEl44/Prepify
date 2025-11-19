@@ -3,7 +3,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { Column, type CreateJob, type Job } from "@/types/jobs";
 import { transformDbRowToJob } from "@/adapters/jobAdapters";
-import { cookies } from "next/headers";
+
 // create a job record in the database
 export async function createJob(
   data: CreateJob
@@ -24,6 +24,7 @@ export async function createJob(
     if (
       !data.title ||
       !data.companyName ||
+      !data.columnId ||
       !data.description ||
       !data.applicationLink
     ) {
@@ -33,56 +34,13 @@ export async function createJob(
       };
     }
 
-    // Get columnId from data or fetch the first column as default
-    let columnId = data.columnId;
-    if (!columnId) {
-      try {
-        const cookieStore = await cookies();
-        const cookieHeader = cookieStore.toString();
-        const response = await fetch(
-          `${
-            process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
-          }/api/applications/columns`,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Cookie: cookieHeader,
-            },
-            cache: "no-store",
-          }
-        );
-        if (response.ok) {
-          const result = await response.json();
-          if (result.success && result.data?.columns?.length > 0) {
-            columnId = result.data.columns[0].id;
-          } else {
-            return {
-              success: false,
-              error: "No columns found. Please create a column first.",
-            };
-          }
-        } else {
-          return {
-            success: false,
-            error: "Failed to fetch columns.",
-          };
-        }
-      } catch (fetchError) {
-        console.error("Error fetching columns:", fetchError);
-        return {
-          success: false,
-          error: "Failed to fetch columns.",
-        };
-      }
-    }
-
     const { data: job, error } = await supabase
       .from("job_applications")
       .insert({
         user_id: user.id,
         job_title: data.title,
         company_name: data.companyName,
-        column_id: columnId,
+        column_id: data.columnId,
         job_description: data.description,
         job_url: data.applicationLink,
         resume_id: data.resumeId ? data.resumeId : null,
