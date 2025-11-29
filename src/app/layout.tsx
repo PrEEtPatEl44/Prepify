@@ -4,6 +4,7 @@ import "./globals.css";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Toaster } from "@/components/ui/sonner";
+import NextTopLoader from "nextjs-toploader";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,7 +43,7 @@ export default function RootLayout({
           <AppSidebar collapsible="icon" />
 
           <SidebarTrigger />
-
+          <NextTopLoader color="#636AE8" height={5} />
           {children}
         </SidebarProvider>
         <Toaster position="top-right" />
