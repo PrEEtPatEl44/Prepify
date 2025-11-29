@@ -10,6 +10,7 @@ import { createClient } from "@/utils/supabase/client";
 import { DocumentBasicInfo } from "@/types/docs";
 import { useSidebar } from "@/components/ui/sidebar";
 import JobMatchModal from "@/components/job-match-modal";
+import JobSearchModal from "@/components/modals/JobSearchModal";
 import { Button } from "@/components/ui/button";
 import ResumeAnalysisLoading from "@/components/resume-analysis-loading";
 import JobSelectionDialog from "@/components/job-selection-dialog";
@@ -97,6 +98,7 @@ const DocxViewer = ({
   const [showJobModal, setShowJobModal] = useState(false);
   const [jobMatches, setJobMatches] = useState<JobMatch[]>([]);
   const [loadingJobs, setLoadingJobs] = useState(false);
+  const [showJobSearchModal, setShowJobSearchModal] = useState(false);
 
   // Handle document change event to apply fitPage and stop loading
   const onDocumentChange = () => {
@@ -302,6 +304,14 @@ const DocxViewer = ({
 
   // Handle Get Job Suggestions
   const handleGetJobSuggestions = async () => {
+    // Open the Job Search modal so user can pick filters first
+    setShowJobSearchModal(true);
+  };
+
+  const fetchJobSuggestionsFromModal = async (opts: {
+    country: string;
+    workTypes: string[];
+  }) => {
     if (!selectedFile) {
       toast.error("No resume selected");
       return;
@@ -321,7 +331,14 @@ const DocxViewer = ({
       formData.append("resumeId", selectedFile.id);
       formData.append("limit", "3");
 
-      const response = await fetch("/api/jobs/suggest", {
+      const employment_types = opts.workTypes.join(",");
+      const country = opts.country.toLowerCase();
+
+      const qs = `?employment_types=${encodeURIComponent(
+        employment_types
+      )}&country=${encodeURIComponent(country)}`;
+
+      const response = await fetch(`/api/jobs/suggest${qs}`, {
         method: "POST",
         body: formData,
       });
@@ -483,6 +500,11 @@ const DocxViewer = ({
         jobs={jobMatches}
         loading={loadingJobs}
         selectedFile={selectedFile}
+      />
+      <JobSearchModal
+        open={showJobSearchModal}
+        onOpenChange={setShowJobSearchModal}
+        onSearch={fetchJobSuggestionsFromModal}
       />
     </>
   );

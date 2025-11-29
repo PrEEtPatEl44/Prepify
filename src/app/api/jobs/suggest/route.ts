@@ -144,9 +144,20 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Step 2: Extract keywords and skills
     const { keywords, skills } = extractKeywordsFromText(extractedText);
 
+    // Read optional query params forwarded from the client
+    const url = new URL(request.url);
+    const employment_types =
+      url.searchParams.get("employment_types") || undefined;
+    const country = url.searchParams.get("country") || undefined;
+
     // Step 3: Search for matching jobs
     const allSearchTerms = [...keywords, ...skills];
-    const jobs = await searchJobs(allSearchTerms, limit);
+    const jobs = await searchJobs(
+      allSearchTerms,
+      limit,
+      employment_types,
+      country
+    );
 
     const response: JobSuggestResponse = {
       success: true,
@@ -332,7 +343,9 @@ function inferRolesFromSkills(skills: string[]): string[] {
  */
 async function searchJobs(
   searchTerms: string[],
-  limit: number
+  limit: number,
+  employment_types?: string | undefined,
+  country?: string | undefined
 ): Promise<JobSuggestion[]> {
   try {
     // Ensure API key is a string before using it in headers
@@ -343,13 +356,14 @@ async function searchJobs(
     }
 
     // Prioritize job titles and use the FIRST one found
-    const jobTitles = searchTerms.filter((term) =>
-      term.includes("developer") ||
-      term.includes("engineer") ||
-      term.includes("scientist") ||
-      term.includes("designer") ||
-      term.includes("analyst") ||
-      term.includes("manager")
+    const jobTitles = searchTerms.filter(
+      (term) =>
+        term.includes("developer") ||
+        term.includes("engineer") ||
+        term.includes("scientist") ||
+        term.includes("designer") ||
+        term.includes("analyst") ||
+        term.includes("manager")
     );
 
     // Use the most specific job title, or fallback to top 2 skills combined
@@ -362,11 +376,20 @@ async function searchJobs(
 
     console.log("Searching JSearch API for:", query);
     console.log("All extracted terms:", searchTerms);
+    console.log("Forwarding params to JSearch:", { employment_types, country });
+
+    // Append optional params if provided
+    const extraQs: string[] = [];
+    if (employment_types)
+      extraQs.push(`employment_types=${encodeURIComponent(employment_types)}`);
+    if (country) extraQs.push(`country=${encodeURIComponent(country)}`);
+
+    const extra = extraQs.length > 0 ? `&${extraQs.join("&")}` : "";
 
     const response = await fetch(
       `https://jsearch.p.rapidapi.com/search?query=${encodeURIComponent(
         query
-      )}&page=1&num_pages=1&date_posted=all`,
+      )}&page=1&num_pages=1&date_posted=all${extra}`,
       {
         method: "GET",
         headers: {
@@ -408,9 +431,12 @@ async function searchJobs(
 
         // Give a base score to all jobs from the search, then boost based on matches
         const baseScore = 40; // Jobs returned by API are at least somewhat relevant
-        const matchBonus = matchedKeywords.length > 0
-          ? Math.round((matchedKeywords.length / Math.min(searchTerms.length, 10)) * 60)
-          : 0;
+        const matchBonus =
+          matchedKeywords.length > 0
+            ? Math.round(
+                (matchedKeywords.length / Math.min(searchTerms.length, 10)) * 60
+              )
+            : 0;
 
         const matchScore = Math.min(100, baseScore + matchBonus);
 
@@ -447,10 +473,7 @@ async function searchJobs(
 /**
  * Fallback mock job search when API fails or is unavailable
  */
-function searchJobsMock(
-  searchTerms: string[],
-  limit: number
-): JobSuggestion[] {
+function searchJobsMock(searchTerms: string[], limit: number): JobSuggestion[] {
   console.log("Using mock job data as fallback");
 
   const mockJobs = [
@@ -534,7 +557,6 @@ function searchJobsMock(
     },
   ];
 
-
   // Calculate match scores
   const jobsWithScores = mockJobs.map((job) => {
     const matchedKeywords = job.keywords.filter((keyword) =>
@@ -568,7 +590,6 @@ function searchJobsMock(
       matchedKeywords,
     };
   });
-
 
   return jobsWithScores
     .filter((job) => job.matchScore > 0)

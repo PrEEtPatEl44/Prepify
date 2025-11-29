@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { CloudUpload, BookOpen, Mic, ChevronRight } from "lucide-react";
 import Calender from "@/components/github-activity-calender";
@@ -10,6 +11,39 @@ import { useUser } from "@/hooks/useUser";
 export default function Home() {
   const router = useRouter();
   const { profile, loading } = useUser();
+
+  const [counts, setCounts] = useState<{
+    jobs_count: number;
+    interviews_count: number;
+  } | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function fetchCounts() {
+      try {
+        const res = await fetch("/api/dashboard", {
+          credentials: "same-origin",
+        });
+        if (!res.ok) return;
+        const json = await res.json();
+        if (mounted && json?.success && json.data) {
+          setCounts({
+            jobs_count: Number(json.data.jobs_count ?? 0),
+            interviews_count: Number(json.data.interviews_count ?? 0),
+          });
+        }
+      } catch (err) {
+        // ignore — keep defaults
+        console.error("Failed to fetch dashboard counts", err);
+      }
+    }
+
+    fetchCounts();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const actionButtons = [
     {
@@ -88,7 +122,10 @@ export default function Home() {
 
       <div className="max-w-lg">
         <h2 className="text-xl font-bold mb-3">Progress Overview</h2>
-        <StatsCard />
+        <StatsCard
+          interviews={counts?.interviews_count ?? 3}
+          applications={counts?.jobs_count ?? 78}
+        />
       </div>
 
       {/* Upcoming Mock Interview */}
