@@ -101,7 +101,7 @@ export default function JobSelectionDialog({
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
-                            <span className="font-semibold text-md mb-1 truncate">
+                            <span className="font-semibold text-md mb-1">
                               {job.title}
                             </span>
                             <p className="text-sm text-muted-foreground mb-2">
