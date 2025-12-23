@@ -87,23 +87,10 @@ yarn install
 
 3. **Set up environment variables**
 
-Create a `.env.local` file in the root directory:
-
-```env
-# Supabase Configuration
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-
-# OpenAI/OpenRouter Configuration (choose one)
-OPENAI_API_KEY=your_openai_api_key
-# OR
-OPENROUTER_API_KEY=your_openrouter_api_key
-OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
-OPENROUTER_MODEL_NAME=openai/gpt-4o-mini
-
-# App Configuration
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+- Create a `.env` file in the root directory:
+- Copy the contents of `.env.example` to `.env` and fill in your credentials:
 ```
+
 
 4. **Run the development server**
 ```bash
