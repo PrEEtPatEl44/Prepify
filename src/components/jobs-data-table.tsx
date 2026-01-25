@@ -5,7 +5,6 @@ import {
   ColumnDef,
   ColumnFiltersState,
   SortingState,
-  VisibilityState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
@@ -13,7 +12,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, Building2, ExternalLink, Sparkle } from "lucide-react";
+import { ArrowUpDown, Building2, ExternalLink } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -24,166 +23,308 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Job } from "@/types/jobs";
+import { Job, Column } from "@/types/jobs";
+import { editJob } from "@/app/jobs/actions";
+import { toast } from "sonner";
 
-const createColumns = (
-  onStartInterview?: (job: Job) => void
-): ColumnDef<Job>[] => [
-  {
-    accessorKey: "companyName",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Company
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      const companyName = row.getValue("companyName") as string;
-      const companyIconUrl = row.original.companyIconUrl;
-
-      return (
-        <div className="flex items-center gap-3">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src={companyIconUrl} alt={companyName} />
-            <AvatarFallback>
-              <Building2 className="h-4 w-4" />
-            </AvatarFallback>
-          </Avatar>
-          <span className="font-medium">{companyName}</span>
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "title",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Job Title
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      return <div className="font-medium">{row.getValue("title")}</div>;
-    },
-  },
-
-  {
-    accessorKey: "createdAt",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Applied Date
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      const date = row.getValue("createdAt") as Date;
-      return <div>{new Date(date).toLocaleDateString()}</div>;
-    },
-  },
-  {
-    id: "actions",
-    header: "Actions",
-    enableHiding: false,
-    cell: ({ row }) => {
-      const job = row.original;
-
-      return (
-        <div className="flex items-center justify-center gap-2">
-          <Button
-            size="sm"
-            variant="default"
-            className="bg-[#636AE8] hover:bg-[#4B4FD6]"
-            onClick={() => {
-              if (onStartInterview) {
-                onStartInterview(job);
-              }
-            }}
-          >
-            <Sparkle className="mr-2 h-4 w-4" />
-            Start Interview
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => window.open(job.applicationLink, "_blank")}
-          >
-            <ExternalLink className="mr-2 h-4 w-4" />
-            View Posting
-          </Button>
-        </div>
-      );
-    },
-  },
-];
+interface Document {
+  id: string;
+  file_name: string;
+  file_path: string;
+}
 
 interface JobsDataTableProps {
-  data: Job[];
-  onStartInterview?: (job: Job) => void;
-  searchFilter?: string;
+  jobs: Job[];
+  setJobs: React.Dispatch<React.SetStateAction<Job[]>>;
+  columns: Column[];
+  searchTerm?: string;
 }
 
 export function JobsDataTable({
-  data,
-  onStartInterview,
-  searchFilter,
+  jobs,
+  setJobs,
+  columns,
+  searchTerm,
 }: JobsDataTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
+  const [resumes, setResumes] = React.useState<Document[]>([]);
+  const [coverLetters, setCoverLetters] = React.useState<Document[]>([]);
 
-  const columns = React.useMemo(
-    () => createColumns(onStartInterview),
-    [onStartInterview]
+  // Fetch resumes and cover letters on mount
+  React.useEffect(() => {
+    const fetchDocuments = async () => {
+      try {
+        const [resumesRes, coverLettersRes] = await Promise.all([
+          fetch("/api/docs?type=resumes"),
+          fetch("/api/docs?type=coverLetters"),
+        ]);
+
+        if (resumesRes.ok) {
+          const resumesData = await resumesRes.json();
+          if (resumesData.success) {
+            setResumes(resumesData.data);
+          }
+        }
+
+        if (coverLettersRes.ok) {
+          const coverLettersData = await coverLettersRes.json();
+          if (coverLettersData.success) {
+            setCoverLetters(coverLettersData.data);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching documents:", error);
+      }
+    };
+
+    fetchDocuments();
+  }, []);
+
+  // Filter jobs based on search term
+  const filteredJobs = React.useMemo(() => {
+    if (!searchTerm || !searchTerm.trim()) return jobs;
+    const query = searchTerm.toLowerCase().trim();
+    return jobs.filter(
+      (job) =>
+        job.title.toLowerCase().includes(query) ||
+        job.companyName.toLowerCase().includes(query) ||
+        job.description?.toLowerCase().includes(query) ||
+        job.applicationLink?.toLowerCase().includes(query)
+    );
+  }, [jobs, searchTerm]);
+
+  // Handle silent update for dropdowns
+  const handleFieldUpdate = async (
+    jobId: string,
+    field: "resumeId" | "coverLetterId" | "columnId",
+    value: string | undefined
+  ) => {
+    try {
+      const result = await editJob(jobId, { [field]: value || null });
+      if (result.success && result.data) {
+        setJobs((prev) =>
+          prev.map((j) => (j.id === jobId ? result.data! : j))
+        );
+        toast.success("Updated successfully");
+      } else {
+        toast.error(result.error || "Failed to update");
+      }
+    } catch (error) {
+      console.error("Update failed:", error);
+      toast.error("Failed to update");
+    }
+  };
+
+  const tableColumns: ColumnDef<Job>[] = React.useMemo(
+    () => [
+      {
+        accessorKey: "companyName",
+        header: ({ column }) => {
+          return (
+            <Button
+              variant="ghost"
+              onClick={() =>
+                column.toggleSorting(column.getIsSorted() === "asc")
+              }
+            >
+              Company
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+          );
+        },
+        cell: ({ row }) => {
+          const companyName = row.getValue("companyName") as string;
+          const companyIconUrl = row.original.companyIconUrl;
+
+          return (
+            <div className="flex items-center gap-3">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={companyIconUrl} alt={companyName} />
+                <AvatarFallback>
+                  <Building2 className="h-4 w-4" />
+                </AvatarFallback>
+              </Avatar>
+              <span className="font-medium">{companyName}</span>
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: "title",
+        header: ({ column }) => {
+          return (
+            <Button
+              variant="ghost"
+              onClick={() =>
+                column.toggleSorting(column.getIsSorted() === "asc")
+              }
+            >
+              Job Title
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+          );
+        },
+        cell: ({ row }) => {
+          return <div className="font-medium">{row.getValue("title")}</div>;
+        },
+      },
+      {
+        accessorKey: "description",
+        header: "Description",
+        cell: ({ row }) => {
+          const description = row.original.description;
+          return (
+            <div
+              className="max-w-[200px] truncate text-muted-foreground"
+              title={description}
+            >
+              {description || "-"}
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: "resumeId",
+        header: "Resume",
+        cell: ({ row }) => {
+          const job = row.original;
+          return (
+            <Select
+              value={job.resumeId || "none"}
+              onValueChange={(value) =>
+                handleFieldUpdate(
+                  job.id,
+                  "resumeId",
+                  value === "none" ? undefined : value
+                )
+              }
+            >
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="Select resume" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None</SelectItem>
+                {resumes.map((resume) => (
+                  <SelectItem key={resume.id} value={resume.id}>
+                    {resume.file_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          );
+        },
+      },
+      {
+        accessorKey: "coverLetterId",
+        header: "Cover Letter",
+        cell: ({ row }) => {
+          const job = row.original;
+          return (
+            <Select
+              value={job.coverLetterId || "none"}
+              onValueChange={(value) =>
+                handleFieldUpdate(
+                  job.id,
+                  "coverLetterId",
+                  value === "none" ? undefined : value
+                )
+              }
+            >
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="Select cover letter" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None</SelectItem>
+                {coverLetters.map((letter) => (
+                  <SelectItem key={letter.id} value={letter.id}>
+                    {letter.file_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          );
+        },
+      },
+      {
+        accessorKey: "applicationLink",
+        header: "Link",
+        cell: ({ row }) => {
+          const link = row.original.applicationLink;
+          return link ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => window.open(link, "_blank")}
+            >
+              <ExternalLink className="h-4 w-4 mr-1" />
+              View
+            </Button>
+          ) : (
+            <span className="text-muted-foreground">-</span>
+          );
+        },
+      },
+      {
+        accessorKey: "columnId",
+        header: "Status",
+        cell: ({ row }) => {
+          const job = row.original;
+          const currentColumn = columns.find((c) => c.id === job.columnId);
+          return (
+            <Select
+              value={job.columnId}
+              onValueChange={(value) =>
+                handleFieldUpdate(job.id, "columnId", value)
+              }
+            >
+              <SelectTrigger className="w-[130px]">
+                <SelectValue>
+                  {currentColumn?.name || "Select status"}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {columns.map((column) => (
+                  <SelectItem key={column.id} value={column.id}>
+                    {column.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          );
+        },
+      },
+    ],
+    [columns, resumes, coverLetters]
   );
 
-  // Update column filters when searchFilter changes
-  React.useEffect(() => {
-    if (searchFilter !== undefined) {
-      setColumnFilters([{ id: "companyName", value: searchFilter }]);
-    }
-  }, [searchFilter]);
-
   const table = useReactTable({
-    data,
-    columns,
+    data: filteredJobs,
+    columns: tableColumns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
     state: {
       sorting,
       columnFilters,
-      columnVisibility,
-      rowSelection,
     },
   });
 
   return (
-    <div className="w-full">
+    <div className="w-full p-4">
       <div className="rounded-xl shadow-xl border bg-white overflow-hidden">
         <Table>
           <TableHeader>
@@ -191,7 +332,7 @@ export function JobsDataTable({
               <TableRow key={headerGroup.id} className="border-0">
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id} className="text-center">
+                    <TableHead key={header.id}>
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -209,13 +350,12 @@ export function JobsDataTable({
               table.getRowModel().rows.map((row, index) => (
                 <TableRow
                   key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
                   className={`border-0 ${
                     index % 2 === 0 ? "bg-white" : "bg-[#FAFAFB]"
                   }`}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="text-center">
+                    <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -227,7 +367,7 @@ export function JobsDataTable({
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
+                  colSpan={tableColumns.length}
                   className="h-24 text-center"
                 >
                   No job applications found.
@@ -239,7 +379,7 @@ export function JobsDataTable({
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredRowModel().rows.length} job application(s) total.
+          {filteredJobs.length} job application(s) total.
         </div>
         <div className="space-x-2">
           <Button

@@ -2,20 +2,28 @@
 
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { Input } from "./ui/input";
+import { Button } from "./ui/button";
 import CreateJobModal from "@/components/modals/CreateJobModal";
 import { type Column, CreateJob } from "@/types/jobs";
 import UserDropdown from "@/components/user-dropdown";
 import { useUser } from "@/hooks/useUser";
 import { useRef } from "react";
+import { LayoutGrid, TableIcon } from "lucide-react";
+
+export type ViewMode = "kanban" | "table";
 
 export default function Header({
   onCreateJob,
   columns,
   setSearchTerm,
+  viewMode,
+  onViewModeChange,
 }: {
   onCreateJob: (job: CreateJob) => Promise<void>;
   columns: Column[];
   setSearchTerm: (term: string) => void;
+  viewMode?: ViewMode;
+  onViewModeChange?: (mode: ViewMode) => void;
 }) {
   const { profile } = useUser();
   const debounceRef = useRef<number | null>(null);
@@ -42,7 +50,31 @@ export default function Header({
           onChange={handleChange}
         />
 
-        <div className="flex items-center gap-6 mr-4">
+        <div className="flex items-center gap-4 mr-4">
+          {/* View Toggle */}
+          {viewMode && onViewModeChange && (
+            <div className="flex items-center gap-1 bg-[#F3F4F6] rounded-lg p-1">
+              <Button
+                variant={viewMode === "kanban" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => onViewModeChange("kanban")}
+                className="h-7 px-3"
+              >
+                <LayoutGrid className="h-4 w-4 mr-1" />
+                Kanban
+              </Button>
+              <Button
+                variant={viewMode === "table" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => onViewModeChange("table")}
+                className="h-7 px-3"
+              >
+                <TableIcon className="h-4 w-4 mr-1" />
+                Table
+              </Button>
+            </div>
+          )}
+
           {/* Create Application Button */}
           {columns.length > 0 && (
             <CreateJobModal

@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import Header from "@/components/header";
+import Header, { type ViewMode } from "@/components/header";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 
@@ -8,6 +8,7 @@ import { createJob } from "@/app/jobs/actions";
 import { type CreateJob, type Column, type Job } from "@/types/jobs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { JobsDataTable } from "@/components/jobs-data-table";
 
 const Kanban = dynamic(() => import("@/components/kanban"), { ssr: false });
 
@@ -16,6 +17,7 @@ const Page = () => {
   const [columns, setColumns] = useState<Column[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [viewMode, setViewMode] = useState<ViewMode>("kanban");
 
   // Fetch jobs and columns on component mount
   useEffect(() => {
@@ -106,17 +108,28 @@ const Page = () => {
           columns={columns}
           onCreateJob={handleCreateJob}
           setSearchTerm={setSearchTerm}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
         />
       </div>
       <div className="flex-1 overflow-hidden">
-        <Kanban
-          jobs={jobs}
-          setJobs={setJobs}
-          columns={columns}
-          setColumns={setColumns}
-          handleCreateJob={handleCreateJob}
-          searchTerm={searchTerm}
-        />
+        {viewMode === "kanban" ? (
+          <Kanban
+            jobs={jobs}
+            setJobs={setJobs}
+            columns={columns}
+            setColumns={setColumns}
+            handleCreateJob={handleCreateJob}
+            searchTerm={searchTerm}
+          />
+        ) : (
+          <JobsDataTable
+            jobs={jobs}
+            setJobs={setJobs}
+            columns={columns}
+            searchTerm={searchTerm}
+          />
+        )}
       </div>
     </div>
   );
