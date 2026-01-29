@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ChevronRight, ChevronDown, ExternalLink, Check } from "lucide-react";
 import Image from "next/image";
-import { createJob } from "@/app/jobs/actions";
+import { createJob } from "@/app/(protected)/jobs/actions";
 import { toast } from "sonner";
 
 interface JobMatch {

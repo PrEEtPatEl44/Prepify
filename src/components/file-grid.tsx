@@ -5,7 +5,7 @@ import { CreateFileModal } from "./modals/CreateFileModal";
 import FileCard from "./file-card";
 import { useEffect, useState, useMemo } from "react";
 import { DocumentBasicInfo } from "@/types/docs";
-import { deleteDocument } from "@/app/docs/actions";
+import { deleteDocument } from "@/app/(protected)/docs/actions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "./ui/button";
 import SearchResultsDock from "./search-results-dock";

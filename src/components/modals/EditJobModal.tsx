@@ -34,7 +34,7 @@ import {
   useCompanySearch,
   type CompanySearchResult,
 } from "@/hooks/useCompanySearch";
-import { editJob } from "@/app/jobs/actions";
+import { editJob } from "@/app/(protected)/jobs/actions";
 import { toast } from "sonner";
 
 interface EditJobModalProps {

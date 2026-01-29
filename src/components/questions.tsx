@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
 import InterviewFeedback from "./interview-feedback";
-import { uploadInterview } from "@/app/interview/actions";
+import { uploadInterview } from "@/app/(protected)/interview/actions";
 
 interface Question {
   id: number;

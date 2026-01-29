@@ -4,7 +4,7 @@ import Header from "@/components/header";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 
-import { createJob } from "@/app/jobs/actions";
+import { createJob } from "@/app/(protected)/jobs/actions";
 import { type CreateJob, type Column, type Job } from "@/types/jobs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";

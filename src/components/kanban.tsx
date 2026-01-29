@@ -14,7 +14,7 @@ import { CreateJob, type Column, type Job } from "@/types/jobs";
 import CreateJobModal from "@/components/modals/CreateJobModal";
 import CreateListModal from "@/components/modals/CreateListModal";
 import DeleteJobModal from "@/components/modals/DeleteJobModal";
-import { deleteJob, moveJob, createColumn } from "@/app/jobs/actions";
+import { deleteJob, moveJob, createColumn } from "@/app/(protected)/jobs/actions";
 import {
   DropdownMenu,
   DropdownMenuContent,
