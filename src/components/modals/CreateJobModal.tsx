@@ -202,7 +202,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
         if (!coverLettersRes.ok) {
           console.error(
             "Failed to fetch cover letters:",
-            coverLettersRes.statusText
+            coverLettersRes.statusText,
           );
         } else {
           const coverLettersJson = await coverLettersRes.json();
@@ -227,7 +227,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
       {/* Header */}
       <DialogTrigger asChild>
         {isHeader ? (
-          <Button className="bg-primary hover:bg-primary-hover">
+          <Button className="bg-primary hover:bg-primary-hover !h-8">
             <Plus />
             <span className="text-sm font-inter hidden sm:inline">
               Create Application

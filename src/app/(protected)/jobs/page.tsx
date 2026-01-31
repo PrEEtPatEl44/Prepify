@@ -2,7 +2,10 @@
 import React from "react";
 import Header, { type ViewMode } from "@/components/header";
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { X, Building2 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 import { createJob } from "@/app/(protected)/jobs/actions";
 import { type CreateJob, type Column, type Job } from "@/types/jobs";
@@ -17,7 +20,19 @@ const Page = () => {
   const [columns, setColumns] = useState<Column[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [viewMode, setViewMode] = useState<ViewMode>("kanban");
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem("jobsViewMode") as ViewMode) || "kanban";
+    }
+    return "kanban";
+  });
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+
+  const handleViewModeChange = useCallback((mode: ViewMode) => {
+    setViewMode(mode);
+    localStorage.setItem("jobsViewMode", mode);
+    setSelectedJob(null);
+  }, []);
 
   // Fetch jobs and columns on component mount
   useEffect(() => {
@@ -81,7 +96,7 @@ const Page = () => {
       toast.error(
         `Failed to create job: ${
           error instanceof Error ? error.message : "Unknown error"
-        }`
+        }`,
       );
     }
   };
@@ -102,35 +117,77 @@ const Page = () => {
   }
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden">
-      <div className="mt-6 px-1 max-w-[95%]">
-        <Header
-          columns={columns}
-          onCreateJob={handleCreateJob}
-          setSearchTerm={setSearchTerm}
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
-        />
-      </div>
-      <div className="flex-1 overflow-hidden">
-        {viewMode === "kanban" ? (
-          <Kanban
-            jobs={jobs}
-            setJobs={setJobs}
+    <div className="h-screen flex flex-row  flex-1 min-w-0">
+      <div
+        className={`flex flex-col h-full ${
+          selectedJob ? "w-1/2" : "w-full"
+        } transition-all duration-500 ease-in-out`}
+      >
+        <div className="mt-6 px-1 pr-2">
+          <Header
             columns={columns}
-            setColumns={setColumns}
-            handleCreateJob={handleCreateJob}
-            searchTerm={searchTerm}
+            onCreateJob={handleCreateJob}
+            setSearchTerm={setSearchTerm}
+            viewMode={viewMode}
+            onViewModeChange={handleViewModeChange}
           />
-        ) : (
-          <JobsDataTable
-            jobs={jobs}
-            setJobs={setJobs}
-            columns={columns}
-            searchTerm={searchTerm}
-          />
-        )}
+        </div>
+        <div className="flex-1 overflow-hidden">
+          {viewMode === "kanban" ? (
+            <Kanban
+              jobs={jobs}
+              setJobs={setJobs}
+              columns={columns}
+              setColumns={setColumns}
+              handleCreateJob={handleCreateJob}
+              searchTerm={searchTerm}
+            />
+          ) : (
+            <JobsDataTable
+              jobs={jobs}
+              setJobs={setJobs}
+              columns={columns}
+              searchTerm={searchTerm}
+              onViewDescription={setSelectedJob}
+            />
+          )}
+        </div>
       </div>
+
+      {selectedJob && (
+        <div className="flex-1 flex-shrink-0 animate-in slide-in-from-right duration-300">
+          <div className="h-screen flex flex-col bg-background/95 border-l shadow-2xl">
+            <div className="sticky top-0 z-10 p-3 bg-muted flex items-center gap-3">
+              <div className="flex flex-1 items-center gap-3 min-w-0">
+                <Avatar className="h-8 w-8 shrink-0">
+                  <AvatarImage
+                    src={selectedJob.companyIconUrl}
+                    alt={selectedJob.companyName}
+                  />
+                  <AvatarFallback>
+                    <Building2 className="h-4 w-4" />
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0">
+                  <p className="font-medium truncate">{selectedJob.title}</p>
+                  <p className="text-sm text-muted-foreground truncate">
+                    {selectedJob.companyName}
+                  </p>
+                </div>
+              </div>
+              <X
+                className="h-5 w-5 shrink-0 text-muted-foreground hover:text-foreground cursor-pointer"
+                onClick={() => setSelectedJob(null)}
+              />
+            </div>
+            <ScrollArea className="flex-1 min-h-0">
+              <div className="p-4 text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground">
+                {selectedJob.description || "No description available."}
+              </div>
+            </ScrollArea>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

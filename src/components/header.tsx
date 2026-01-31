@@ -41,26 +41,26 @@ export default function Header({
 
   return (
     <>
-      <div className="p-2 flex justify-between items-center bg-card rounded-xl shadow-md gap-2 sm:gap-4">
+      <div className="p-2 mr-1 flex justify-between items-center bg-card rounded-xl shadow-md gap-2 sm:gap-4">
         {/* Search Box */}
         <Input
           type="text"
           placeholder="Search jobs..."
-          className="max-w-2xl max-h-8 bg-muted !border-none"
+          className="max-w-xl max-h-8 bg-muted !border-none"
           onChange={handleChange}
         />
 
         <div className="flex items-center gap-4 mr-4">
           {/* View Toggle */}
           {viewMode && onViewModeChange && (
-            <div className="flex items-center gap-1 bg-[#F3F4F6] rounded-lg p-1">
+            <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
               <Button
                 variant={viewMode === "kanban" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => onViewModeChange("kanban")}
                 className="h-7 px-3"
               >
-                <LayoutGrid className="h-4 w-4 mr-1" />
+                <LayoutGrid className="h-4 w-4 mr-1 " />
                 Kanban
               </Button>
               <Button
