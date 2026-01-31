@@ -279,24 +279,6 @@ export function JobsDataTable({
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
-                      disabled={!job.applicationLink}
-                      onClick={() =>
-                        job.applicationLink &&
-                        window.open(job.applicationLink, "_blank")
-                      }
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Open Link</TooltipContent>
-                </Tooltip>
-
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
                       disabled={!resume}
                       onClick={() => {
                         if (resume && onViewFile) {
@@ -333,6 +315,24 @@ export function JobsDataTable({
                       ? `View Cover Letter: ${coverLetter.file_name}`
                       : "No Cover Letter"}
                   </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      disabled={!job.applicationLink}
+                      onClick={() =>
+                        job.applicationLink &&
+                        window.open(job.applicationLink, "_blank")
+                      }
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Open Link</TooltipContent>
                 </Tooltip>
               </div>
             </TooltipProvider>

@@ -62,19 +62,20 @@ export default function Viewer({ file }: ViewerProps) {
   }
 
   return (
-    <div
-      className="h-screen flex flex-col bg-[#171A1F66] shadow-2xl overflow-scroll scrollbar-hide"
-      style={{ scrollbarWidth: "none" }}
-    >
+    <div className="flex flex-col bg-[#171A1F66] shadow-2xl">
       <div className="">
         <Document
           file={fileUrl}
           onLoadSuccess={onDocumentLoadSuccess}
-          className={"m-4 flex flex-col gap-4"}
+          className={"m-4 flex flex-col items-center gap-4"}
         >
           {numPages &&
             Array.from(new Array(numPages), (el, index) => (
-              <Page key={`page_${index + 1}`} pageNumber={index + 1} />
+              <Page
+                key={`page_${index + 1}`}
+                pageNumber={index + 1}
+                className={"shadow-lg"}
+              />
             ))}
         </Document>
       </div>
