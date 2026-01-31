@@ -108,7 +108,7 @@ const createColumns = (
           <Button
             size="sm"
             variant="default"
-            className="bg-[#636AE8] hover:bg-[#4B4FD6]"
+            className="bg-primary hover:bg-primary-hover"
             onClick={() => {
               if (onStartInterview) {
                 onStartInterview(job);
@@ -184,7 +184,7 @@ export function JobsDataTable({
 
   return (
     <div className="w-full">
-      <div className="rounded-xl shadow-xl border bg-white overflow-hidden">
+      <div className="rounded-xl shadow-xl border bg-card overflow-hidden">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -211,7 +211,7 @@ export function JobsDataTable({
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                   className={`border-0 ${
-                    index % 2 === 0 ? "bg-white" : "bg-[#FAFAFB]"
+                    index % 2 === 0 ? "bg-card" : "bg-muted/50"
                   }`}
                 >
                   {row.getVisibleCells().map((cell) => (

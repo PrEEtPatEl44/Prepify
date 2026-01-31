@@ -1,7 +1,8 @@
 "use client";
 
 import React, { ReactNode } from "react";
-import { LogOut } from "lucide-react";
+import { LogOut, Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -28,7 +29,7 @@ const UserDropdown = ({
   sideForDesktop,
 }: UserDropdownProps) => {
   const { profile } = useUser();
-
+  const { theme, setTheme } = useTheme();
   const { isMobile } = useSidebar();
   return (
     <DropdownMenu>
@@ -54,6 +55,10 @@ const UserDropdown = ({
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
+          {theme === "dark" ? <Sun /> : <Moon />}
+          {theme === "dark" ? "Light mode" : "Dark mode"}
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={logout}>
           <LogOut />
           Log out

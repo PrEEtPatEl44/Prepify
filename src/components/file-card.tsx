@@ -27,10 +27,10 @@ const FileCard: React.FC<FileCardProps> = ({
     >
       <CardContent className="!p-0 ">
         {/* Thumbnail Area */}
-        <div className="relative min-h-36 rounded-t-lg flex items-center justify-center bg-gray-50 ">
+        <div className="relative min-h-36 rounded-t-lg flex items-center justify-center bg-muted/50 ">
           <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button className="p-1 rounded-full hover:bg-white/20">
-              <MoreVertical className="w-4 h-4 text-gray-600" />
+            <button className="p-1 rounded-full hover:bg-background/20">
+              <MoreVertical className="w-4 h-4 text-muted-foreground" />
             </button>
           </div>
           <File className="w-6 h-6 text-blue-500" />
@@ -39,7 +39,7 @@ const FileCard: React.FC<FileCardProps> = ({
         {/* File Info */}
         <div className="p-3 flex justify-between items-center">
           <h3
-            className="text-sm w-full font-medium text-gray-900 truncate "
+            className="text-sm w-full font-medium text-foreground truncate "
             title={file.file_name}
           >
             {file.file_name}
@@ -51,7 +51,7 @@ const FileCard: React.FC<FileCardProps> = ({
                 onDelete={() => handleDeleteFile(file.id, file.file_path)}
               >
                 <button className="flex-shrink-0">
-                  <Trash2 className="w-5 h-5 mt-2 text-gray-500 hover:text-red-600 cursor-pointer transition-colors" />
+                  <Trash2 className="w-5 h-5 mt-2 text-muted-foreground hover:text-red-600 cursor-pointer transition-colors" />
                 </button>
               </DeleteDocModal>
             )}

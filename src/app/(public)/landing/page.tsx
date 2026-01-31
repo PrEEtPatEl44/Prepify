@@ -34,7 +34,7 @@ export default function LandingPage() {
             </Link>
             <Link
               href="/auth/signup"
-              className="rounded-md bg-[#636AE8] px-4 py-2 text-sm font-medium text-white hover:bg-[#636AE8]/90 transition-colors"
+              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 transition-colors"
             >
               Sign up
             </Link>
@@ -45,9 +45,9 @@ export default function LandingPage() {
       <main className="flex-1">
         {/* Hero */}
         <section className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-[#636AE8]/5 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
           <div className="max-w-6xl mx-auto px-6 pt-24 pb-20 text-center relative">
-            <p className="text-sm font-medium text-[#636AE8] mb-4">AI-Powered Career Preparation</p>
+            <p className="text-sm font-medium text-primary mb-4">AI-Powered Career Preparation</p>
             <h1 className="text-5xl md:text-6xl font-bold tracking-tight font-[family-name:var(--font-archivo)] max-w-3xl mx-auto leading-tight">
               Your AI-powered job search companion
             </h1>
@@ -58,7 +58,7 @@ export default function LandingPage() {
             <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/auth/signup"
-                className="rounded-md bg-[#636AE8] px-8 py-3 text-sm font-medium text-white hover:bg-[#636AE8]/90 transition-colors shadow-lg shadow-[#636AE8]/25"
+                className="rounded-md bg-primary px-8 py-3 text-sm font-medium text-white hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25"
               >
                 Get Started — It&apos;s Free
               </Link>
@@ -82,9 +82,9 @@ export default function LandingPage() {
               <div className="p-8 grid grid-cols-3 gap-4">
                 <div className="rounded-lg bg-muted/50 p-4">
                   <div className="text-xs text-muted-foreground mb-1">Resume Score</div>
-                  <div className="text-2xl font-bold text-[#636AE8]">87/100</div>
+                  <div className="text-2xl font-bold text-primary">87/100</div>
                   <div className="mt-2 h-2 rounded-full bg-muted overflow-hidden">
-                    <div className="h-full w-[87%] rounded-full bg-[#636AE8]" />
+                    <div className="h-full w-[87%] rounded-full bg-primary" />
                   </div>
                 </div>
                 <div className="rounded-lg bg-muted/50 p-4">
@@ -105,7 +105,7 @@ export default function LandingPage() {
                         key={i}
                         className="w-3 h-3 rounded-sm"
                         style={{
-                          backgroundColor: `color-mix(in oklch, #636AE8 ${Math.random() > 0.4 ? Math.floor(Math.random() * 80 + 20) : 5}%, transparent)`,
+                          backgroundColor: `color-mix(in oklch, var(--primary) ${Math.random() > 0.4 ? Math.floor(Math.random() * 80 + 20) : 5}%, transparent)`,
                         }}
                       />
                     ))}
@@ -114,8 +114,8 @@ export default function LandingPage() {
                 <div className="rounded-lg bg-muted/50 p-4 h-24">
                   <div className="text-xs text-muted-foreground mb-2">Quick Actions</div>
                   <div className="space-y-1">
-                    <div className="text-xs rounded bg-[#636AE8]/10 text-[#636AE8] px-2 py-1">+ New Application</div>
-                    <div className="text-xs rounded bg-[#636AE8]/10 text-[#636AE8] px-2 py-1">Upload Resume</div>
+                    <div className="text-xs rounded bg-primary/10 text-primary px-2 py-1">+ New Application</div>
+                    <div className="text-xs rounded bg-primary/10 text-primary px-2 py-1">Upload Resume</div>
                   </div>
                 </div>
               </div>
@@ -169,10 +169,10 @@ export default function LandingPage() {
                 },
               ].map((item) => (
                 <div key={item.step} className="relative text-center">
-                  <div className="mx-auto w-20 h-20 rounded-full bg-[#636AE8]/10 flex items-center justify-center text-[#636AE8] relative z-10">
+                  <div className="mx-auto w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center text-primary relative z-10">
                     {item.icon}
                   </div>
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 w-6 h-6 rounded-full bg-[#636AE8] text-white text-xs font-bold flex items-center justify-center">
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 w-6 h-6 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center">
                     {item.step}
                   </div>
                   <h3 className="mt-6 font-semibold text-lg">{item.title}</h3>
@@ -197,7 +197,7 @@ export default function LandingPage() {
               {/* Resume Analysis */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                 <div>
-                  <div className="inline-flex items-center gap-2 rounded-full bg-[#636AE8]/10 px-3 py-1 text-xs font-medium text-[#636AE8] mb-4">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary mb-4">
                     Resume Analysis
                   </div>
                   <h3 className="text-2xl font-bold font-[family-name:var(--font-archivo)]">
@@ -211,7 +211,7 @@ export default function LandingPage() {
                   <ul className="mt-6 space-y-3">
                     {["PDF & DOCX support", "Keyword gap identification", "Actionable improvement recommendations", "Score breakdown by category"].map((item) => (
                       <li key={item} className="flex items-center gap-3 text-sm">
-                        <CheckIcon className="w-4 h-4 text-[#636AE8] shrink-0" />
+                        <CheckIcon className="w-4 h-4 text-primary shrink-0" />
                         {item}
                       </li>
                     ))}
@@ -226,7 +226,7 @@ export default function LandingPage() {
                         <span className="font-medium">82%</span>
                       </div>
                       <div className="h-2 rounded-full bg-muted overflow-hidden">
-                        <div className="h-full w-[82%] rounded-full bg-[#636AE8]" />
+                        <div className="h-full w-[82%] rounded-full bg-primary" />
                       </div>
                     </div>
                     <div>
@@ -235,12 +235,12 @@ export default function LandingPage() {
                         <span className="font-medium">90%</span>
                       </div>
                       <div className="h-2 rounded-full bg-muted overflow-hidden">
-                        <div className="h-full w-[90%] rounded-full bg-[#636AE8]/70" />
+                        <div className="h-full w-[90%] rounded-full bg-primary/70" />
                       </div>
                     </div>
                     <div className="pt-3 border-t border-border flex justify-between items-center">
                       <span className="font-medium">Overall Score</span>
-                      <span className="text-2xl font-bold text-[#636AE8]">87/100</span>
+                      <span className="text-2xl font-bold text-primary">87/100</span>
                     </div>
                   </div>
                 </div>
@@ -258,7 +258,7 @@ export default function LandingPage() {
                     ].map((item, i) => (
                       <div key={i} className="rounded-lg bg-muted/50 p-3">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-xs rounded bg-[#636AE8]/10 text-[#636AE8] px-1.5 py-0.5">{item.type}</span>
+                          <span className="text-xs rounded bg-primary/10 text-primary px-1.5 py-0.5">{item.type}</span>
                           <span className="text-xs text-muted-foreground">{item.difficulty}</span>
                         </div>
                         <p className="text-sm">{item.q}</p>
@@ -267,7 +267,7 @@ export default function LandingPage() {
                   </div>
                 </div>
                 <div className="order-1 md:order-2">
-                  <div className="inline-flex items-center gap-2 rounded-full bg-[#636AE8]/10 px-3 py-1 text-xs font-medium text-[#636AE8] mb-4">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary mb-4">
                     Interview Prep
                   </div>
                   <h3 className="text-2xl font-bold font-[family-name:var(--font-archivo)]">
@@ -281,7 +281,7 @@ export default function LandingPage() {
                   <ul className="mt-6 space-y-3">
                     {["Beginner to Expert difficulty levels", "Technical, behavioral, and mixed questions", "Real-time AI feedback on answers", "Customized to job description"].map((item) => (
                       <li key={item} className="flex items-center gap-3 text-sm">
-                        <CheckIcon className="w-4 h-4 text-[#636AE8] shrink-0" />
+                        <CheckIcon className="w-4 h-4 text-primary shrink-0" />
                         {item}
                       </li>
                     ))}
@@ -292,7 +292,7 @@ export default function LandingPage() {
               {/* Job Tracking */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                 <div>
-                  <div className="inline-flex items-center gap-2 rounded-full bg-[#636AE8]/10 px-3 py-1 text-xs font-medium text-[#636AE8] mb-4">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary mb-4">
                     Job Tracking
                   </div>
                   <h3 className="text-2xl font-bold font-[family-name:var(--font-archivo)]">
@@ -306,7 +306,7 @@ export default function LandingPage() {
                   <ul className="mt-6 space-y-3">
                     {["Drag-and-drop kanban board", "List and table views", "Custom status stages", "Resume linking per application"].map((item) => (
                       <li key={item} className="flex items-center gap-3 text-sm">
-                        <CheckIcon className="w-4 h-4 text-[#636AE8] shrink-0" />
+                        <CheckIcon className="w-4 h-4 text-primary shrink-0" />
                         {item}
                       </li>
                     ))}
@@ -349,7 +349,7 @@ export default function LandingPage() {
                       <div className="text-xs text-muted-foreground mt-1">Total Applications</div>
                     </div>
                     <div className="rounded-lg bg-muted/50 p-4 text-center">
-                      <div className="text-2xl font-bold text-[#636AE8]">87%</div>
+                      <div className="text-2xl font-bold text-primary">87%</div>
                       <div className="text-xs text-muted-foreground mt-1">Avg Resume Score</div>
                     </div>
                     <div className="rounded-lg bg-muted/50 p-4 text-center">
@@ -363,7 +363,7 @@ export default function LandingPage() {
                   </div>
                 </div>
                 <div className="order-1 md:order-2">
-                  <div className="inline-flex items-center gap-2 rounded-full bg-[#636AE8]/10 px-3 py-1 text-xs font-medium text-[#636AE8] mb-4">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary mb-4">
                     Dashboard & Analytics
                   </div>
                   <h3 className="text-2xl font-bold font-[family-name:var(--font-archivo)]">
@@ -376,7 +376,7 @@ export default function LandingPage() {
                   <ul className="mt-6 space-y-3">
                     {["Activity calendar heatmap", "Statistics overview", "Document management", "Quick actions"].map((item) => (
                       <li key={item} className="flex items-center gap-3 text-sm">
-                        <CheckIcon className="w-4 h-4 text-[#636AE8] shrink-0" />
+                        <CheckIcon className="w-4 h-4 text-primary shrink-0" />
                         {item}
                       </li>
                     ))}
@@ -407,7 +407,7 @@ export default function LandingPage() {
               ].map((agent, i) => (
                 <div key={agent.name} className="flex items-center gap-4">
                   <div className="w-48 rounded-xl border border-border bg-card p-4 text-center shadow-sm">
-                    <div className="w-10 h-10 rounded-lg bg-[#636AE8]/10 flex items-center justify-center text-[#636AE8] mx-auto mb-3">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary mx-auto mb-3">
                       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
                       </svg>
@@ -442,7 +442,7 @@ export default function LandingPage() {
                 { stat: "85%", label: "Users report faster job search", quote: "Tracking everything in one place saved me hours every week." },
               ].map((item) => (
                 <div key={item.stat} className="rounded-xl border border-border bg-card p-6 shadow-sm">
-                  <div className="text-3xl font-bold text-[#636AE8]">{item.stat}</div>
+                  <div className="text-3xl font-bold text-primary">{item.stat}</div>
                   <div className="text-sm font-medium mt-1">{item.label}</div>
                   <p className="text-sm text-muted-foreground mt-4 italic">&ldquo;{item.quote}&rdquo;</p>
                 </div>
@@ -452,7 +452,7 @@ export default function LandingPage() {
         </section>
 
         {/* Final CTA */}
-        <section className="py-24 border-t border-border/50 bg-[#636AE8]">
+        <section className="py-24 border-t border-border/50 bg-primary">
           <div className="max-w-3xl mx-auto px-6 text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-white font-[family-name:var(--font-archivo)]">
               Start preparing smarter today
@@ -462,7 +462,7 @@ export default function LandingPage() {
             </p>
             <Link
               href="/auth/signup"
-              className="mt-8 inline-block rounded-md bg-white text-[#636AE8] px-8 py-3 text-sm font-semibold hover:bg-white/90 transition-colors shadow-lg"
+              className="mt-8 inline-block rounded-md bg-white text-primary px-8 py-3 text-sm font-semibold hover:bg-white/90 transition-colors shadow-lg"
             >
               Get Started — It&apos;s Free
             </Link>

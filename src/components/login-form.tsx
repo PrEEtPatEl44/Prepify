@@ -63,9 +63,9 @@ export function LoginForm({
             <div className="relative  w-full mb-5">
               <Separator
                 orientation="horizontal"
-                className="bg-gray-200 flex"
+                className="bg-muted flex"
               />
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-0.5 bg-[#636AE8]"></div>
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-0.5 bg-primary"></div>
             </div>
           </CardTitle>
         </CardHeader>
@@ -88,7 +88,7 @@ export function LoginForm({
                   <Label htmlFor="password">Password</Label>
                   <Link
                     href="/auth/forgot-password"
-                    className="ml-auto inline-block text-sm underline-offset-4  hover:underline decoration-[#636AE8]"
+                    className="ml-auto inline-block text-sm underline-offset-4  hover:underline decoration-primary"
                   >
                     Forgot password?
                   </Link>
@@ -104,7 +104,7 @@ export function LoginForm({
               {error && <p className="text-sm text-red-500">{error}</p>}
               <Button
                 type="submit"
-                className="w-full bg-[#636AE8] hover:bg-[#4e57c1]"
+                className="w-full bg-primary hover:bg-primary-hover"
                 disabled={isLoading}
               >
                 {isLoading ? "Logging in..." : "Login"}
@@ -113,7 +113,7 @@ export function LoginForm({
                 Don&apos;t have an account?{" "}
                 <Link
                   href="/auth/signup"
-                  className="underline underline-offset-4 text-[#636AE8] hover:decoration-[#4e57c1]"
+                  className="underline underline-offset-4 text-primary hover:decoration-primary-hover"
                 >
                   Sign up
                 </Link>
@@ -121,12 +121,12 @@ export function LoginForm({
               <div className="flex items-center w-full gap-2">
                 <Separator
                   orientation="horizontal"
-                  className="bg-gray-200 flex-1"
+                  className="bg-muted flex-1"
                 />
-                <span className="text-sm text-gray-500">or</span>
+                <span className="text-sm text-muted-foreground">or</span>
                 <Separator
                   orientation="horizontal"
-                  className="bg-gray-200 flex-1"
+                  className="bg-muted flex-1"
                 />
               </div>
               <Button

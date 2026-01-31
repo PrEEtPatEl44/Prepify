@@ -122,7 +122,7 @@ const Page = () => {
               <div className="mb-4">
                 <button
                   onClick={() => setAnalysisResult(null)}
-                  className="text-[#636AE8] hover:text-[#4f56d4] flex items-center gap-2 font-medium"
+                  className="text-primary hover:text-primary-hover flex items-center gap-2 font-medium"
                 >
                   Back to Documents
                 </button>

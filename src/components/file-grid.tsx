@@ -123,7 +123,7 @@ const FileGrid = ({
             open={isModalOpen}
             onOpenChange={handleModalClose}
           >
-            <Card className="max-w-[170px] group hover:shadow-md transition-all duration-200 cursor-pointer bg-white border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50/30">
+            <Card className="max-w-[170px] group hover:shadow-md transition-all duration-200 cursor-pointer bg-card border-2 border-dashed border-border hover:border-primary/50 hover:bg-primary/10">
               <CardContent className="p-0 size-full">
                 <div className="p-3 min-h-42 size-full flex flex-col items-center justify-center hover:text-blue-500">
                   <h3 className="text-sm font-medium mb-1 text-center">
@@ -141,7 +141,7 @@ const FileGrid = ({
           Array.from({ length: 20 }).map((_, index) => (
             <Card key={index} className="max-w-[170px] shadow-lg overflow-clip">
               <CardContent className="!p-0">
-                <div className="min-h-32 rounded-t-lg bg-gray-50">
+                <div className="min-h-32 rounded-t-lg bg-muted/50">
                   <Skeleton className="w-full h-32" />
                 </div>
                 <div className="p-3">
@@ -152,13 +152,13 @@ const FileGrid = ({
           ))
         ) : !files || files.length === 0 ? (
           <div className="col-span-full flex flex-col items-center justify-center py-16 px-4">
-            <div className="bg-gray-100 rounded-full p-6 mb-4">
-              <FileX className="w-16 h-16 text-gray-400" />
+            <div className="bg-muted rounded-full p-6 mb-4">
+              <FileX className="w-16 h-16 text-muted-foreground/70" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">
+            <h3 className="text-xl font-semibold text-foreground/80 mb-2">
               No {documentType === "resumes" ? "resumes" : "cover letters"} yet
             </h3>
-            <p className="text-gray-500 text-center max-w-md mb-6">
+            <p className="text-muted-foreground text-center max-w-md mb-6">
               Get started by uploading your first{" "}
               {documentType === "resumes" ? "resume" : "cover letter"}. You can
               easily manage and organize all your documents in one place.
@@ -169,7 +169,7 @@ const FileGrid = ({
               open={isModalOpen}
               onOpenChange={handleModalClose}
             >
-              <Button className="flex items-center gap-2 px-6 py-3 bg-[#636AE8] hover:bg-[#4e57c1] text-white rounded-lg transition-colors font-medium">
+              <Button className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary-hover text-white rounded-lg transition-colors font-medium">
                 <Plus className="w-5 h-5" />
                 Upload {documentType === "resumes" ? "Resume" : "Cover Letter"}
               </Button>

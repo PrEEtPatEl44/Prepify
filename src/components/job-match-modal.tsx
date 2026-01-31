@@ -119,7 +119,7 @@ export default function JobMatchModal({
               variant="ghost"
               size="icon"
               onClick={() => onOpenChange(false)}
-              className="h-8 w-8 hover:bg-gray-100 rounded-full"
+              className="h-8 w-8 hover:bg-muted rounded-full"
             >
               <X className="h-5 w-5" />
             </Button> */}
@@ -130,13 +130,13 @@ export default function JobMatchModal({
         <div className="overflow-y-auto flex-1 px-8 py-6">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-16">
-              <div className="w-12 h-12 border-4 border-[#636AE8] border-t-transparent rounded-full animate-spin mb-4"></div>
-              <p className="text-gray-600">Finding matching jobs...</p>
+              <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+              <p className="text-muted-foreground">Finding matching jobs...</p>
             </div>
           ) : jobs.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16">
-              <p className="text-gray-600 text-lg">No matching jobs found</p>
-              <p className="text-gray-500 text-sm mt-2">
+              <p className="text-muted-foreground text-lg">No matching jobs found</p>
+              <p className="text-muted-foreground text-sm mt-2">
                 Try uploading a different resume
               </p>
             </div>
@@ -145,14 +145,14 @@ export default function JobMatchModal({
               {jobs.map((job) => (
                 <div
                   key={job.id}
-                  className="border rounded-xl p-6 hover:shadow-md transition-all duration-300 bg-white overflow-hidden"
+                  className="border rounded-xl p-6 hover:shadow-md transition-all duration-300 bg-card overflow-hidden"
                 >
                   <div className="flex items-start justify-between gap-6">
                     {/* Left Section - Job Info */}
                     <div className="flex items-center gap-4 flex-1 min-w-0">
                       <button
                         onClick={() => toggleExpanded(job.id)}
-                        className="p-1 hover:bg-gray-100 rounded transition-colors"
+                        className="p-1 hover:bg-muted rounded transition-colors"
                       >
                         {expandedJobs.has(job.id) ? (
                           <ChevronDown className="h-8 w-8 transition-transform duration-300" />
@@ -163,7 +163,7 @@ export default function JobMatchModal({
 
                       <div className="flex items-center gap-4 flex-1 min-w-0">
                         {/* Company Logo */}
-                        <div className="w-14 h-14 shrink-0 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center border">
+                        <div className="w-14 h-14 shrink-0 rounded-lg overflow-hidden bg-muted flex items-center justify-center border">
                           <Image
                             src={job.companyIconUrl}
                             alt={job.company}
@@ -185,14 +185,14 @@ export default function JobMatchModal({
 
                         {/* Job Details */}
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-xl font-semibold text-gray-900 mb-1 line-clamp-2">
+                          <h3 className="text-xl font-semibold text-foreground mb-1 line-clamp-2">
                             {job.title}
                           </h3>
-                          <p className="text-base text-gray-600 font-medium">
+                          <p className="text-base text-muted-foreground font-medium">
                             {job.company}
                           </p>
                           {job.location && (
-                            <p className="text-sm text-gray-500 mt-1">
+                            <p className="text-sm text-muted-foreground mt-1">
                               {job.location}
                             </p>
                           )}
@@ -245,7 +245,7 @@ export default function JobMatchModal({
                           className={`text-md ${
                             addedJobs.has(job.id)
                               ? "bg-green-600 hover:bg-green-700 text-white border-green-600"
-                              : "bg-[#636AE8] hover:bg-[#4B54C8] hover:text-white text-white"
+                              : "bg-primary hover:bg-primary-hover hover:text-white text-white"
                           }`}
                           onClick={() => handleAddJob(job)}
                           disabled={
@@ -271,7 +271,7 @@ export default function JobMatchModal({
                           onClick={() => window.open(job.url, "_blank")}
                           size="default"
                           variant="outline"
-                          className="border-gray-300 hover:bg-gray-50 text-md"
+                          className="border-border hover:bg-muted/50 text-md"
                         >
                           <ExternalLink className="mr-2 h-4 w-4" />
                           view posting
@@ -292,10 +292,10 @@ export default function JobMatchModal({
                       {/* Description */}
                       {job.description && (
                         <div>
-                          <h4 className="text-sm font-semibold text-gray-900 mb-2">
+                          <h4 className="text-sm font-semibold text-foreground mb-2">
                             Job Description
                           </h4>
-                          <p className="text-sm text-gray-600 leading-relaxed">
+                          <p className="text-sm text-muted-foreground leading-relaxed">
                             {job.description}
                           </p>
                         </div>
@@ -304,14 +304,14 @@ export default function JobMatchModal({
                       {/* Matched Keywords */}
                       {job.matchedKeywords.length > 0 && (
                         <div>
-                          <h4 className="text-sm font-semibold text-gray-900 mb-2">
+                          <h4 className="text-sm font-semibold text-foreground mb-2">
                             Matching Skills
                           </h4>
                           <div className="flex flex-wrap gap-2">
                             {job.matchedKeywords.map((keyword, idx) => (
                               <span
                                 key={idx}
-                                className="px-3 py-1.5 bg-[#636AE8]/10 text-[#636AE8] rounded-full text-xs font-medium"
+                                className="px-3 py-1.5 bg-primary/10 text-primary rounded-full text-xs font-medium"
                               >
                                 {keyword}
                               </span>

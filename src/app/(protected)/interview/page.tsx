@@ -226,7 +226,7 @@ const Page = () => {
       <div className="h-screen flex flex-1 flex-col overflow-hidden">
         <div className="mt-6 px-1 max-w-[95%]">
           {isLoading ? (
-            <div className="flex items-center justify-between gap-4 bg-white p-2 rounded-xl">
+            <div className="flex items-center justify-between gap-4 bg-card p-2 rounded-xl">
               <Skeleton className="h-10 w-128" />
               <Skeleton className="h-10 w-10  rounded-full" />
             </div>
@@ -245,22 +245,22 @@ const Page = () => {
         <div className="overflow-auto ">
           {isGeneratingQuestions ? (
             <div className="h-full flex flex-col items-center justify-center p-6 space-y-4">
-              <Loader2 className="w-16 h-16 text-[#636AE8] animate-spin" />
-              <h3 className="text-xl font-semibold text-gray-800">
+              <Loader2 className="w-16 h-16 text-primary animate-spin" />
+              <h3 className="text-xl font-semibold text-foreground">
                 Generating Interview Questions...
               </h3>
-              <p className="text-gray-600 text-center max-w-md">
+              <p className="text-muted-foreground text-center max-w-md">
                 Analyzing job description and resume to create personalized
                 interview questions
               </p>
             </div>
           ) : questionError ? (
             <div className="h-full flex flex-col items-center justify-center p-6 space-y-4">
-              <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
-                <h3 className="text-lg font-semibold text-red-700 mb-2">
+              <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg p-6 max-w-md">
+                <h3 className="text-lg font-semibold text-red-700 dark:text-red-300 mb-2">
                   Failed to Generate Questions
                 </h3>
-                <p className="text-red-600">{questionError}</p>
+                <p className="text-red-600 dark:text-red-400">{questionError}</p>
               </div>
             </div>
           ) : viewingInterview ? (
@@ -303,7 +303,7 @@ const Page = () => {
                         {[1, 2, 3].map((i) => (
                           <div
                             key={i}
-                            className="p-4 border border-gray-200 rounded-lg bg-white"
+                            className="p-4 border border-border rounded-lg bg-card"
                           >
                             <div className="flex items-center justify-between gap-4">
                               <div className="flex items-center gap-3 flex-1">
@@ -326,7 +326,7 @@ const Page = () => {
                     </div>
                   </div>
                 ) : error ? (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+                  <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg p-4 text-red-700 dark:text-red-300">
                     {error}
                   </div>
                 ) : jobs.length > 0 ? (
@@ -342,14 +342,14 @@ const Page = () => {
                     />
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center py-16 px-4 bg-white rounded-lg border">
-                    <div className="bg-gray-100 rounded-full p-6 mb-4">
-                      <Video className="w-16 h-16 text-gray-400" />
+                  <div className="flex flex-col items-center justify-center py-16 px-4 bg-card rounded-lg border">
+                    <div className="bg-muted rounded-full p-6 mb-4">
+                      <Video className="w-16 h-16 text-muted-foreground/70" />
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                    <h3 className="text-xl font-semibold text-foreground/80 mb-2">
                       No Job Applications Yet
                     </h3>
-                    <p className="text-gray-500 text-center max-w-md">
+                    <p className="text-muted-foreground text-center max-w-md">
                       Start adding job applications to track your progress and
                       prepare for interviews.
                     </p>
@@ -361,10 +361,10 @@ const Page = () => {
                   <div className="w-full space-y-6">
                     <div className="space-y-4">
                       {[1, 2, 3].map((i) => (
-                        <div
-                          key={i}
-                          className="p-4 border border-gray-200 rounded-lg bg-white"
-                        >
+                      <div
+                        key={i}
+                        className="p-4 border border-border rounded-lg bg-card"
+                      >
                           <div className="flex items-center justify-between gap-4">
                             <div className="flex items-center gap-3 flex-1">
                               <Skeleton className="h-10 w-10 rounded-lg" />
@@ -398,14 +398,14 @@ const Page = () => {
                   />
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-16 px-4 bg-white rounded-lg border">
-                  <div className="bg-gray-100 rounded-full p-6 mb-4">
-                    <Award className="w-16 h-16 text-gray-400" />
+                <div className="flex flex-col items-center justify-center py-16 px-4 bg-card rounded-lg border">
+                  <div className="bg-muted rounded-full p-6 mb-4">
+                    <Award className="w-16 h-16 text-muted-foreground/70" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                  <h3 className="text-xl font-semibold text-foreground/80 mb-2">
                     No Interviews Yet
                   </h3>
-                  <p className="text-gray-500 text-center max-w-md">
+                  <p className="text-muted-foreground text-center max-w-md">
                     Complete your first mock interview to see your history and
                     feedback here.
                   </p>

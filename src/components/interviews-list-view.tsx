@@ -78,13 +78,13 @@ export function InterviewsListView({
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case "easy":
-        return "bg-green-100 text-green-700";
+        return "bg-green-500/15 text-green-600 dark:text-green-400";
       case "intermediate":
         return "bg-yellow-100 text-yellow-700";
       case "hard":
-        return "bg-red-100 text-red-700";
+        return "bg-destructive/15 text-destructive";
       default:
-        return "bg-gray-100 text-gray-700";
+        return "bg-muted text-foreground/80";
     }
   };
 
@@ -125,7 +125,7 @@ export function InterviewsListView({
           filteredInterviews.map((interview) => (
             <Card
               key={interview.id}
-              className="p-4 hover:shadow-lg transition-all duration-200 border border-gray-200 hover:border-[#636AE8]/30 bg-white"
+              className="p-4 hover:shadow-lg transition-all duration-200 border border-border hover:border-primary/30 bg-card"
             >
               <div className="flex items-center justify-between gap-4">
                 {/* Left Section - Company & Job Info */}
@@ -136,16 +136,16 @@ export function InterviewsListView({
                       alt={interview.job_applications.company_name}
                       className="object-cover"
                     />
-                    <AvatarFallback className="rounded-lg bg-gradient-to-br from-[#636AE8] to-[#4B4FD6] text-white">
+                    <AvatarFallback className="rounded-lg bg-gradient-to-br from-primary to-primary-hover text-white">
                       <Building2 className="h-5 w-5" />
                     </AvatarFallback>
                   </Avatar>
 
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-semibold text-gray-900 truncate">
+                    <h3 className="text-lg font-semibold text-foreground truncate">
                       {interview.job_applications.job_title}
                     </h3>
-                    <p className="text-sm text-gray-600 font-medium">
+                    <p className="text-sm text-muted-foreground font-medium">
                       {interview.job_applications.company_name}
                     </p>
                   </div>
@@ -155,7 +155,7 @@ export function InterviewsListView({
                 <div className="flex items-center gap-4">
                   {/* Score */}
                   <div className="flex items-center gap-2">
-                    <Award className="w-5 h-5 text-gray-400" />
+                    <Award className="w-5 h-5 text-muted-foreground/70" />
                     <span
                       className={`text-lg font-bold ${getScoreColor(
                         interview.overall_score
@@ -166,7 +166,7 @@ export function InterviewsListView({
                   </div>
 
                   {/* Type Badge */}
-                  <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-medium">
+                  <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-primary/15 text-primary text-sm font-medium">
                     {getTypeIcon(interview.type)}
                     <span className="capitalize">{interview.type}</span>
                   </div>
@@ -182,7 +182,7 @@ export function InterviewsListView({
                   </div>
 
                   {/* Date */}
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Calendar className="h-4 w-4" />
                     <span>
                       {new Date(interview.created_at).toLocaleDateString(
@@ -202,7 +202,7 @@ export function InterviewsListView({
                   <Button
                     size="default"
                     variant="outline"
-                    className="border-gray-300 hover:bg-gray-50"
+                    className="border-border hover:bg-muted/50"
                     onClick={() => {
                       if (onViewDetails) {
                         onViewDetails(interview);
@@ -217,16 +217,16 @@ export function InterviewsListView({
             </Card>
           ))
         ) : (
-          <div className="flex flex-col items-center justify-center py-16 px-4 bg-white rounded-lg border border-gray-200">
-            <div className="bg-gray-100 rounded-full p-6 mb-4">
-              <Award className="w-16 h-16 text-gray-400" />
+          <div className="flex flex-col items-center justify-center py-16 px-4 bg-card rounded-lg border border-border">
+            <div className="bg-muted rounded-full p-6 mb-4">
+              <Award className="w-16 h-16 text-muted-foreground/70" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">
+            <h3 className="text-xl font-semibold text-foreground/80 mb-2">
               {localSearch
                 ? "No matching interviews found"
                 : "No interviews yet"}
             </h3>
-            <p className="text-gray-500 text-center max-w-md">
+            <p className="text-muted-foreground text-center max-w-md">
               {localSearch
                 ? "Try adjusting your search terms to find what you're looking for."
                 : "Complete your first mock interview to see your history here."}
@@ -237,13 +237,13 @@ export function InterviewsListView({
 
       {/* Footer Stats */}
       {filteredInterviews.length > 0 && (
-        <div className="flex items-center justify-between py-4 border-t border-gray-200 sticky bottom-0">
-          <div className="text-sm text-gray-600">
+        <div className="flex items-center justify-between py-4 border-t border-border sticky bottom-0">
+          <div className="text-sm text-muted-foreground">
             Showing{" "}
             <span className="font-semibold">{filteredInterviews.length}</span>{" "}
             {filteredInterviews.length === 1 ? "interview" : "interviews"}
             {localSearch && data.length !== filteredInterviews.length && (
-              <span className="text-gray-500">
+              <span className="text-muted-foreground">
                 {" "}
                 (filtered from {data.length} total)
               </span>

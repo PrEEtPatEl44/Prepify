@@ -400,22 +400,22 @@ const DocxViewer = ({
         className="h-screen min-w-fit flex flex-col bg-[#171A1F66] shadow-2xl overflow-y-scroll scrollbar-hide"
         style={{ scrollbarWidth: "none" }}
       >
-        <div className="sticky top-0 z-10 p-3 bg-gray-100 flex items-center gap-3">
+        <div className="sticky top-0 z-10 p-3 bg-muted flex items-center gap-3">
           <div className="flex flex-1 items-center gap-3">
             <div className="p-2">
-              <File className="h-6 w-6 text-[#636AE8]" />
+              <File className="h-6 w-6 text-primary" />
             </div>
             <span className="text-lg">{selectedFile?.file_name}</span>
           </div>
           <div className="flex gap-2 items-center">
             <a
               onClick={handleDownload}
-              className="p-1 rounded-full hover:bg-white/20"
+              className="p-1 rounded-full hover:bg-background/20"
             >
-              <Download className="h-6 w-6 text-gray-600 hover:text-gray-800 cursor-pointer" />
+              <Download className="h-6 w-6 text-muted-foreground hover:text-foreground cursor-pointer" />
             </a>
             <X
-              className="h-6 w-6 text-gray-600 hover:text-gray-800 cursor-pointer"
+              className="h-6 w-6 text-muted-foreground hover:text-foreground cursor-pointer"
               onClick={() => handleClose()}
             />
           </div>
@@ -423,10 +423,10 @@ const DocxViewer = ({
 
         <div className="relative flex-1">
           {isLoading && (
-            <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/90">
+            <div className="absolute inset-0 z-50 flex items-center justify-center bg-card/90">
               <div className="flex flex-col items-center gap-4">
-                <div className="w-12 h-12 border-4 border-[#636AE8] border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-gray-600">Loading document...</p>
+                <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-muted-foreground">Loading document...</p>
               </div>
             </div>
           )}
@@ -437,7 +437,7 @@ const DocxViewer = ({
               <Button
                 size="sm"
                 onClick={handleGetJobSuggestions}
-                className="bg-[#636AE8] hover:bg-[#4e57c1] text-white gap-2"
+                className="bg-primary hover:bg-primary-hover text-white gap-2"
                 disabled={loadingJobs}
               >
                 <Sparkles className="h-4 w-4 " />
@@ -445,7 +445,7 @@ const DocxViewer = ({
               </Button>
               <Button
                 size="sm"
-                className="bg-[#F2F2FD] hover:bg-[#E0E0F8] text-[#636AE8] shadow-lg transition-all duration-200 mr-5"
+                className="bg-primary-lighter hover:bg-primary-light text-primary shadow-lg transition-all duration-200 mr-5"
                 onClick={handleGetATSScore}
                 disabled={isAnalyzing}
               >

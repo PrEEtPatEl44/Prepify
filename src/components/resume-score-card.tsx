@@ -19,16 +19,16 @@ export default function ResumeScoreCard({
   return (
     <div
       className={cn(
-        "relative bg-white border border-[#bcc1ca] rounded-[10px] p-6",
+        "relative bg-card border border-border rounded-[10px] p-6",
         className
       )}
     >
       {/* Text Content */}
       <div className="mb-8">
-        <h3 className="text-lg font-bold text-[#171a1f] mb-2">
+        <h3 className="text-lg font-bold text-foreground mb-2">
           Your resume scored {score} out of 100.
         </h3>
-        <p className="text-base text-[#171a1f] leading-relaxed">
+        <p className="text-base text-foreground leading-relaxed">
           This is a decent start, but there&apos;s clear room for improvement on
           your resume. It scored low on some key criteria hiring managers and
           resume screening software look for, but they can be easily improved.
@@ -40,7 +40,7 @@ export default function ResumeScoreCard({
       {/* Slider Section */}
       <div className="relative h-[54px]">
         {/* Background bar */}
-        <div className="absolute top-1/2 -translate-y-1/2 w-full h-1.5 bg-[#ced0f8] rounded-full" />
+        <div className="absolute top-1/2 -translate-y-1/2 w-full h-1.5 bg-primary-light rounded-full" />
 
         {/* Gradient bar */}
         <div

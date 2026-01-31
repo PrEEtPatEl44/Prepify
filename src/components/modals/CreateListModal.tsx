@@ -36,9 +36,9 @@ export default function CreateListModal({ onSubmit }: CreateListModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <div className="flex items-center justify-center bg-gray-100 cursor-pointer rounded-lg p-2">
-          <Plus className="h-5 w-5 text-gray-500" />
-          <span className="ml-2 text-gray-500 font-medium">
+        <div className="flex items-center justify-center bg-muted cursor-pointer rounded-lg p-2">
+          <Plus className="h-5 w-5 text-muted-foreground" />
+          <span className="ml-2 text-muted-foreground font-medium">
             Create New List
           </span>
         </div>
@@ -66,11 +66,11 @@ export default function CreateListModal({ onSubmit }: CreateListModalProps) {
         </div>
 
         <DialogFooter className="px-4 flex justify-end gap-3">
-          <DialogClose className="hover:bg-gray-200 rounded-md px-3 border border-gray-300">
+          <DialogClose className="hover:bg-muted rounded-md px-3 border border-border">
             Cancel
           </DialogClose>
           <Button
-            className={`bg-[#636AE8] hover:bg-[#4e57c9] focus:ring-2 focus:ring-[#4e57c9] focus:ring-offset-2 text-white ${
+            className={`bg-primary hover:bg-primary-hover focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 text-white ${
               isLoading ? "disabled" : ""
             }`}
             disabled={isLoading}

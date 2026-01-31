@@ -74,7 +74,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <Image src="/logo.svg" width={32} height={32} alt="logo" />
 
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate text-2xl text-black font-semibold">
+                <span className="truncate text-2xl text-foreground font-semibold">
                   Prepify
                 </span>
               </div>

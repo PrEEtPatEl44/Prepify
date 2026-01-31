@@ -72,8 +72,8 @@ export default function ResumeAnalysisLoading({
         <CardContent className="pt-6">
           <div className="flex flex-col items-center mb-6">
             <div className="relative">
-              <div className="w-16 h-16 border-4 border-[#636AE8] border-t-transparent rounded-full animate-spin"></div>
-              <Sparkles className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-8 w-8 text-[#636AE8] animate-pulse" />
+              <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+              <Sparkles className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-8 w-8 text-primary animate-pulse" />
             </div>
             <h2 className="text-xl font-semibold mt-4">Analyzing Resume</h2>
             <p className="text-sm text-muted-foreground mt-1">
@@ -91,19 +91,19 @@ export default function ResumeAnalysisLoading({
                   key={step.id}
                   className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-300 ${
                     isActive
-                      ? "bg-[#636AE8]/10 border border-[#636AE8]/30"
+                      ? "bg-primary/10 border border-primary/30"
                       : isCompleted
-                      ? "bg-green-50 border border-green-200"
-                      : "bg-gray-50 border border-gray-200"
+                      ? "bg-green-500/10 border border-green-500/20"
+                      : "bg-muted/50 border border-border"
                   }`}
                 >
                   <div
                     className={`flex-shrink-0 ${
                       isActive
-                        ? "text-[#636AE8] animate-pulse"
+                        ? "text-primary animate-pulse"
                         : isCompleted
-                        ? "text-green-600"
-                        : "text-gray-400"
+                        ? "text-green-600 dark:text-green-400"
+                        : "text-muted-foreground/70"
                     }`}
                   >
                     {isCompleted ? (
@@ -115,23 +115,23 @@ export default function ResumeAnalysisLoading({
                   <span
                     className={`text-sm font-medium ${
                       isActive
-                        ? "text-[#636AE8]"
+                        ? "text-primary"
                         : isCompleted
-                        ? "text-green-700"
-                        : "text-gray-500"
+                        ? "text-green-700 dark:text-green-400"
+                        : "text-muted-foreground"
                     }`}
                   >
                     {step.label}
                   </span>
                   {isActive && (
                     <div className="ml-auto flex gap-1">
-                      <div className="w-2 h-2 bg-[#636AE8] rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
                       <div
-                        className="w-2 h-2 bg-[#636AE8] rounded-full animate-bounce"
+                        className="w-2 h-2 bg-primary rounded-full animate-bounce"
                         style={{ animationDelay: "0.1s" }}
                       ></div>
                       <div
-                        className="w-2 h-2 bg-[#636AE8] rounded-full animate-bounce"
+                        className="w-2 h-2 bg-primary rounded-full animate-bounce"
                         style={{ animationDelay: "0.2s" }}
                       ></div>
                     </div>
@@ -141,16 +141,16 @@ export default function ResumeAnalysisLoading({
             })}
           </div>
 
-          <div className="mt-6 bg-gray-100 rounded-lg p-3">
-            <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+          <div className="mt-6 bg-muted rounded-lg p-3">
+            <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
               <span>Progress</span>
               <span>
                 {activeStep + 1} of {steps.length}
               </span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full bg-muted rounded-full h-2">
               <div
-                className="bg-[#636AE8] h-2 rounded-full transition-all duration-500 ease-out"
+                className="bg-primary h-2 rounded-full transition-all duration-500 ease-out"
                 style={{
                   width: `${((activeStep + 1) / steps.length) * 100}%`,
                 }}
