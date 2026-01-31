@@ -90,7 +90,7 @@ export function ForgotPasswordForm({
                 {error && <p className="text-sm text-red-500">{error}</p>}
                 <Button
                   type="submit"
-                  className="w-full bg-[#636AE8] hover:bg-[#4e57c1]"
+                  className="w-full bg-primary hover:bg-primary-hover"
                   disabled={isLoading}
                 >
                   {isLoading ? "Sending..." : "Send reset email"}
@@ -100,7 +100,7 @@ export function ForgotPasswordForm({
                 Already have an account?{" "}
                 <Link
                   href="/auth/login"
-                  className="hover:underline underline-offset-4 decoration-[#636AE8]"
+                  className="hover:underline underline-offset-4 decoration-primary"
                 >
                   Login
                 </Link>

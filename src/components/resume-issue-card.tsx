@@ -29,7 +29,7 @@ export default function ResumeIssueCard({
   return (
     <div
       className={cn(
-        "relative bg-white border border-[#e3e8ef] rounded-[10px] overflow-hidden",
+        "relative bg-card border border-border rounded-[10px] overflow-hidden",
         className
       )}
     >
@@ -44,19 +44,19 @@ export default function ResumeIssueCard({
       {/* Content area */}
       <div className="pl-[37px] pr-12 py-3">
         <div>
-          <h4 className="text-sm font-bold text-[#171a1f] mb-0.5">{title}</h4>
+          <h4 className="text-sm font-bold text-foreground mb-0.5">{title}</h4>
           {subtitle && (
-            <p className="text-sm italic text-[#565d6d] m-0">{subtitle}</p>
+            <p className="text-sm italic text-muted-foreground m-0">{subtitle}</p>
           )}
         </div>
 
         {/* Suggested Fix Section (conditionally rendered) */}
         {showSuggestedFix && suggestedFix && isExpanded && (
-          <div className="mt-4 pt-4 border-t border-[#e3e8ef]">
-            <h5 className="text-sm font-semibold text-[#171a1f] mb-2">
+          <div className="mt-4 pt-4 border-t border-border">
+            <h5 className="text-sm font-semibold text-foreground mb-2">
               Suggested Fix:
             </h5>
-            <div className="text-sm text-[#565d6d]">
+            <div className="text-sm text-muted-foreground">
               {typeof suggestedFix === "string" ? (
                 <p className="m-0">{suggestedFix}</p>
               ) : (
@@ -71,13 +71,13 @@ export default function ResumeIssueCard({
       {showSuggestedFix && suggestedFix && (
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded transition-colors"
+          className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded transition-colors"
           aria-label={isExpanded ? "Collapse" : "Expand"}
         >
           {isExpanded ? (
-            <ChevronUp className="w-5 h-5 text-[#565d6d]" />
+            <ChevronUp className="w-5 h-5 text-muted-foreground" />
           ) : (
-            <ChevronDown className="w-5 h-5 text-[#565d6d]" />
+            <ChevronDown className="w-5 h-5 text-muted-foreground" />
           )}
         </button>
       )}

@@ -79,7 +79,7 @@ export default function Home() {
         <h1 className="text-3xl font-bold">
           Welcome, {loading ? "..." : profile?.name || "Guest"}
         </h1>
-        <p className="text-gray-600">
+        <p className="text-muted-foreground">
           Get started with your job application journey
         </p>
       </div>
@@ -93,15 +93,15 @@ export default function Home() {
             onClick={() => handleCardClick(button)}
           >
             <CardContent className="flex justify-between items-center p-4 group">
-              <div className="bg-[#CED0F8] text-[#161D96] p-4 rounded-md transition-all duration-300">
+              <div className="bg-primary/10 text-primary p-4 rounded-md transition-all duration-300 dark:bg-primary/20 dark:text-primary-foreground">
                 {button.icon}
               </div>
-              <span className="w-full text-center sm:text-left font-semibold text-base sm:text-lg lg:text-xl transition-colors duration-300 px-2 group-hover:text-[#161D96]">
+              <span className="w-full text-center sm:text-left font-semibold text-base sm:text-lg lg:text-xl transition-colors duration-300 px-2 group-hover:text-primary">
                 {button.title}
               </span>
               <ChevronRight
                 size={40}
-                className="text-[#161D96] transition-transform duration-300 group-hover:translate-x-1"
+                className="text-primary transition-transform duration-300 group-hover:translate-x-1"
               />
             </CardContent>
           </Card>
@@ -113,7 +113,7 @@ export default function Home() {
         <h2 className="text-xl font-bold mb-3">
           Applications Created / Interviews Completed
         </h2>
-        <div className="shadow-xl bg-white max-w-fit rounded-md pt-3 px-6">
+        <div className="shadow-xl bg-card max-w-fit rounded-md pt-3 px-6">
           <Calender />
         </div>
       </div>

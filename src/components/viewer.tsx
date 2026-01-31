@@ -23,7 +23,7 @@ interface ViewerProps {
 const loadingComponent = (
   <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
     <div className="relative">
-      <div className="w-16 h-16 border-4 border-gray-200 border-t-[#636AE8] rounded-full animate-spin"></div>
+      <div className="w-16 h-16 border-4 border-border border-t-primary rounded-full animate-spin"></div>
     </div>
     <p className="text-white text-lg font-medium">Loading document...</p>
   </div>
@@ -94,22 +94,22 @@ export default function Viewer({ selectedFile, setSelectedFile }: ViewerProps) {
       className="h-screen min-w-fit flex flex-col bg-[#171A1F66] shadow-2xl overflow-y-scroll scrollbar-hide"
       style={{ scrollbarWidth: "none" }}
     >
-      <div className="sticky top-0 z-10 p-3 bg-gray-100 flex items-center gap-3">
+      <div className="sticky top-0 z-10 p-3 bg-muted flex items-center gap-3">
         <div className="flex flex-1 items-center gap-3">
           <div className="p-2">
-            <File className="h-6 w-6 text-[#636AE8]" />
+            <File className="h-6 w-6 text-primary" />
           </div>
           <span className="text-lg">{selectedFile?.file_name}</span>
         </div>
         <div className="flex gap-2 items-center">
           <a
             onClick={() => handleDownload()}
-            className="p-1 rounded-full hover:bg-white/20"
+            className="p-1 rounded-full hover:bg-background/20"
           >
-            <Download className="h-6 w-6 text-gray-600 hover:text-gray-800 cursor-pointer" />
+            <Download className="h-6 w-6 text-muted-foreground hover:text-foreground cursor-pointer" />
           </a>
           <X
-            className="h-6 w-6 text-gray-600 hover:text-gray-800 cursor-pointer"
+            className="h-6 w-6 text-muted-foreground hover:text-foreground cursor-pointer"
             onClick={() => handleClose()}
           />
         </div>

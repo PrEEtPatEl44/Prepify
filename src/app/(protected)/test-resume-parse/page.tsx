@@ -66,7 +66,7 @@ export default function TestJobSuggestPage() {
     if (score >= 80) return "text-green-600";
     if (score >= 60) return "text-blue-600";
     if (score >= 40) return "text-yellow-600";
-    return "text-gray-600";
+    return "text-muted-foreground";
   };
 
   return (
@@ -74,7 +74,7 @@ export default function TestJobSuggestPage() {
       <Card className="max-w-4xl mx-auto">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Sparkles className="h-6 w-6 text-[#636AE8]" />
+            <Sparkles className="h-6 w-6 text-primary" />
             <CardTitle>Test AI Job Suggestions</CardTitle>
           </div>
         </CardHeader>
@@ -93,33 +93,33 @@ export default function TestJobSuggestPage() {
           <Button
             onClick={testSuggest}
             disabled={loading || !resumeId}
-            className="w-full bg-[#636AE8] hover:bg-[#4e57c1]"
+            className="w-full bg-primary hover:bg-primary-hover"
           >
             {loading ? "Finding Jobs..." : "Get AI Job Suggestions"}
           </Button>
 
           {error && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-md">
-              <p className="text-red-600 font-medium">Error:</p>
-              <p className="text-red-500 text-sm">{error}</p>
+            <div className="p-4 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-md">
+              <p className="text-red-600 dark:text-red-400 font-medium">Error:</p>
+              <p className="text-red-500 dark:text-red-400 text-sm">{error}</p>
             </div>
           )}
 
           {result && (
             <div className="space-y-6">
               {/* Success Message */}
-              <div className="p-4 bg-green-50 border border-green-200 rounded-md">
-                <p className="text-green-600 font-medium">✓ {result.message}</p>
+              <div className="p-4 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-md">
+                <p className="text-green-600 dark:text-green-400 font-medium">✓ {result.message}</p>
               </div>
 
               {/* Extracted Keywords */}
-              <div className="p-4 bg-gray-50 border rounded-md">
+              <div className="p-4 bg-muted/50 border rounded-md">
                 <h3 className="font-semibold mb-2">Extracted Keywords:</h3>
                 <div className="flex flex-wrap gap-2">
                   {result.data.keywords.map((keyword: string, i: number) => (
                     <span
                       key={i}
-                      className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm"
+                      className="px-3 py-1 bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-400 rounded-full text-sm"
                     >
                       {keyword}
                     </span>
@@ -128,13 +128,13 @@ export default function TestJobSuggestPage() {
               </div>
 
               {/* Extracted Skills */}
-              <div className="p-4 bg-gray-50 border rounded-md">
+              <div className="p-4 bg-muted/50 border rounded-md">
                 <h3 className="font-semibold mb-2">Extracted Skills:</h3>
                 <div className="flex flex-wrap gap-2">
                   {result.data.skills.map((skill: string, i: number) => (
                     <span
                       key={i}
-                      className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm"
+                      className="px-3 py-1 bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-400 rounded-full text-sm"
                     >
                       {skill}
                     </span>
@@ -146,25 +146,25 @@ export default function TestJobSuggestPage() {
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Matching Jobs:</h3>
                 {result.data.jobs.map((job: Job) => (
-                  <Card key={job.id} className="border-2 hover:border-[#636AE8] transition-colors">
+                  <Card key={job.id} className="border-2 hover:border-primary transition-colors">
                     <CardContent className="pt-6">
                       <div className="flex justify-between items-start mb-3">
                         <div>
                           <h4 className="text-lg font-semibold">{job.title}</h4>
-                          <p className="text-sm text-gray-600">{job.company} • {job.location}</p>
+                          <p className="text-sm text-muted-foreground">{job.company} • {job.location}</p>
                         </div>
                         <div className={`text-2xl font-bold ${getMatchScoreColor(job.matchScore)}`}>
                           {job.matchScore}%
                         </div>
                       </div>
                       
-                      <p className="text-sm text-gray-700 mb-3">{job.description}</p>
+                      <p className="text-sm text-foreground/80 mb-3">{job.description}</p>
                       
                       <div className="flex flex-wrap gap-2 mb-3">
                         {job.matchedKeywords.map((keyword: string, i: number) => (
                           <span
                             key={i}
-                            className="px-2 py-1 bg-[#636AE8]/10 text-[#636AE8] rounded text-xs"
+                            className="px-2 py-1 bg-primary/10 text-primary rounded text-xs"
                           >
                             {keyword}
                           </span>
@@ -173,7 +173,7 @@ export default function TestJobSuggestPage() {
 
                       <Button
                         onClick={() => window.open(job.url, "_blank")}
-                        className="w-full bg-[#636AE8] hover:bg-[#4e57c1] gap-2"
+                        className="w-full bg-primary hover:bg-primary-hover gap-2"
                       >
                         View Job <ExternalLink className="h-4 w-4" />
                       </Button>

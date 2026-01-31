@@ -14,7 +14,7 @@ import { CreateJob, type Column, type Job } from "@/types/jobs";
 import CreateJobModal from "@/components/modals/CreateJobModal";
 import CreateListModal from "@/components/modals/CreateListModal";
 import DeleteJobModal from "@/components/modals/DeleteJobModal";
-import { deleteJob, moveJob, createColumn } from "@/app/jobs/actions";
+import { deleteJob, moveJob, createColumn } from "@/app/(protected)/jobs/actions";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -185,7 +185,7 @@ const Kanban = ({
           column.id === "create-new-list" ? (
             <div
               key={column.id}
-              className="flex h-[100%] max-h-[100vh] flex-col divide-y overflow-hidden !rounded-t-xl border bg-gray-100 text-xs shadow-lg p-2"
+              className="flex h-[100%] max-h-[100vh] flex-col divide-y overflow-hidden !rounded-t-xl border bg-muted text-xs shadow-lg p-2"
             >
               <div className="m-0 p-2 font-semibold text-sm border-0">
                 <CreateListModal onSubmit={handleCreateList} />
@@ -195,14 +195,14 @@ const Kanban = ({
             <KanbanBoard
               id={column.id}
               key={column.id}
-              className="bg-white p-2 shadow-lg"
+              className="bg-card p-2 shadow-lg"
             >
               <KanbanHeader className="border-0">
                 <div className="flex justify-between items-center gap-2">
                   <span
                     className={`text-md font-archivo font-semibold flex items-center gap-2`}
                   >
-                    <span className="text-gray-400 text-xs">
+                    <span className="text-muted-foreground/70 text-xs">
                       <GripVertical size={16} />
                     </span>
                     {column.name}
@@ -223,7 +223,7 @@ const Kanban = ({
                       id={jobData.id}
                       key={jobData.id}
                       name={jobData.name}
-                      className="bg-[#F3F4F6] border-0"
+                      className="bg-muted border-0"
                     >
                       <div className="flex items-start justify-between gap-2 relative">
                         <div className="flex gap-3">
@@ -261,7 +261,7 @@ const Kanban = ({
                               asChild
                             >
                               <div
-                                className="text-gray-500 p-1.5 rounded-md transition-all hover:text-gray-700 hover:bg-gray-200"
+                                className="text-muted-foreground p-1.5 rounded-md transition-all hover:text-foreground/80 hover:bg-muted"
                                 onMouseDown={(e) => {
                                   e.stopPropagation();
                                 }}

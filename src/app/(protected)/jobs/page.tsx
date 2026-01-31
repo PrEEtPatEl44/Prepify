@@ -4,7 +4,7 @@ import Header, { type ViewMode } from "@/components/header";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 
-import { createJob } from "@/app/jobs/actions";
+import { createJob } from "@/app/(protected)/jobs/actions";
 import { type CreateJob, type Column, type Job } from "@/types/jobs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -89,13 +89,13 @@ const Page = () => {
   if (isLoading) {
     return (
       <div className="h-screen flex flex-col w-full">
-        <Skeleton className="h-12 mt-6 px-1 max-w-[95%] rounded-xl bg-gray-200 mb-2" />
+        <Skeleton className="h-12 mt-6 px-1 max-w-[95%] rounded-xl bg-muted mb-2" />
 
         <div className="flex flex-1 gap-2">
-          <Skeleton className="flex-1 rounded-lg bg-gray-200" />
-          <Skeleton className="flex-1 rounded-lg bg-gray-200" />
-          <Skeleton className="flex-1 rounded-lg bg-gray-200" />
-          <Skeleton className="flex-1 rounded-lg bg-gray-200" />
+          <Skeleton className="flex-1 rounded-lg bg-muted" />
+          <Skeleton className="flex-1 rounded-lg bg-muted" />
+          <Skeleton className="flex-1 rounded-lg bg-muted" />
+          <Skeleton className="flex-1 rounded-lg bg-muted" />
         </div>
       </div>
     );

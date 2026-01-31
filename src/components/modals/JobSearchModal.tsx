@@ -165,12 +165,12 @@ export default function JobSearchModal({
 
         <DialogFooter className="px-4">
           <div className="flex gap-2 w-full justify-end">
-            <DialogClose className="hover:bg-gray-300 cursor-pointer">
+            <DialogClose className="hover:bg-border cursor-pointer">
               Cancel
             </DialogClose>
             <Button
               onClick={handleSearch}
-              className="bg-[#636AE8] hover:bg-[#4e57c1] cursor-pointer"
+              className="bg-primary hover:bg-primary-hover cursor-pointer"
             >
               Search
             </Button>

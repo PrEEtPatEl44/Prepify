@@ -41,12 +41,12 @@ export default function Header({
 
   return (
     <>
-      <div className="p-2 flex justify-between items-center bg-white rounded-xl shadow-md gap-2 sm:gap-4">
+      <div className="p-2 flex justify-between items-center bg-card rounded-xl shadow-md gap-2 sm:gap-4">
         {/* Search Box */}
         <Input
           type="text"
           placeholder="Search jobs..."
-          className="max-w-2xl max-h-8 bg-[#F3F4F6] !border-none"
+          className="max-w-2xl max-h-8 bg-muted !border-none"
           onChange={handleChange}
         />
 

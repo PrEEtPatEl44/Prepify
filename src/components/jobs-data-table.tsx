@@ -12,7 +12,14 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, Building2, ExternalLink } from "lucide-react";
+import {
+  ArrowUpDown,
+  Building2,
+  ExternalLink,
+  Eye,
+  FileText,
+  Mail,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -31,10 +38,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Job, Column } from "@/types/jobs";
-import { editJob } from "@/app/jobs/actions";
+import { editJob } from "@/app/(protected)/jobs/actions";
 import { toast } from "sonner";
-
+import { useSidebar } from "@/components/ui/sidebar";
 interface Document {
   id: string;
   file_name: string;
@@ -46,6 +60,7 @@ interface JobsDataTableProps {
   setJobs: React.Dispatch<React.SetStateAction<Job[]>>;
   columns: Column[];
   searchTerm?: string;
+  onViewDescription?: (job: Job) => void;
 }
 
 export function JobsDataTable({
@@ -53,14 +68,16 @@ export function JobsDataTable({
   setJobs,
   columns,
   searchTerm,
+  onViewDescription,
 }: JobsDataTableProps) {
+  const sidebar = useSidebar();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
+    [],
   );
   const [resumes, setResumes] = React.useState<Document[]>([]);
   const [coverLetters, setCoverLetters] = React.useState<Document[]>([]);
-
+  const { setOpen } = sidebar;
   // Fetch resumes and cover letters on mount
   React.useEffect(() => {
     const fetchDocuments = async () => {
@@ -100,7 +117,7 @@ export function JobsDataTable({
         job.title.toLowerCase().includes(query) ||
         job.companyName.toLowerCase().includes(query) ||
         job.description?.toLowerCase().includes(query) ||
-        job.applicationLink?.toLowerCase().includes(query)
+        job.applicationLink?.toLowerCase().includes(query),
     );
   }, [jobs, searchTerm]);
 
@@ -108,14 +125,12 @@ export function JobsDataTable({
   const handleFieldUpdate = async (
     jobId: string,
     field: "resumeId" | "coverLetterId" | "columnId",
-    value: string | undefined
+    value: string | undefined,
   ) => {
     try {
       const result = await editJob(jobId, { [field]: value || null });
       if (result.success && result.data) {
-        setJobs((prev) =>
-          prev.map((j) => (j.id === jobId ? result.data! : j))
-        );
+        setJobs((prev) => prev.map((j) => (j.id === jobId ? result.data! : j)));
         toast.success("Updated successfully");
       } else {
         toast.error(result.error || "Failed to update");
@@ -155,7 +170,9 @@ export function JobsDataTable({
                   <Building2 className="h-4 w-4" />
                 </AvatarFallback>
               </Avatar>
-              <span className="font-medium">{companyName}</span>
+              <span className="font-medium truncate max-w-[120px]">
+                {companyName}
+              </span>
             </div>
           );
         },
@@ -176,102 +193,10 @@ export function JobsDataTable({
           );
         },
         cell: ({ row }) => {
-          return <div className="font-medium">{row.getValue("title")}</div>;
-        },
-      },
-      {
-        accessorKey: "description",
-        header: "Description",
-        cell: ({ row }) => {
-          const description = row.original.description;
           return (
-            <div
-              className="max-w-[200px] truncate text-muted-foreground"
-              title={description}
-            >
-              {description || "-"}
+            <div className="font-medium truncate max-w-[150px]">
+              {row.getValue("title")}
             </div>
-          );
-        },
-      },
-      {
-        accessorKey: "resumeId",
-        header: "Resume",
-        cell: ({ row }) => {
-          const job = row.original;
-          return (
-            <Select
-              value={job.resumeId || "none"}
-              onValueChange={(value) =>
-                handleFieldUpdate(
-                  job.id,
-                  "resumeId",
-                  value === "none" ? undefined : value
-                )
-              }
-            >
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Select resume" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None</SelectItem>
-                {resumes.map((resume) => (
-                  <SelectItem key={resume.id} value={resume.id}>
-                    {resume.file_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          );
-        },
-      },
-      {
-        accessorKey: "coverLetterId",
-        header: "Cover Letter",
-        cell: ({ row }) => {
-          const job = row.original;
-          return (
-            <Select
-              value={job.coverLetterId || "none"}
-              onValueChange={(value) =>
-                handleFieldUpdate(
-                  job.id,
-                  "coverLetterId",
-                  value === "none" ? undefined : value
-                )
-              }
-            >
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Select cover letter" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None</SelectItem>
-                {coverLetters.map((letter) => (
-                  <SelectItem key={letter.id} value={letter.id}>
-                    {letter.file_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          );
-        },
-      },
-      {
-        accessorKey: "applicationLink",
-        header: "Link",
-        cell: ({ row }) => {
-          const link = row.original.applicationLink;
-          return link ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => window.open(link, "_blank")}
-            >
-              <ExternalLink className="h-4 w-4 mr-1" />
-              View
-            </Button>
-          ) : (
-            <span className="text-muted-foreground">-</span>
           );
         },
       },
@@ -288,7 +213,7 @@ export function JobsDataTable({
                 handleFieldUpdate(job.id, "columnId", value)
               }
             >
-              <SelectTrigger className="w-[130px]">
+              <SelectTrigger className="w-[80%]">
                 <SelectValue>
                   {currentColumn?.name || "Select status"}
                 </SelectValue>
@@ -304,8 +229,107 @@ export function JobsDataTable({
           );
         },
       },
+      {
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => {
+          const job = row.original;
+          const resume = resumes.find((r) => r.id === job.resumeId);
+          const coverLetter = coverLetters.find(
+            (cl) => cl.id === job.coverLetterId,
+          );
+
+          return (
+            <TooltipProvider delayDuration={300}>
+              <div className="flex items-center gap-1">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      disabled={!job.description}
+                      onClick={() => {
+                        if (job.description && onViewDescription) {
+                          setOpen(false);
+                          onViewDescription(job);
+                        }
+                      }}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>View Description</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      disabled={!job.applicationLink}
+                      onClick={() =>
+                        job.applicationLink &&
+                        window.open(job.applicationLink, "_blank")
+                      }
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Open Link</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      disabled={!resume}
+                      onClick={() => {
+                        if (resume) {
+                          window.open(resume.file_path, "_blank");
+                        }
+                      }}
+                    >
+                      <FileText className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {resume ? `View Resume: ${resume.file_name}` : "No Resume"}
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      disabled={!coverLetter}
+                      onClick={() => {
+                        if (coverLetter) {
+                          window.open(coverLetter.file_path, "_blank");
+                        }
+                      }}
+                    >
+                      <Mail className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {coverLetter
+                      ? `View Cover Letter: ${coverLetter.file_name}`
+                      : "No Cover Letter"}
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </TooltipProvider>
+          );
+        },
+      },
     ],
-    [columns, resumes, coverLetters]
+    [columns, resumes, coverLetters],
   );
 
   const table = useReactTable({
@@ -315,6 +339,11 @@ export function JobsDataTable({
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    initialState: {
+      pagination: {
+        pageSize: 20,
+      },
+    },
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     state: {
@@ -324,10 +353,10 @@ export function JobsDataTable({
   });
 
   return (
-    <div className="w-full p-4">
-      <div className="rounded-xl shadow-xl border bg-white overflow-hidden">
+    <div className="flex flex-col h-full pt-6 w-full pr-3 pb-2">
+      <ScrollArea className="flex-1 min-h-0 rounded-xl shadow-xl bg-card px-2">
         <Table>
-          <TableHeader>
+          <TableHeader className="sticky top-0 z-10 bg-card border-b shadow-[0_1px_0_0_var(--color-border)]">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="border-0">
                 {headerGroup.headers.map((header) => {
@@ -337,7 +366,7 @@ export function JobsDataTable({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   );
@@ -348,17 +377,12 @@ export function JobsDataTable({
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row, index) => (
-                <TableRow
-                  key={row.id}
-                  className={`border-0 ${
-                    index % 2 === 0 ? "bg-white" : "bg-[#FAFAFB]"
-                  }`}
-                >
+                <TableRow key={row.id} className={`border-0 bg-card`}>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}
@@ -376,8 +400,9 @@ export function JobsDataTable({
             )}
           </TableBody>
         </Table>
-      </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
+      <div className="flex items-center justify-end space-x-2 py-4 shrink-0">
         <div className="flex-1 text-sm text-muted-foreground">
           {filteredJobs.length} job application(s) total.
         </div>

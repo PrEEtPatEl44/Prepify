@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Archivo } from "next/font/google";
 import "./globals.css";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import NextTopLoader from "nextjs-toploader";
+import { ThemeProvider } from "next-themes";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,8 +21,8 @@ const archivo = Archivo({
 });
 
 export const metadata: Metadata = {
-  title: "Pepify",
-  description: "The best AI powerd job search platform",
+  title: "Prepify",
+  description: "The best AI powered job search platform",
   icons: {
     icon: "/logo.svg",
   },
@@ -35,18 +34,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${archivo.variable} antialiased`}
       >
-        <SidebarProvider>
-          <AppSidebar collapsible="icon" />
-
-          <SidebarTrigger />
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <NextTopLoader color="#636AE8" height={5} />
           {children}
-        </SidebarProvider>
-        <Toaster position="top-right" />
+          <Toaster position="top-right" />
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -227,7 +227,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
       {/* Header */}
       <DialogTrigger asChild>
         {isHeader ? (
-          <Button className="bg-[#636AE8] hover:bg-[#5A5FD3]">
+          <Button className="bg-primary hover:bg-primary-hover">
             <Plus />
             <span className="text-sm font-inter hidden sm:inline">
               Create Application
@@ -236,7 +236,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
           </Button>
         ) : (
           <div
-            className={`cursor-pointer hover:text-accent-foreground rounded-full p-2 transition-colors bg-[#636AE8] hover:bg-[#5A5FD3]`}
+            className={`cursor-pointer hover:text-accent-foreground rounded-full p-2 transition-colors bg-primary hover:bg-primary-hover`}
           >
             <Plus strokeWidth={5} className="h-3 w-3 text-white" />
           </div>
@@ -268,16 +268,16 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
                     }
                   }}
                   placeholder="Company"
-                  className={`bg-gray-100 ${selectedCompany ? "pr-10" : ""}`}
+                  className={`bg-muted ${selectedCompany ? "pr-10" : ""}`}
                   required
                 />
                 {searchLoading && !selectedCompany && (
                   <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-                    <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
+                    <div className="w-4 h-4 border-2 border-border border-t-blue-600 rounded-full animate-spin"></div>
                   </div>
                 )}
                 {selectedCompany && selectedCompany.icon && (
-                  <div className="absolute right-2 w-7 h-7 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden">
+                  <div className="absolute right-2 w-7 h-7 bg-muted rounded-md flex items-center justify-center overflow-hidden">
                     <Image
                       src={selectedCompany.icon}
                       alt={selectedCompany.name}
@@ -289,7 +289,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
                         img.style.display = "none";
                         const parent = img.parentElement;
                         if (parent) {
-                          parent.innerHTML = `<span class="text-xs font-semibold text-gray-600">${selectedCompany.name
+                          parent.innerHTML = `<span class="text-xs font-semibold text-muted-foreground">${selectedCompany.name
                             .slice(0, 2)
                             .toUpperCase()}</span>`;
                         }
@@ -302,15 +302,15 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
               {showCompanyDropdown && results.length > 0 && (
                 <div
                   ref={dropdownRef}
-                  className="absolute w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-[2000] max-h-64 overflow-y-auto"
+                  className="absolute w-full mt-1 bg-card border border-border rounded-md shadow-lg z-[2000] max-h-64 overflow-y-auto"
                 >
                   {results.map((company) => (
                     <div
                       key={`${company.brandId}`}
-                      className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                      className="flex items-center gap-3 p-3 hover:bg-muted/50 cursor-pointer transition-colors"
                       onClick={() => handleCompanySelect(company)}
                     >
-                      <div className="w-8 h-8 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden flex-shrink-0">
+                      <div className="w-8 h-8 bg-muted rounded-md flex items-center justify-center overflow-hidden flex-shrink-0">
                         <Image
                           src={company.icon}
                           alt={`${company.name}`}
@@ -322,7 +322,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
                             img.style.display = "none";
                             const parent = img.parentElement;
                             if (parent) {
-                              parent.innerHTML = `<span class="text-xs font-semibold text-gray-600">${company.name
+                              parent.innerHTML = `<span class="text-xs font-semibold text-muted-foreground">${company.name
                                 .slice(0, 2)
                                 .toUpperCase()}</span>`;
                             }
@@ -330,10 +330,10 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
                         />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm text-gray-900 truncate">
+                        <div className="font-medium text-sm text-foreground truncate">
                           {company.name}
                         </div>
-                        <div className="text-xs text-gray-500 truncate">
+                        <div className="text-xs text-muted-foreground truncate">
                           {company.domain}
                         </div>
                       </div>
@@ -353,7 +353,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
               value={formData.jobTitle}
               onChange={(e) => handleInputChange("jobTitle", e.target.value)}
               placeholder="Job Title"
-              className="bg-gray-100"
+              className="bg-muted"
               required
             />
           </div>
@@ -369,7 +369,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
               }
               rows={8}
               placeholder="Job Description"
-              className="bg-gray-100 !resize-none [field-sizing-content] h-full"
+              className="bg-muted !resize-none [field-sizing-content] h-full"
               required
             />
           </div>
@@ -389,7 +389,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
                 }
                 required
               >
-                <SelectTrigger className="w-full h-full bg-gray-100 ">
+                <SelectTrigger className="w-full h-full bg-muted ">
                   <SelectValue placeholder="Select a Resume" />
                 </SelectTrigger>
                 <SelectContent position="popper" className="z-[2000]">
@@ -398,7 +398,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
                     {resumes.length === 0 && (
                       <SelectItem
                         value="NotAvailable"
-                        className="p-3 text-sm text-gray-500"
+                        className="p-3 text-sm text-muted-foreground"
                       >
                         No resumes available
                       </SelectItem>
@@ -428,7 +428,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
                 }}
                 required
               >
-                <SelectTrigger className="w-full h-full bg-gray-100 ">
+                <SelectTrigger className="w-full h-full bg-muted ">
                   <SelectValue placeholder="Select a Coverletter" />
                 </SelectTrigger>
                 <SelectContent>
@@ -437,7 +437,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
                     {coverLetters.length === 0 && (
                       <SelectItem
                         value="NotAvailable"
-                        className="p-3 text-sm text-gray-500"
+                        className="p-3 text-sm text-muted-foreground"
                       >
                         No cover letters available
                       </SelectItem>
@@ -460,7 +460,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
               value={formData.link}
               onChange={(e) => handleInputChange("link", e.target.value)}
               placeholder="Link"
-              className="bg-gray-100"
+              className="bg-muted"
               required
             />
           </div>
@@ -469,7 +469,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
             <DialogClose
               type="button"
               disabled={isLoading}
-              className="hover:bg-gray-200 rounded-md border border-gray-200 px-2"
+              className="hover:bg-muted rounded-md border border-border px-2"
             >
               Cancel
             </DialogClose>
@@ -483,7 +483,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
                 // !formData.company.trim() ||
                 // !formData.jobTitle.trim()
               }
-              className="bg-[#636AE8] hover:bg-[#4e57c1]"
+              className="bg-primary hover:bg-primary-hover"
             >
               {isLoading ? "Saving..." : "Save"}
             </Button>

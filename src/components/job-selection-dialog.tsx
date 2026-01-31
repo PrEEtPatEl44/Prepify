@@ -78,8 +78,8 @@ export default function JobSelectionDialog({
                   key={job.id}
                   className={`cursor-pointer transition-all duration-200 !py-0 ${
                     isSelected
-                      ? "border-[#636AE8] border-2 bg-[#636AE8]/5"
-                      : "border-gray-200 hover:border-[#636AE8]/50 hover:bg-gray-50"
+                      ? "border-primary border-2 bg-primary/5"
+                      : "border-border hover:border-primary/50 hover:bg-muted/50"
                   }`}
                   onClick={() => handleSelectJob(job)}
                 >
@@ -96,8 +96,8 @@ export default function JobSelectionDialog({
                               />
                             </Avatar>
                           ) : (
-                            <div className="w-16 h-16 rounded-lg bg-[#636AE8]/10 flex items-center justify-center flex-shrink-0">
-                              <Building2 className="h-8 w-8 text-[#636AE8]" />
+                            <div className="w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                              <Building2 className="h-8 w-8 text-primary" />
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
@@ -108,7 +108,7 @@ export default function JobSelectionDialog({
                               {job.companyName}
                             </p>
                             {job.description && (
-                              <p className="text-sm text-gray-600 line-clamp-2">
+                              <p className="text-sm text-muted-foreground line-clamp-2">
                                 {job.description}
                               </p>
                             )}
@@ -117,7 +117,7 @@ export default function JobSelectionDialog({
                                 href={job.applicationLink}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-xs text-[#636AE8] hover:underline mt-2"
+                                className="inline-flex items-center gap-1 text-xs text-primary hover:underline mt-2"
                                 onClick={(e) => e.stopPropagation()}
                               >
                                 View Job Posting
@@ -128,7 +128,7 @@ export default function JobSelectionDialog({
                         </div>
                       </div>
                       {isSelected && (
-                        <CheckCircle2 className="h-6 w-6 text-[#636AE8] flex-shrink-0" />
+                        <CheckCircle2 className="h-6 w-6 text-primary flex-shrink-0" />
                       )}
                     </div>
                   </CardContent>
@@ -151,7 +151,7 @@ export default function JobSelectionDialog({
             <Button
               onClick={handleConfirm}
               disabled={!selectedJobId}
-              className="bg-[#636AE8] hover:bg-[#4f56d4]"
+              className="bg-primary hover:bg-primary-hover"
             >
               Analyze
             </Button>

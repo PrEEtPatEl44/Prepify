@@ -33,8 +33,8 @@ export default function DeleteJobModal({
         <DropdownMenuItem
           className={
             isDeleting
-              ? "text-gray-400 cursor-not-allowed"
-              : "text-red-600 hover:bg-red-50 focus:bg-red-50 cursor-pointer"
+              ? "text-muted-foreground/70 cursor-not-allowed"
+              : "text-red-600 hover:bg-destructive/10 focus:bg-destructive/10 cursor-pointer"
           }
           disabled={isDeleting}
           onSelect={(e) => {
@@ -51,13 +51,13 @@ export default function DeleteJobModal({
             <span className="px-4">Delete Job Application </span>
           </DialogTitle>
         </DialogHeader>
-        <Separator className="bg-gray-300" />
+        <Separator className="bg-border" />
         <DialogDescription className="px-4">
           Are you sure you want to delete this Application with job title{" "}
           {job.title}? This cannot be undone.
         </DialogDescription>
         <DialogFooter className="px-4">
-          <DialogClose className="border-gray-200 border px-3 rounded-md hover:bg-gray-200 ">
+          <DialogClose className="border-border border px-3 rounded-md hover:bg-muted ">
             Cancel
           </DialogClose>
           <Button

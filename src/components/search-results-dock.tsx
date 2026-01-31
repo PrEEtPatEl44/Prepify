@@ -23,17 +23,17 @@ const SearchResultsDock = ({
   };
 
   return (
-    <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 bg-white border border-gray-300 rounded-full shadow-lg backdrop-blur-sm bg-opacity-95 animate-in slide-in-from-bottom duration-300">
-      <p className="text-sm text-gray-700 whitespace-nowrap">
+    <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 bg-card/95 border border-border rounded-full shadow-lg backdrop-blur-sm animate-in slide-in-from-bottom duration-300">
+      <p className="text-sm text-foreground/80 whitespace-nowrap">
         {filteredCount > 0 ? (
           <>
             Showing{" "}
             <span className="font-semibold text-blue-600">{filteredCount}</span>{" "}
-            of <span className="font-semibold text-gray-900">{totalCount}</span>{" "}
+            of <span className="font-semibold text-foreground">{totalCount}</span>{" "}
             {pluralize(totalCount, itemType)}
             <span className="ml-1">
               for &quot;
-              <span className="font-medium text-gray-900">{searchTerm}</span>
+              <span className="font-medium text-foreground">{searchTerm}</span>
               &quot;
             </span>
           </>
@@ -43,7 +43,7 @@ const SearchResultsDock = ({
               No results found
             </span>{" "}
             for &quot;
-            <span className="font-medium text-gray-900">{searchTerm}</span>
+            <span className="font-medium text-foreground">{searchTerm}</span>
             &quot;
           </>
         )}

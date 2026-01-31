@@ -246,7 +246,7 @@ export function CreateFileModal({
             <Button
               type="submit"
               disabled={!fileName.trim() || !selectedFile || isSubmitting}
-              className="bg-[#636AE8] hover:bg-[#4e57c2] focus:ring-4 focus:ring-[#636AE8]/50 text-white"
+              className="bg-primary hover:bg-primary-hover focus:ring-4 focus:ring-primary/50 text-white"
             >
               {isSubmitting ? (
                 <>

@@ -142,13 +142,13 @@ export function JobsListView({
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case "easy":
-        return "bg-green-100 text-green-700";
+        return "bg-green-500/15 text-green-600 dark:text-green-400";
       case "intermediate":
         return "bg-yellow-100 text-yellow-700";
       case "hard":
-        return "bg-red-100 text-red-700";
+        return "bg-destructive/15 text-destructive";
       default:
-        return "bg-gray-100 text-gray-700";
+        return "bg-muted text-foreground/80";
     }
   };
 
@@ -197,13 +197,13 @@ export function JobsListView({
   return (
     <div className="w-full space-y-6">
       {/* Filter Tabs */}
-      <div className="flex gap-2 border-b border-gray-200">
+      <div className="flex gap-2 border-b border-border">
         <button
           onClick={() => setFilterTab("all")}
           className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 ${
             filterTab === "all"
-              ? "border-[#636AE8] text-[#636AE8]"
-              : "border-transparent text-gray-600 hover:text-gray-900"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-foreground"
           }`}
         >
           All Jobs
@@ -212,8 +212,8 @@ export function JobsListView({
           onClick={() => setFilterTab("with-interviews")}
           className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 ${
             filterTab === "with-interviews"
-              ? "border-[#636AE8] text-[#636AE8]"
-              : "border-transparent text-gray-600 hover:text-gray-900"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-foreground"
           }`}
         >
           With Interviews
@@ -222,8 +222,8 @@ export function JobsListView({
           onClick={() => setFilterTab("without-interviews")}
           className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 ${
             filterTab === "without-interviews"
-              ? "border-[#636AE8] text-[#636AE8]"
-              : "border-transparent text-gray-600 hover:text-gray-900"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-foreground"
           }`}
         >
           Without Interviews
@@ -241,7 +241,7 @@ export function JobsListView({
             return (
               <Card
                 key={job.id}
-                className={`hover:shadow-lg  transition-all duration-200 border border-gray-200 hover:border-[#636AE8]/30 bg-white ${
+                className={`hover:shadow-lg  transition-all duration-200 border border-border hover:border-primary/30 bg-card ${
                   isExpanded ? "pb-0 pt-3" : "py-3"
                 }`}
               >
@@ -254,12 +254,12 @@ export function JobsListView({
                           <TooltipTrigger asChild>
                             <button
                               onClick={() => toggleJobExpansion(job.id)}
-                              className="p-1 hover:bg-gray-100 rounded transition-colors"
+                              className="p-1 hover:bg-muted rounded transition-colors"
                             >
                               {isExpanded ? (
-                                <ChevronDown className="h-5 w-5 text-gray-600" />
+                                <ChevronDown className="h-5 w-5 text-muted-foreground" />
                               ) : (
-                                <ChevronRight className="h-5 w-5 text-gray-600" />
+                                <ChevronRight className="h-5 w-5 text-muted-foreground" />
                               )}
                             </button>
                           </TooltipTrigger>
@@ -279,16 +279,16 @@ export function JobsListView({
                           alt={job.companyName}
                           className="object-cover"
                         />
-                        <AvatarFallback className="rounded-lg bg-gradient-to-br from-[#636AE8] to-[#4B4FD6] text-white">
+                        <AvatarFallback className="rounded-lg bg-gradient-to-br from-primary to-primary-hover text-white">
                           <Building2 className="h-5 w-5" />
                         </AvatarFallback>
                       </Avatar>
 
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-semibold text-gray-900 truncate">
+                        <h3 className="text-lg font-semibold text-foreground truncate">
                           {job.title}
                         </h3>
-                        <p className="text-sm text-gray-600 font-medium">
+                        <p className="text-sm text-muted-foreground font-medium">
                           {job.companyName}
                         </p>
                       </div>
@@ -297,9 +297,9 @@ export function JobsListView({
                     {/* Right Section - Average Score & Actions */}
                     <div className="flex flex-1 gap-3 justify-end items-center">
                       {averageScore !== null && (
-                        <div className="flex items-center gap-2 px-3 py-1 bg-gray-50 rounded-lg">
-                          <Award className="w-4 h-4 text-gray-400" />
-                          <span className="text-sm text-gray-500">Avg:</span>
+                        <div className="flex items-center gap-2 px-3 py-1 bg-muted/50 rounded-lg">
+                          <Award className="w-4 h-4 text-muted-foreground/70" />
+                          <span className="text-sm text-muted-foreground">Avg:</span>
                           <span
                             className={`text-lg font-bold ${getScoreColor(
                               averageScore
@@ -311,7 +311,7 @@ export function JobsListView({
                       )}
                       <Button
                         size="default"
-                        className="bg-gradient-to-r from-[#636AE8] to-[#4B4FD6] hover:from-[#4B4FD6] hover:to-[#3B3FC6] text-white shadow-md hover:shadow-lg transition-all"
+                        className="bg-gradient-to-r from-primary to-primary-hover hover:from-primary-hover hover:to-primary-hover text-white shadow-md hover:shadow-lg transition-all"
                         onClick={() => {
                           if (onStartInterview) {
                             onStartInterview(job);
@@ -324,7 +324,7 @@ export function JobsListView({
                       <Button
                         size="default"
                         variant="outline"
-                        className="border-gray-300 hover:bg-gray-50"
+                        className="border-border hover:bg-muted/50"
                         onClick={() =>
                           window.open(job.applicationLink, "_blank")
                         }
@@ -338,22 +338,22 @@ export function JobsListView({
 
                 {/* Expanded Interview History */}
                 {isExpanded && (
-                  <div className="border-t border-gray-200 bg-gray-50 p-4 rounded-xl">
+                  <div className="border-t border-border bg-muted/50 p-4 rounded-xl">
                     {interviews.length > 0 ? (
                       <div className="space-y-3">
-                        <h4 className="text-sm font-semibold text-gray-700 mb-3">
+                        <h4 className="text-sm font-semibold text-foreground/80 mb-3">
                           Interview History ({interviews.length})
                         </h4>
                         {interviews.map((interview) => (
                           <Card
                             key={interview.id}
-                            className="p-3 bg-white border border-gray-200 hover:border-[#636AE8]/30 transition-all"
+                            className="p-3 bg-card border border-border hover:border-primary/30 transition-all"
                           >
                             <div className="flex items-center justify-between gap-3">
                               {/* Interview Details */}
                               <div className="flex items-center gap-3 flex-1">
                                 <div className="flex items-center gap-2">
-                                  <Award className="w-4 h-4 text-gray-400" />
+                                  <Award className="w-4 h-4 text-muted-foreground/70" />
                                   <span
                                     className={`text-base font-bold ${getScoreColor(
                                       interview.overall_score
@@ -363,7 +363,7 @@ export function JobsListView({
                                   </span>
                                 </div>
 
-                                <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">
+                                <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/15 text-primary text-xs font-medium">
                                   {getTypeIcon(interview.type)}
                                   <span className="capitalize">
                                     {interview.type}
@@ -381,7 +381,7 @@ export function JobsListView({
                                     interview.difficulty.slice(1)}
                                 </div>
 
-                                <div className="flex items-center gap-1 text-xs text-gray-500">
+                                <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                   <Calendar className="h-3 w-3" />
                                   <span>
                                     {new Date(
@@ -394,7 +394,7 @@ export function JobsListView({
                                   </span>
                                 </div>
 
-                                <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-medium">
+                                <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-muted text-foreground/80 text-xs font-medium">
                                   <span>
                                     {interview.questions_feedback.length}{" "}
                                     {interview.questions_feedback.length === 1
@@ -408,7 +408,7 @@ export function JobsListView({
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="border-gray-300 hover:bg-gray-50"
+                                className="border-border hover:bg-muted/50"
                                 onClick={() => {
                                   if (onViewInterviewDetails) {
                                     onViewInterviewDetails(interview);
@@ -424,7 +424,7 @@ export function JobsListView({
                       </div>
                     ) : (
                       <div className="text-center py-8">
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-muted-foreground">
                           No interviews yet for this job
                         </p>
                       </div>
@@ -435,16 +435,16 @@ export function JobsListView({
             );
           })
         ) : (
-          <div className="flex flex-col items-center justify-center py-16 px-4 bg-white rounded-lg border border-gray-200">
-            <div className="bg-gray-100 rounded-full p-6 mb-4">
-              <Building2 className="w-16 h-16 text-gray-400" />
+          <div className="flex flex-col items-center justify-center py-16 px-4 bg-card rounded-lg border border-border">
+            <div className="bg-muted rounded-full p-6 mb-4">
+              <Building2 className="w-16 h-16 text-muted-foreground/70" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">
+            <h3 className="text-xl font-semibold text-foreground/80 mb-2">
               {localSearch
                 ? "No matching jobs found"
                 : "No job applications yet"}
             </h3>
-            <p className="text-gray-500 text-center max-w-md">
+            <p className="text-muted-foreground text-center max-w-md">
               {localSearch
                 ? "Try adjusting your search terms to find what you're looking for."
                 : "Start adding job applications to track your progress and prepare for interviews."}
@@ -455,12 +455,12 @@ export function JobsListView({
 
       {/* Footer Stats */}
       {filteredJobs.length > 0 && (
-        <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-          <div className="text-sm text-gray-600">
+        <div className="flex items-center justify-between pt-4 border-t border-border">
+          <div className="text-sm text-muted-foreground">
             Showing <span className="font-semibold">{filteredJobs.length}</span>{" "}
             {filteredJobs.length === 1 ? "application" : "applications"}
             {localSearch && data.length !== filteredJobs.length && (
-              <span className="text-gray-500">
+              <span className="text-muted-foreground">
                 {" "}
                 (filtered from {data.length} total)
               </span>

@@ -106,9 +106,9 @@ const InterviewSettingsModal: React.FC<InterviewSettingsModalProps> = ({
             {companyName && jobTitle ? (
               <>
                 Customize your interview settings for{" "}
-                <span className="font-semibold text-gray-700">{jobTitle}</span>{" "}
+                <span className="font-semibold text-foreground/80">{jobTitle}</span>{" "}
                 at{" "}
-                <span className="font-semibold text-gray-700">
+                <span className="font-semibold text-foreground/80">
                   {companyName}
                 </span>
               </>
@@ -194,7 +194,7 @@ const InterviewSettingsModal: React.FC<InterviewSettingsModalProps> = ({
               <Label htmlFor="questionCount" className="text-base font-medium">
                 Number of Questions
               </Label>
-              <span className="text-lg font-semibold text-[#636AE8]">
+              <span className="text-lg font-semibold text-primary">
                 {questionCount}
               </span>
             </div>
@@ -207,7 +207,7 @@ const InterviewSettingsModal: React.FC<InterviewSettingsModalProps> = ({
               onValueChange={(value: number[]) => setQuestionCount(value[0])}
               className="w-full"
             />
-            <div className="flex justify-between text-xs text-gray-500">
+            <div className="flex justify-between text-xs text-muted-foreground">
               <span>1 question</span>
               <span>10 questions</span>
             </div>
@@ -226,7 +226,7 @@ const InterviewSettingsModal: React.FC<InterviewSettingsModalProps> = ({
           <Button
             type="button"
             onClick={handleStart}
-            className="w-full sm:w-auto mx-1 bg-[#636AE8] hover:bg-[#4B4FD6]"
+            className="w-full sm:w-auto mx-1 bg-primary hover:bg-primary-hover"
           >
             Start Interview
           </Button>

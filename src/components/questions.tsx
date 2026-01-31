@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
 import InterviewFeedback from "./interview-feedback";
-import { uploadInterview } from "@/app/interview/actions";
+import { uploadInterview } from "@/app/(protected)/interview/actions";
 
 interface Question {
   id: number;
@@ -332,25 +332,25 @@ export default function Questions({
   }
 
   return (
-    <div className="bg-white rounded-lg p-4 shadow-xl rounded-xl gap-2 w-full flex flex-1 flex-col">
+    <div className="bg-card rounded-lg p-4 shadow-xl rounded-xl gap-2 w-full flex flex-1 flex-col">
       {/* Question Header with Audio Visualization and Timer */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
           {/* Audio Visualization */}
           <div className="flex items-center ">
-            <AudioLines className="text-[#636AE8]" />
-            <AudioLines className="text-[#636AE8]" />
-            <AudioLines className="text-[#636AE8]" />
+            <AudioLines className="text-primary" />
+            <AudioLines className="text-primary" />
+            <AudioLines className="text-primary" />
           </div>
 
           {/* Question Text */}
-          <p className="text-xl text-[#171a1f] ">{currentQuestion.text}</p>
+          <p className="text-xl text-foreground ">{currentQuestion.text}</p>
         </div>
 
         {/* Timer with Hourglass */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          <Hourglass className="w-6 h-6 text-gray-400" />
-          <span className="text-[20px]  text-[#636ae8]">
+          <Hourglass className="w-6 h-6 text-muted-foreground/70" />
+          <span className="text-[20px]  text-primary">
             {formatTime(questionTime)} mins
           </span>
         </div>
@@ -365,8 +365,8 @@ export default function Questions({
             isRecording
               ? "bg-red-500 text-white hover:bg-red-600"
               : isSettingUp
-              ? "bg-[#9ca3f0] text-white cursor-not-allowed"
-              : "bg-[#636ae8] text-white hover:bg-[#5058c9]"
+              ? "bg-primary-light text-white cursor-not-allowed"
+              : "bg-primary text-white hover:bg-primary-hover"
           }`}
         >
           {isSettingUp ? (
@@ -388,7 +388,7 @@ export default function Questions({
               stopRecording();
             }
           }}
-          className={`px-6 rounded-md flex items-center gap-2 bg-[#f2f2fd] text-[#636ae8] hover:bg-[#e9e9ff]`}
+          className={`px-6 rounded-md flex items-center gap-2 bg-primary-lighter text-primary hover:bg-primary-light`}
           disabled={isRecording || isSettingUp}
         >
           <Keyboard className="w-5 h-5" />
@@ -410,12 +410,12 @@ export default function Questions({
               : "Your answer will appear here"
           }
           readOnly={isRecording || isSettingUp}
-          className="min-h-[30vh] bg-[#f2f2fd] border-[#f2f2fd] text-[#636ae8] text-lg p-3 resize-none focus:ring-0 focus:border-[#636ae8]"
+          className="min-h-[30vh] bg-primary-lighter border-primary-lighter text-primary text-lg p-3 resize-none focus:ring-0 focus:border-primary"
         />
         {isSettingUp && (
           <div className="absolute top-3 right-3 flex items-center gap-2">
-            <div className="w-4 h-4 border-2 border-[#636ae8] border-t-transparent rounded-full animate-spin" />
-            <span className="text-sm text-[#636ae8] font-medium">
+            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <span className="text-sm text-primary font-medium">
               Connecting...
             </span>
           </div>
@@ -430,13 +430,13 @@ export default function Questions({
 
       {/* Footer with Question Counter and Next Button */}
       <div className="flex items-center justify-end gap-6">
-        <span className="text-md text-[#8c8d8b]">
+        <span className="text-md text-muted-foreground">
           {String(currentQuestionIndex + 1).padStart(2, "0")}/{total}
         </span>
         {isLastQuestion ? (
           <Button
             onClick={handleFinish}
-            className="bg-[#636ae8] text-white hover:bg-[#5058c9] px-6 py-2 rounded-md flex items-center gap-2"
+            className="bg-primary text-white hover:bg-primary-hover px-6 py-2 rounded-md flex items-center gap-2"
           >
             Finish
             <ArrowRight className="w-4 h-4" />
@@ -444,7 +444,7 @@ export default function Questions({
         ) : (
           <Button
             onClick={handleNext}
-            className="bg-[#f2f2fd] text-[#636ae8] hover:bg-[#e9e9ff] hover:text-[#4e57c1] px-6 py-2 rounded-md flex items-center gap-2"
+            className="bg-primary-lighter text-primary hover:bg-primary-light hover:text-primary-hover px-6 py-2 rounded-md flex items-center gap-2"
           >
             Next
             <ArrowRight className="w-4 h-4" />

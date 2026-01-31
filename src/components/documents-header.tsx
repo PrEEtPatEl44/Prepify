@@ -16,8 +16,8 @@ function getTabClasses(active: boolean) {
     px-2 !m-0 font-semibold mr-4 cursor-pointer transition duration-200   
     ${
       active
-        ? "text-[#636AE8] underline underline-offset-[95%] decoration-[#636AE8] decoration-3"
-        : "text-muted-foreground hover:text-gray-400"
+        ? "text-primary underline underline-offset-[95%] decoration-primary decoration-3"
+        : "text-muted-foreground hover:text-muted-foreground/70"
     }
   `;
 }
@@ -42,14 +42,14 @@ export default function DocsHeader({
   return (
     <>
       <div className="w-full">
-        <div className="p-2 flex justify-between items-center bg-white rounded-xl shadow-md gap-2 sm:gap-4">
+        <div className="p-2 flex justify-between items-center bg-card rounded-xl shadow-md gap-2 sm:gap-4">
           {/* Search Box */}
           <Input
             type="text"
             placeholder={`Search your ${
               documentType === "resumes" ? "resumes" : "cover letters"
             }...`}
-            className={`max-h-8 bg-[#F3F4F6] !border-none`}
+            className={`max-h-8 bg-muted !border-none`}
             onChange={(e) => handleChange(e)}
           />
 

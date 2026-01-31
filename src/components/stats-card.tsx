@@ -27,7 +27,7 @@ export default function StatsCard({
       datasets: [
         {
           data: [value, 100 - value],
-          backgroundColor: ["#161D96", "#CED0F8"],
+          backgroundColor: ["var(--primary-dark)", "var(--primary-light)"],
           borderWidth: 0,
           hoverOffset: 0,
         },
@@ -50,37 +50,37 @@ export default function StatsCard({
   );
 
   return (
-    <div className="w-full max-w-[497px] h-[169px] bg-white rounded-[10px] shadow-[0_0_2px_0_rgba(23,26,31,0.12),0_8px_17px_0_rgba(23,26,31,0.15)] flex items-center px-4 py-6">
+    <div className="w-full max-w-[497px] h-[169px] bg-card rounded-[10px] shadow-[0_0_2px_0_rgba(23,26,31,0.12),0_8px_17px_0_rgba(23,26,31,0.15)] flex items-center px-4 py-6">
       <div className="flex flex-col items-center min-w-[96px]">
         <div className="relative w-24 h-24 mb-2">
           <Doughnut data={chartData} options={options} />
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-lg font-normal text-text-dark">{score}%</span>
+            <span className="text-lg font-normal text-card-foreground">{score}%</span>
           </div>
         </div>
-        <span className="text-sm font-normal text-text-dark text-center">
+        <span className="text-sm font-normal text-card-foreground text-center">
           Resume Score
         </span>
       </div>
 
-      <div className="w-px h-20 bg-divider-blue mx-6"></div>
+      <div className="w-px h-20 bg-border mx-6"></div>
 
       <div className="flex flex-col items-center min-w-[120px]">
-        <span className="text-5xl font-medium text-text-dark mb-1">
+        <span className="text-5xl font-medium text-card-foreground mb-1">
           {interviews}
         </span>
-        <span className="text-sm font-normal text-text-dark text-center">
+        <span className="text-sm font-normal text-card-foreground text-center">
           Interviews Completed
         </span>
       </div>
 
-      <div className="w-px h-20 bg-divider-blue mx-6"></div>
+      <div className="w-px h-20 bg-border mx-6"></div>
 
       <div className="flex flex-col items-center min-w-[120px]">
-        <span className="text-5xl font-medium text-text-dark mb-1">
+        <span className="text-5xl font-medium text-card-foreground mb-1">
           {applications}
         </span>
-        <span className="text-sm font-normal text-text-dark text-center">
+        <span className="text-sm font-normal text-card-foreground text-center">
           Total Applications
         </span>
       </div>
