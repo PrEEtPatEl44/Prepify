@@ -6,13 +6,14 @@ import { useEffect, useState, useCallback } from "react";
 import { X, Building2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
+import { type DocumentBasicInfo } from "@/types/docs";
 import { createJob } from "@/app/(protected)/jobs/actions";
 import { type CreateJob, type Column, type Job } from "@/types/jobs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { JobsDataTable } from "@/components/jobs-data-table";
 
+const Viewer = dynamic(() => import("@/components/pdf-viewer"), { ssr: false });
 const Kanban = dynamic(() => import("@/components/kanban"), { ssr: false });
 
 const Page = () => {
@@ -20,18 +21,30 @@ const Page = () => {
   const [columns, setColumns] = useState<Column[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    if (typeof window !== "undefined") {
-      return (localStorage.getItem("jobsViewMode") as ViewMode) || "kanban";
-    }
-    return "kanban";
-  });
+  const [viewMode, setViewMode] = useState<ViewMode>("kanban");
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [file, setFile] = useState<DocumentBasicInfo | null>(null);
 
+  const handleViewFile = (job: Job, file?: DocumentBasicInfo) => {
+    setSelectedJob(job);
+    if (file) {
+      setFile(file);
+    } else {
+      setFile(null);
+    }
+  };
   const handleViewModeChange = useCallback((mode: ViewMode) => {
     setViewMode(mode);
     localStorage.setItem("jobsViewMode", mode);
     setSelectedJob(null);
+    setFile(null);
+  }, []);
+
+  useEffect(() => {
+    const savedViewMode = localStorage.getItem("jobsViewMode") as ViewMode;
+    if (savedViewMode) {
+      setViewMode(savedViewMode);
+    }
   }, []);
 
   // Fetch jobs and columns on component mount
@@ -148,7 +161,7 @@ const Page = () => {
               setJobs={setJobs}
               columns={columns}
               searchTerm={searchTerm}
-              onViewDescription={setSelectedJob}
+              onViewFile={handleViewFile}
             />
           )}
         </div>
@@ -181,9 +194,13 @@ const Page = () => {
               />
             </div>
             <ScrollArea className="flex-1 min-h-0">
-              <div className="p-4 text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground">
-                {selectedJob.description || "No description available."}
-              </div>
+              {file ? (
+                <Viewer file={file} />
+              ) : (
+                <div className="p-4 text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground">
+                  {selectedJob.description || "No description available."}
+                </div>
+              )}
             </ScrollArea>
           </div>
         </div>

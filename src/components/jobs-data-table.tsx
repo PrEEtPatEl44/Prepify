@@ -49,18 +49,15 @@ import { Job, Column } from "@/types/jobs";
 import { editJob } from "@/app/(protected)/jobs/actions";
 import { toast } from "sonner";
 import { useSidebar } from "@/components/ui/sidebar";
-interface Document {
-  id: string;
-  file_name: string;
-  file_path: string;
-}
+
+import { type DocumentBasicInfo } from "@/types/docs";
 
 interface JobsDataTableProps {
   jobs: Job[];
   setJobs: React.Dispatch<React.SetStateAction<Job[]>>;
   columns: Column[];
   searchTerm?: string;
-  onViewDescription?: (job: Job) => void;
+  onViewFile?: (job: Job, file?: DocumentBasicInfo) => void;
 }
 
 export function JobsDataTable({
@@ -68,15 +65,17 @@ export function JobsDataTable({
   setJobs,
   columns,
   searchTerm,
-  onViewDescription,
+  onViewFile,
 }: JobsDataTableProps) {
   const sidebar = useSidebar();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
   );
-  const [resumes, setResumes] = React.useState<Document[]>([]);
-  const [coverLetters, setCoverLetters] = React.useState<Document[]>([]);
+  const [resumes, setResumes] = React.useState<DocumentBasicInfo[]>([]);
+  const [coverLetters, setCoverLetters] = React.useState<DocumentBasicInfo[]>(
+    [],
+  );
   const { setOpen } = sidebar;
   // Fetch resumes and cover letters on mount
   React.useEffect(() => {
@@ -90,14 +89,26 @@ export function JobsDataTable({
         if (resumesRes.ok) {
           const resumesData = await resumesRes.json();
           if (resumesData.success) {
-            setResumes(resumesData.data);
+            const resumeWithType = resumesData.data.map(
+              (r: DocumentBasicInfo) => ({
+                ...r,
+                documentType: "resumes" as const,
+              }),
+            );
+            setResumes(resumeWithType);
           }
         }
 
         if (coverLettersRes.ok) {
           const coverLettersData = await coverLettersRes.json();
           if (coverLettersData.success) {
-            setCoverLetters(coverLettersData.data);
+            const coverLettersWithType = coverLettersData.data.map(
+              (c: DocumentBasicInfo) => ({
+                ...c,
+                documentType: "coverLetters" as const,
+              }),
+            );
+            setCoverLetters(coverLettersWithType);
           }
         }
       } catch (error) {
@@ -250,9 +261,9 @@ export function JobsDataTable({
                       className="h-8 w-8"
                       disabled={!job.description}
                       onClick={() => {
-                        if (job.description && onViewDescription) {
+                        if (job.description && onViewFile) {
                           setOpen(false);
-                          onViewDescription(job);
+                          onViewFile(job);
                         }
                       }}
                     >
@@ -288,8 +299,8 @@ export function JobsDataTable({
                       className="h-8 w-8"
                       disabled={!resume}
                       onClick={() => {
-                        if (resume) {
-                          window.open(resume.file_path, "_blank");
+                        if (resume && onViewFile) {
+                          onViewFile(job, resume);
                         }
                       }}
                     >
@@ -309,8 +320,8 @@ export function JobsDataTable({
                       className="h-8 w-8"
                       disabled={!coverLetter}
                       onClick={() => {
-                        if (coverLetter) {
-                          window.open(coverLetter.file_path, "_blank");
+                        if (coverLetter && onViewFile) {
+                          onViewFile(job, coverLetter);
                         }
                       }}
                     >
