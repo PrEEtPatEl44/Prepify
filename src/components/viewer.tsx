@@ -12,7 +12,7 @@ import { DocumentBasicInfo } from "@/types/docs";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",
-  import.meta.url
+  import.meta.url,
 ).toString();
 
 interface ViewerProps {
@@ -118,7 +118,7 @@ export default function Viewer({ selectedFile, setSelectedFile }: ViewerProps) {
         <Document
           file={fileURl}
           onLoadSuccess={onDocumentLoadSuccess}
-          className={"m-4 min-w-fit mx-auto gap-4 max-w-xl "}
+          className={"m-4 min-w-fit mx-auto gap-4 max-w-xl"}
           loading={loadingComponent}
         >
           {numPages &&
