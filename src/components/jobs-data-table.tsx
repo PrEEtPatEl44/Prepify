@@ -217,6 +217,7 @@ export function JobsDataTable({
         cell: ({ row }) => {
           const job = row.original;
           const currentColumn = columns.find((c) => c.id === job.columnId);
+          const pillColor = currentColumn?.color;
           return (
             <Select
               value={job.columnId}
@@ -224,7 +225,17 @@ export function JobsDataTable({
                 handleFieldUpdate(job.id, "columnId", value)
               }
             >
-              <SelectTrigger className="w-[80%]">
+              <SelectTrigger
+                className="w-full rounded-full border-0 px-3 py-1 h-7 text-xs font-medium [&>svg]:ml-1 [&>svg]:h-3 [&>svg]:w-3"
+                style={
+                  pillColor
+                    ? {
+                        backgroundColor: `${pillColor}20`,
+                        color: pillColor,
+                      }
+                    : undefined
+                }
+              >
                 <SelectValue>
                   {currentColumn?.name || "Select status"}
                 </SelectValue>
@@ -232,7 +243,15 @@ export function JobsDataTable({
               <SelectContent>
                 {columns.map((column) => (
                   <SelectItem key={column.id} value={column.id}>
-                    {column.name}
+                    <span className="flex items-center gap-2">
+                      {column.color && (
+                        <span
+                          className="inline-block h-2.5 w-2.5 rounded-full shrink-0"
+                          style={{ backgroundColor: column.color }}
+                        />
+                      )}
+                      {column.name}
+                    </span>
                   </SelectItem>
                 ))}
               </SelectContent>

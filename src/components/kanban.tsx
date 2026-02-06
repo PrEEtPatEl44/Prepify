@@ -85,9 +85,9 @@ const Kanban = ({
     );
   }, [jobs, searchTerm]);
 
-  const handleCreateList = async (listName: string) => {
+  const handleCreateList = async (listName: string, color?: string) => {
     if (!listName) return;
-    const newColumn: Column = await createColumn(listName).then((res) => {
+    const newColumn: Column = await createColumn(listName, color).then((res) => {
       if (!res.success || !res.data) {
         throw new Error(res.error || "Failed to create column");
       }

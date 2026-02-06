@@ -237,7 +237,8 @@ export async function moveJob(
 }
 
 export async function createColumn(
-  name: string
+  name: string,
+  color?: string
 ): Promise<{ success: boolean; data?: Column; error?: string }> {
   try {
     const supabase = await createClient();
@@ -260,6 +261,7 @@ export async function createColumn(
       .insert({
         user_id: user.id,
         name,
+        ...(color && { color }),
       })
       .select("*")
       .single();

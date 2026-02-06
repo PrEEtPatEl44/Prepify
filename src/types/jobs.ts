@@ -39,6 +39,7 @@ interface JobDbRow {
 interface Column {
   id: string;
   name: string;
+  color?: string;
   [key: string]: unknown;
 }
 
