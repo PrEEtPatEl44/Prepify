@@ -69,6 +69,14 @@ Copy `.env.example` to `.env.local` and configure:
 
 Use `@/*` to import from `src/*` (e.g., `@/components/ui/button`).
 
+## Data Fetching & Mutations
+
+- **Data fetching (GET)**: Use API routes (`app/api/`) for fetching data
+- **Data mutations (POST/PUT/DELETE)**: Use Server Actions instead of API routes
+  - Place server actions in `actions.ts` files alongside the page that uses them (e.g., `app/(protected)/templates/actions.ts`)
+  - Always add `"use server"` directive at the top
+  - Use `revalidatePath()` after mutations to update the UI
+
 ## Commit Convention
 
 Follow conventional commits: `feat:`, `fix:`, `docs:`, `style:`, `refactor:`, `test:`, `chore:`
