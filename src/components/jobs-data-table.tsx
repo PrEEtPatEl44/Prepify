@@ -19,6 +19,8 @@ import {
   Eye,
   FileText,
   Mail,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -45,10 +47,18 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import { Job, Column } from "@/types/jobs";
-import { editJob } from "@/app/(protected)/jobs/actions";
+import { editJob, deleteJob } from "@/app/(protected)/jobs/actions";
 import { toast } from "sonner";
 import { useSidebar } from "@/components/ui/sidebar";
+import EditJobModal from "@/components/modals/EditJobModal";
+import DeleteJobModal from "@/components/modals/DeleteJobModal";
 
 import { type DocumentBasicInfo } from "@/types/docs";
 
@@ -151,6 +161,36 @@ export function JobsDataTable({
       toast.error("Failed to update");
     }
   };
+
+  const handleConfirmDelete = React.useCallback(
+    async (job: Job) => {
+      try {
+        const result = await deleteJob(job.id);
+        if (!result.success) {
+          throw new Error(result.error || "Failed to delete job");
+        }
+        setJobs((prev) => prev.filter((j) => j.id !== job.id));
+        toast.success("Job deleted successfully");
+      } catch (error) {
+        console.error("Failed to delete job:", error);
+        toast.error(
+          `Failed to delete job: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`,
+        );
+      }
+    },
+    [setJobs],
+  );
+
+  const handleJobUpdated = React.useCallback(
+    (updatedJob: Job) => {
+      setJobs((prev) =>
+        prev.map((j) => (j.id === updatedJob.id ? updatedJob : j)),
+      );
+    },
+    [setJobs],
+  );
 
   const tableColumns: ColumnDef<Job>[] = React.useMemo(
     () => [
@@ -272,69 +312,62 @@ export function JobsDataTable({
           return (
             <TooltipProvider delayDuration={300}>
               <div className="flex items-center gap-1">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
+                <DropdownMenu>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>View</TooltipContent>
+                  </Tooltip>
+                  <DropdownMenuContent
+                    align="end"
+                    className="w-44"
+                    side="bottom"
+                    sideOffset={4}
+                  >
+                    <DropdownMenuItem
+                      className="cursor-pointer"
                       disabled={!job.description}
-                      onClick={() => {
+                      onSelect={() => {
                         if (job.description && onViewFile) {
                           setOpen(false);
                           onViewFile(job);
                         }
                       }}
                     >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>View Description</TooltipContent>
-                </Tooltip>
-
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
+                      <Eye className="h-4 w-4 mr-2" />
+                      View Description
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="cursor-pointer"
                       disabled={!resume}
-                      onClick={() => {
+                      onSelect={() => {
                         if (resume && onViewFile) {
                           onViewFile(job, resume);
                         }
                       }}
                     >
-                      <FileText className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {resume ? `View Resume: ${resume.file_name}` : "No Resume"}
-                  </TooltipContent>
-                </Tooltip>
-
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
+                      <FileText className="h-4 w-4 mr-2" />
+                      View Resume
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="cursor-pointer"
                       disabled={!coverLetter}
-                      onClick={() => {
+                      onSelect={() => {
                         if (coverLetter && onViewFile) {
                           onViewFile(job, coverLetter);
                         }
                       }}
                     >
-                      <Mail className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {coverLetter
-                      ? `View Cover Letter: ${coverLetter.file_name}`
-                      : "No Cover Letter"}
-                  </TooltipContent>
-                </Tooltip>
+                      <Mail className="h-4 w-4 mr-2" />
+                      View Cover Letter
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
 
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -353,13 +386,37 @@ export function JobsDataTable({
                   </TooltipTrigger>
                   <TooltipContent>Open Link</TooltipContent>
                 </Tooltip>
+
+                <EditJobModal
+                  job={job}
+                  onJobUpdated={handleJobUpdated}
+                  trigger={
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  }
+                />
+
+                <DeleteJobModal
+                  onConfirm={handleConfirmDelete}
+                  job={job}
+                  trigger={
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-red-500 hover:text-red-600"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  }
+                />
               </div>
             </TooltipProvider>
           );
         },
       },
     ],
-    [columns, resumes, coverLetters],
+    [columns, resumes, coverLetters, handleConfirmDelete, handleJobUpdated],
   );
 
   const table = useReactTable({

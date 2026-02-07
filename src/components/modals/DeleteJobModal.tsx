@@ -19,31 +19,37 @@ import { Button } from "@/components/ui/button";
 interface DeleteJobModalProps {
   onConfirm: (job: Job) => void;
   job: Job;
+  trigger?: React.ReactNode;
 }
 
 export default function DeleteJobModal({
   onConfirm,
   job,
+  trigger,
 }: DeleteJobModalProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <DropdownMenuItem
-          className={
-            isDeleting
-              ? "text-muted-foreground/70 cursor-not-allowed"
-              : "text-red-600 hover:bg-destructive/10 focus:bg-destructive/10 cursor-pointer"
-          }
-          disabled={isDeleting}
-          onSelect={(e) => {
-            // Prevent the dropdown from closing
-            e.preventDefault();
-          }}
-        >
-          {isDeleting ? "Deleting..." : "Delete"}
-        </DropdownMenuItem>
+        {trigger ? (
+          trigger
+        ) : (
+          <DropdownMenuItem
+            className={
+              isDeleting
+                ? "text-muted-foreground/70 cursor-not-allowed"
+                : "text-red-600 hover:bg-destructive/10 focus:bg-destructive/10 cursor-pointer"
+            }
+            disabled={isDeleting}
+            onSelect={(e) => {
+              // Prevent the dropdown from closing
+              e.preventDefault();
+            }}
+          >
+            {isDeleting ? "Deleting..." : "Delete"}
+          </DropdownMenuItem>
+        )}
       </DialogTrigger>
       <DialogContent className="px-0">
         <DialogHeader>

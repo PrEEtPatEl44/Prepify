@@ -154,6 +154,7 @@ const Page = () => {
               setColumns={setColumns}
               handleCreateJob={handleCreateJob}
               searchTerm={searchTerm}
+              onViewFile={handleViewFile}
             />
           ) : (
             <JobsDataTable

@@ -39,15 +39,16 @@ import { toast } from "sonner";
 
 interface EditJobModalProps {
   job: Job;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   onJobUpdated?: (updatedJob: Job) => void;
+  trigger?: React.ReactNode;
 }
 
 type DocumentWithType = DocumentBasicInfo & {
   documentType: "resumes" | "coverLetters";
 };
 
-const EditJobModal = ({ children, job, onJobUpdated }: EditJobModalProps) => {
+const EditJobModal = ({ children, job, onJobUpdated, trigger }: EditJobModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [resumes, setResumes] = useState<DocumentBasicInfo[]>([]);
   const [coverLetters, setCoverLetters] = useState<DocumentBasicInfo[]>([]);
@@ -273,15 +274,19 @@ const EditJobModal = ({ children, job, onJobUpdated }: EditJobModalProps) => {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       {/* Header */}
       <DialogTrigger asChild>
-        <DropdownMenuItem
-          className="cursor-pointer"
-          onSelect={(e) => {
-            // Prevent the dropdown from closing
-            e.preventDefault();
-          }}
-        >
-          {children}
-        </DropdownMenuItem>
+        {trigger ? (
+          trigger
+        ) : (
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onSelect={(e) => {
+              // Prevent the dropdown from closing
+              e.preventDefault();
+            }}
+          >
+            {children}
+          </DropdownMenuItem>
+        )}
       </DialogTrigger>
       <DialogContent
         className="px-0 min-w-xl  pt-2"

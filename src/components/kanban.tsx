@@ -8,9 +8,10 @@ import {
   KanbanProvider,
 } from "@/components/ui/shadcn-io/kanban";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Ellipsis, GripVertical } from "lucide-react";
-import { useState, useMemo } from "react";
+import { Ellipsis, Eye, FileText, GripVertical, Mail } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
 import { CreateJob, type Column, type Job } from "@/types/jobs";
+import { type DocumentBasicInfo } from "@/types/docs";
 import CreateJobModal from "@/components/modals/CreateJobModal";
 import CreateListModal from "@/components/modals/CreateListModal";
 import DeleteJobModal from "@/components/modals/DeleteJobModal";
@@ -37,6 +38,7 @@ const Kanban = ({
   setColumns,
   handleCreateJob,
   searchTerm,
+  onViewFile,
 }: {
   jobs: Job[];
   setJobs: React.Dispatch<React.SetStateAction<Job[]>>;
@@ -44,6 +46,7 @@ const Kanban = ({
   setColumns: React.Dispatch<React.SetStateAction<Column[]>>;
   handleCreateJob: (jobData: CreateJob) => Promise<void>;
   searchTerm?: string;
+  onViewFile?: (job: Job, file?: DocumentBasicInfo) => void;
 }) => {
   // UPDATED: Handle kanban data changes and transform back to Job format
   const handleKanbanDataChange = (updatedKanbanItems: JobKanbanItem[]) => {
@@ -71,6 +74,47 @@ const Kanban = ({
 
   const [pickedItem, setPickedItem] = useState<JobKanbanItem | null>();
   const [prevJobs, setPrevJobs] = useState<Job[] | null>(null);
+  const [resumes, setResumes] = useState<DocumentBasicInfo[]>([]);
+  const [coverLetters, setCoverLetters] = useState<DocumentBasicInfo[]>([]);
+
+  useEffect(() => {
+    const fetchDocuments = async () => {
+      try {
+        const [resumesRes, coverLettersRes] = await Promise.all([
+          fetch("/api/docs?type=resumes"),
+          fetch("/api/docs?type=coverLetters"),
+        ]);
+
+        if (resumesRes.ok) {
+          const resumesData = await resumesRes.json();
+          if (resumesData.success) {
+            setResumes(
+              resumesData.data.map((r: DocumentBasicInfo) => ({
+                ...r,
+                documentType: "resumes" as const,
+              }))
+            );
+          }
+        }
+
+        if (coverLettersRes.ok) {
+          const coverLettersData = await coverLettersRes.json();
+          if (coverLettersData.success) {
+            setCoverLetters(
+              coverLettersData.data.map((c: DocumentBasicInfo) => ({
+                ...c,
+                documentType: "coverLetters" as const,
+              }))
+            );
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching documents:", error);
+      }
+    };
+
+    fetchDocuments();
+  }, []);
 
   // Filter jobs based on search term
   const filteredJobs = useMemo(() => {
@@ -276,6 +320,65 @@ const Kanban = ({
                               sideOffset={4}
                               onCloseAutoFocus={(e) => e.preventDefault()}
                             >
+                              {(() => {
+                                const originalJob = jobs.find(
+                                  (j) => j.id === jobData.id
+                                );
+                                const resume = resumes.find(
+                                  (r) => r.id === originalJob?.resumeId
+                                );
+                                const coverLetter = coverLetters.find(
+                                  (cl) => cl.id === originalJob?.coverLetterId
+                                );
+                                return (
+                                  <>
+                                    <DropdownMenuItem
+                                      className="cursor-pointer"
+                                      disabled={!originalJob?.description}
+                                      onSelect={() => {
+                                        if (originalJob && onViewFile) {
+                                          onViewFile(originalJob);
+                                        }
+                                      }}
+                                    >
+                                      <Eye className="h-4 w-4 mr-2" />
+                                      View Description
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      className="cursor-pointer"
+                                      disabled={!resume}
+                                      onSelect={() => {
+                                        if (
+                                          originalJob &&
+                                          resume &&
+                                          onViewFile
+                                        ) {
+                                          onViewFile(originalJob, resume);
+                                        }
+                                      }}
+                                    >
+                                      <FileText className="h-4 w-4 mr-2" />
+                                      View Resume
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      className="cursor-pointer"
+                                      disabled={!coverLetter}
+                                      onSelect={() => {
+                                        if (
+                                          originalJob &&
+                                          coverLetter &&
+                                          onViewFile
+                                        ) {
+                                          onViewFile(originalJob, coverLetter);
+                                        }
+                                      }}
+                                    >
+                                      <Mail className="h-4 w-4 mr-2" />
+                                      View Cover Letter
+                                    </DropdownMenuItem>
+                                  </>
+                                );
+                              })()}
                               <DropdownMenuItem
                                 className="cursor-pointer"
                                 onSelect={() => {
