@@ -23,9 +23,8 @@ const resumeDataSchema = z.object({
           .optional()
           .describe("End date or 'Present' if current"),
         description: z
-          .string()
-          .optional()
-          .describe("Responsibilities and achievements"),
+          .array(z.string())
+          .describe("Each bullet point or responsibility as a separate string"),
       })
     )
     .describe("Work experience entries"),
@@ -61,7 +60,9 @@ const resumeDataSchema = z.object({
     .array(
       z.object({
         name: z.string().describe("Project name"),
-        description: z.string().optional().describe("Project description"),
+        description: z
+          .array(z.string())
+          .describe("Each bullet point or detail about the project as a separate string"),
         technologies: z
           .array(z.string())
           .optional()
@@ -141,8 +142,9 @@ export class ResumeDataExtractorAgent {
 
 Be accurate and thorough:
 - Extract the candidate's full name, contact info, and location exactly as written
-- List all work experience entries in chronological order (most recent first)
+- List all work experience entries in chronological order (most recent first). Split each role's description into individual bullet points — one string per bullet, not a single combined paragraph.
 - List all education entries
+- For projects, also split descriptions into individual bullet points
 - Extract all skills mentioned anywhere in the resume, grouped by category as they appear in the resume (e.g. "Languages: Python, Java" → category "Languages", items ["Python", "Java"]). If the resume doesn't group skills, create sensible categories yourself.
 - Extract certifications, projects, and links (LinkedIn, GitHub, portfolio, etc.)
 - If a field is not present in the resume, omit it or use an empty array
