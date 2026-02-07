@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { File, Download, X, Sparkles } from "lucide-react";
+import { File, Download, X, Sparkles, FileText, ArrowLeft, Loader2 } from "lucide-react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
@@ -95,6 +95,10 @@ const DocxViewer = ({
   const [loadingJobs, setLoadingJobs] = useState(false);
   const [showJobSearchModal, setShowJobSearchModal] = useState(false);
 
+  // Template PDF state
+  const [isTemplating, setIsTemplating] = useState(false);
+  const [templatePdfUrl, setTemplatePdfUrl] = useState<string | null>(null);
+
   // Load from Supabase Storage by file path
   const loadFromSupabase = useCallback(
     async (bucketName: string, filePath: string) => {
@@ -131,7 +135,51 @@ const DocxViewer = ({
       URL.revokeObjectURL(fileUrl);
       setFileUrl("");
     }
+    if (templatePdfUrl) {
+      URL.revokeObjectURL(templatePdfUrl);
+      setTemplatePdfUrl(null);
+    }
   }
+
+  const handleUseTemplate = async () => {
+    if (!selectedFile) return;
+
+    setIsTemplating(true);
+    try {
+      const response = await fetch("/api/docs/template-resume", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resumeId: selectedFile.id }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error || "Failed to generate template");
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      setTemplatePdfUrl(url);
+      setNumPages(undefined);
+      toast.success("Template generated!");
+    } catch (error) {
+      console.error("Error generating template:", error);
+      toast.error("Template generation failed", {
+        description:
+          error instanceof Error ? error.message : "Something went wrong",
+      });
+    } finally {
+      setIsTemplating(false);
+    }
+  };
+
+  const handleBackToOriginal = () => {
+    if (templatePdfUrl) {
+      URL.revokeObjectURL(templatePdfUrl);
+      setTemplatePdfUrl(null);
+      setNumPages(undefined);
+    }
+  };
 
   const handleGetATSScore = async () => {
     if (!selectedFile) return;
@@ -372,14 +420,17 @@ const DocxViewer = ({
     }
   }, [selectedFile, loadFromSupabase]);
 
-  // Clean up blob URL on unmount
+  // Clean up blob URLs on unmount
   useEffect(() => {
     return () => {
       if (fileUrl) {
         URL.revokeObjectURL(fileUrl);
       }
+      if (templatePdfUrl) {
+        URL.revokeObjectURL(templatePdfUrl);
+      }
     };
-  }, [fileUrl]);
+  }, [fileUrl, templatePdfUrl]);
 
   return (
     <>
@@ -406,6 +457,17 @@ const DocxViewer = ({
             <span className="text-lg">{selectedFile?.file_name}</span>
           </div>
           <div className="flex gap-2 items-center">
+            {templatePdfUrl && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleBackToOriginal}
+                className="gap-1 text-muted-foreground hover:text-foreground"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Original
+              </Button>
+            )}
             <a
               onClick={handleDownload}
               className="p-1 rounded-full hover:bg-background/20"
@@ -429,16 +491,29 @@ const DocxViewer = ({
             </div>
           )}
 
-          {/* Get Score Button Overlay */}
+          {/* Action Buttons Overlay */}
           {!isLoading && documentType === "resumes" && (
             <div className="absolute bottom-12 bg-black/50 right-0 z-40 p-2 rounded-l-lg flex gap-2">
+              <Button
+                size="sm"
+                onClick={handleUseTemplate}
+                className="bg-primary hover:bg-primary-hover text-white gap-2"
+                disabled={isTemplating}
+              >
+                {isTemplating ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <FileText className="h-4 w-4" />
+                )}
+                Use Template
+              </Button>
               <Button
                 size="sm"
                 onClick={handleGetJobSuggestions}
                 className="bg-primary hover:bg-primary-hover text-white gap-2"
                 disabled={loadingJobs}
               >
-                <Sparkles className="h-4 w-4 " />
+                <Sparkles className="h-4 w-4" />
                 Get Job Suggestions
               </Button>
               <Button
@@ -453,9 +528,9 @@ const DocxViewer = ({
             </div>
           )}
 
-          {fileUrl && (
+          {(templatePdfUrl || fileUrl) && (
             <Document
-              file={fileUrl}
+              file={templatePdfUrl || fileUrl}
               onLoadSuccess={onDocumentLoadSuccess}
               className="m-4 flex flex-col items-center gap-4"
             >

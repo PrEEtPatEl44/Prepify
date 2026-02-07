@@ -17,11 +17,21 @@ const resumeDataSchema = z.object({
       z.object({
         company: z.string().describe("Company or organization name"),
         title: z.string().describe("Job title or role"),
-        start_date: z.string().optional().describe("Start date"),
+        location: z.string().optional().describe("Job location (city, state)"),
+        start_date: z.string().optional().describe("Start date (for the primary or only date range)"),
         end_date: z
           .string()
           .optional()
-          .describe("End date or 'Present' if current"),
+          .describe("End date or 'Present' if current (for the primary or only date range)"),
+        date_ranges: z
+          .array(
+            z.object({
+              start_date: z.string().describe("Start date of this period"),
+              end_date: z.string().describe("End date of this period, or 'Present'"),
+            })
+          )
+          .optional()
+          .describe("Multiple date ranges if the candidate held this role across non-contiguous periods (e.g. left and returned). Only use when there are 2+ separate periods; otherwise leave empty and use the top-level start_date/end_date."),
         description: z
           .array(z.string())
           .describe("Each bullet point or responsibility as a separate string"),
@@ -32,6 +42,7 @@ const resumeDataSchema = z.object({
     .array(
       z.object({
         institution: z.string().describe("School or university name"),
+        location: z.string().optional().describe("School location (city, state)"),
         degree: z.string().optional().describe("Degree type (e.g. B.S., M.A.)"),
         field: z.string().optional().describe("Field of study or major"),
         start_date: z.string().optional().describe("Start date"),
@@ -143,6 +154,7 @@ export class ResumeDataExtractorAgent {
 Be accurate and thorough:
 - Extract the candidate's full name, contact info, and location exactly as written
 - List all work experience entries in chronological order (most recent first). Split each role's description into individual bullet points — one string per bullet, not a single combined paragraph.
+- If a single role has multiple non-contiguous date ranges (e.g. the candidate left and returned), populate the date_ranges array with each period. Otherwise leave date_ranges empty and just use start_date/end_date.
 - List all education entries
 - For projects, also split descriptions into individual bullet points
 - Extract all skills mentioned anywhere in the resume, grouped by category as they appear in the resume (e.g. "Languages: Python, Java" → category "Languages", items ["Python", "Java"]). If the resume doesn't group skills, create sensible categories yourself.
