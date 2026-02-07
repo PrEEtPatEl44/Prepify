@@ -1,6 +1,6 @@
 "use server";
 
-// import { PDFParse } from "pdf-parse";
+import { PDFParse } from "pdf-parse";
 import mammoth from "mammoth";
 
 /**
@@ -45,8 +45,10 @@ export async function extractTextFromFile(
 
     // Extract based on file type
     if (fileType === "application/pdf" || fileName.endsWith(".pdf")) {
-      const text = "test";
-      return { success: true, text };
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = new PDFParse({ data: new Uint8Array(arrayBuffer) });
+      const result = await pdf.getText();
+      return { success: true, text: result.text };
     } else if (
       fileType ===
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||

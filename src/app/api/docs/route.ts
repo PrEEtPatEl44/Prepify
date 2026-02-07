@@ -1,6 +1,8 @@
 import { createClient } from "@/utils/supabase/server";
-import { NextRequest } from "next/server";
+import { NextRequest, after } from "next/server";
 import { revalidatePath } from "next/cache";
+import { extractTextFromFile } from "@/lib/textExtraction";
+import { ResumeDataExtractorAgent } from "@/lib/agents/resumeDataExtractor";
 
 // GET /api/docs
 export async function GET(request: NextRequest) {
@@ -209,6 +211,34 @@ export async function POST(request: NextRequest) {
 
     // Revalidate the docs page to show the new file
     revalidatePath("/docs");
+
+    // Extract structured resume data in the background (resumes only)
+    if (documentType === "resumes") {
+      after(async () => {
+        try {
+          const { success, text } = await extractTextFromFile(file);
+          if (!success || !text) {
+            console.error("Resume text extraction failed for record:", dbData.id);
+            return;
+          }
+
+          const agent = new ResumeDataExtractorAgent();
+          const resumeData = await agent.extractResumeData(text);
+
+          const supabaseAfter = await createClient();
+          const { error: updateError } = await supabaseAfter
+            .from("resumes")
+            .update({ resume_data: resumeData })
+            .eq("id", dbData.id);
+
+          if (updateError) {
+            console.error("Failed to save resume_data:", updateError);
+          }
+        } catch (error) {
+          console.error("Resume data extraction failed:", error);
+        }
+      });
+    }
 
     return new Response(
       JSON.stringify({

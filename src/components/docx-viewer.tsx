@@ -1,11 +1,10 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { File, Download, X, Sparkles } from "lucide-react";
-import {
-  DocumentEditorContainerComponent,
-  Toolbar,
-} from "@syncfusion/ej2-react-documenteditor";
+import { Document, Page, pdfjs } from "react-pdf";
+import "react-pdf/dist/Page/AnnotationLayer.css";
+import "react-pdf/dist/Page/TextLayer.css";
 import { createClient } from "@/utils/supabase/client";
 import { DocumentBasicInfo } from "@/types/docs";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -17,15 +16,10 @@ import JobSelectionDialog from "@/components/job-selection-dialog";
 import { Job } from "@/types/jobs";
 import { toast } from "sonner";
 
-DocumentEditorContainerComponent.Inject(Toolbar);
-
-import { registerLicense } from "@syncfusion/ej2-base";
-
-if (process.env.NEXT_PUBLIC_SYNCFUSION_KEY) {
-  registerLicense(process.env.NEXT_PUBLIC_SYNCFUSION_KEY);
-} else {
-  console.warn("Syncfusion license key is not set.");
-}
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  "pdfjs-dist/build/pdf.worker.min.mjs",
+  import.meta.url,
+).toString();
 
 interface AnalysisResult {
   total_score: number;
@@ -85,8 +79,9 @@ const DocxViewer = ({
   onAnalysisComplete,
   documentType,
 }: ViewerProps) => {
-  const editorRef = useRef<DocumentEditorContainerComponent>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [fileUrl, setFileUrl] = useState<string>("");
+  const [numPages, setNumPages] = useState<number>();
   const { setOpen } = useSidebar();
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -100,47 +95,42 @@ const DocxViewer = ({
   const [loadingJobs, setLoadingJobs] = useState(false);
   const [showJobSearchModal, setShowJobSearchModal] = useState(false);
 
-  // Handle document change event to apply fitPage and stop loading
-  const onDocumentChange = () => {
-    if (editorRef.current) {
-      editorRef.current.documentEditor.fitPage("FitPageWidth");
-      setIsLoading(false);
-      setOpen(false);
-    }
-  };
-
   // Load from Supabase Storage by file path
-  const loadFromSupabase = async (bucketName: string, filePath: string) => {
-    setIsLoading(true);
-    try {
-      const supabase = createClient();
+  const loadFromSupabase = useCallback(
+    async (bucketName: string, filePath: string) => {
+      setIsLoading(true);
+      try {
+        const supabase = createClient();
 
-      const { data, error: downloadError } = await supabase.storage
-        .from(bucketName)
-        .download(filePath);
+        const { data, error: downloadError } = await supabase.storage
+          .from(bucketName)
+          .download(filePath);
 
-      if (downloadError) throw downloadError;
+        if (downloadError) throw downloadError;
 
-      const reader = new FileReader();
-      reader.readAsDataURL(data);
+        const blobUrl = URL.createObjectURL(data);
+        setFileUrl(blobUrl);
+        setIsLoading(false);
+      } catch (err) {
+        console.error("Error loading document:", err);
+        setIsLoading(false);
+      }
+    },
+    [],
+  );
 
-      reader.onloadend = async () => {
-        const base64String = reader.result as string;
-        const base64Data = base64String.split(",")[1];
-
-        if (editorRef.current) {
-          editorRef.current.documentEditor.open(base64Data);
-        }
-      };
-    } catch (err) {
-      console.error("Error loading document:", err);
-      setIsLoading(false);
-    }
-  };
+  function onDocumentLoadSuccess({ numPages }: { numPages: number }): void {
+    setOpen(false);
+    setNumPages(numPages);
+  }
 
   function handleClose() {
     setOpen(true);
     setSelectedFile(null);
+    if (fileUrl) {
+      URL.revokeObjectURL(fileUrl);
+      setFileUrl("");
+    }
   }
 
   const handleGetATSScore = async () => {
@@ -380,8 +370,16 @@ const DocxViewer = ({
     if (selectedFile) {
       loadFromSupabase("documents", selectedFile.file_path);
     }
-  }, [selectedFile]);
-  console.log("Selected File:", selectedFile);
+  }, [selectedFile, loadFromSupabase]);
+
+  // Clean up blob URL on unmount
+  useEffect(() => {
+    return () => {
+      if (fileUrl) {
+        URL.revokeObjectURL(fileUrl);
+      }
+    };
+  }, [fileUrl]);
 
   return (
     <>
@@ -455,42 +453,23 @@ const DocxViewer = ({
             </div>
           )}
 
-          <DocumentEditorContainerComponent
-            ref={editorRef}
-            className="min-w-fit mx-auto gap-4 !max-w-2xl"
-            id="container"
-            enableToolbar={false}
-            height="100%"
-            showPropertiesPane={false}
-            serviceUrl={process.env.NEXT_PUBLIC_SYNCFUSION_SERVICE_URL}
-            readOnly={true}
-            restrictEditing={true}
-            documentChange={onDocumentChange}
-          />
+          {fileUrl && (
+            <Document
+              file={fileUrl}
+              onLoadSuccess={onDocumentLoadSuccess}
+              className="m-4 flex flex-col items-center gap-4"
+            >
+              {numPages &&
+                Array.from(new Array(numPages), (_, index) => (
+                  <Page
+                    key={`page_${index + 1}`}
+                    pageNumber={index + 1}
+                    className="shadow-lg"
+                  />
+                ))}
+            </Document>
+          )}
         </div>
-
-        {/* Action Buttons - Only show for resumes */}
-        {
-          //selectedFile && selectedFile.file_path.includes("resumes") && (
-          //   <div className="sticky bottom-0 z-50 p-4 bg-gray-800/90 backdrop-blur-sm border-t border-gray-700 flex gap-3 justify-end">
-          //     <Button
-          //       onClick={handleGetJobSuggestions}
-          //       className="bg-[#636AE8] hover:bg-[#4e57c1] text-white gap-2"
-          //       disabled={loadingJobs}
-          //     >
-          //       <Sparkles className="h-4 w-4" />
-          //       Get Job Suggestions
-          //     </Button>
-          //     <Button
-          //       className="bg-gray-600 hover:bg-gray-700 text-white gap-2"
-          //       disabled
-          //     >
-          //       <FileText className="h-4 w-4" />
-          //       Get ATS Score
-          //     </Button>
-          //   </div>
-          // )
-        }
       </div>
 
       {/* Job Match Modal */}

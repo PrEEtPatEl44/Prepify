@@ -4,7 +4,10 @@ import { useState } from "react";
 import DocsHeader from "@/components/documents-header";
 import FileGrid from "@/components/file-grid";
 import { DocumentBasicInfo } from "@/types/docs";
-import DocxViewer from "@/components/docx-viewer";
+import dynamic from "next/dynamic";
+const DocxViewer = dynamic(() => import("@/components/docx-viewer"), {
+  ssr: false,
+});
 import ResumeAnalysisResults from "@/components/resume-analysis-results";
 
 interface AnalysisResult {
