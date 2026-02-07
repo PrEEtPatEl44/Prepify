@@ -47,7 +47,7 @@ export async function extractTextFromFile(
     if (fileType === "application/pdf" || fileName.endsWith(".pdf")) {
       const arrayBuffer = await file.arrayBuffer();
       const pdf = new PDFParse({ data: new Uint8Array(arrayBuffer) });
-      const result = await pdf.getText();
+      const result = await pdf.getText({ parseHyperlinks: true });
       return { success: true, text: result.text };
     } else if (
       fileType ===

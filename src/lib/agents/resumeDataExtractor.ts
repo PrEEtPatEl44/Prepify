@@ -40,7 +40,20 @@ const resumeDataSchema = z.object({
       })
     )
     .describe("Education entries"),
-  skills: z.array(z.string()).describe("Technical and soft skills"),
+  skills: z
+    .array(
+      z.object({
+        category: z
+          .string()
+          .describe(
+            "Skill group name as given in the resume (e.g. Languages, Frameworks, Databases, Tools, Soft Skills)"
+          ),
+        items: z.array(z.string()).describe("Skills in this group"),
+      })
+    )
+    .describe(
+      "Skills grouped by category. Preserve the groupings from the resume. If skills are not grouped, create sensible categories."
+    ),
   certifications: z
     .array(z.string())
     .describe("Certifications and licenses"),
@@ -130,7 +143,7 @@ Be accurate and thorough:
 - Extract the candidate's full name, contact info, and location exactly as written
 - List all work experience entries in chronological order (most recent first)
 - List all education entries
-- Extract all skills mentioned anywhere in the resume
+- Extract all skills mentioned anywhere in the resume, grouped by category as they appear in the resume (e.g. "Languages: Python, Java" → category "Languages", items ["Python", "Java"]). If the resume doesn't group skills, create sensible categories yourself.
 - Extract certifications, projects, and links (LinkedIn, GitHub, portfolio, etc.)
 - If a field is not present in the resume, omit it or use an empty array
 - For dates, preserve the original format from the resume (e.g. "Jan 2020", "2020-01", "2020")
