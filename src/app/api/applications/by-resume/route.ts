@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { GetJobsResponse, ApiError } from "@/types/api";
-import { createClient } from "@/utils/supabase/server";
+import { db } from "@/db";
+import { jobApplications } from "@/db/schema";
+import { getAuthUserId } from "@/db/auth";
+import { eq, and, desc } from "drizzle-orm";
 import { transformDbRowToJob } from "@/adapters/jobAdapters";
 
 /**
@@ -27,14 +30,9 @@ export async function GET(request: Request): Promise<NextResponse> {
       `GET /api/applications/by-resume - Fetching jobs for resume_id: ${resumeId}`
     );
 
-    const supabase = await createClient();
+    const userId = await getAuthUserId();
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    if (!userId) {
       return NextResponse.json(
         {
           success: false,
@@ -45,23 +43,16 @@ export async function GET(request: Request): Promise<NextResponse> {
       );
     }
 
-    const { data: jobs, error: jobsError } = await supabase
-      .from("job_applications")
-      .select("*")
-      .eq("user_id", user.id)
-      .eq("resume_id", resumeId)
-      .order("created_at", { ascending: false });
-
-    if (jobsError) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Failed to retrieve jobs",
-          message: jobsError.message,
-        },
-        { status: 500 }
-      );
-    }
+    const jobs = await db
+      .select()
+      .from(jobApplications)
+      .where(
+        and(
+          eq(jobApplications.userId, userId),
+          eq(jobApplications.resumeId, resumeId)
+        )
+      )
+      .orderBy(desc(jobApplications.createdAt));
 
     if (!jobs || jobs.length === 0) {
       return NextResponse.json(

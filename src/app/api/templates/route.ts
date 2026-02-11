@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { db } from "@/db";
+import { templates } from "@/db/schema";
+import { getAuthUserId } from "@/db/auth";
+import { eq, desc } from "drizzle-orm";
 import { GetAllTemplatesResult } from "@/types/templates";
 
 /**
@@ -10,14 +13,9 @@ export async function GET(): Promise<NextResponse> {
   try {
     console.log("GET /api/templates - Fetching all templates");
 
-    const supabase = await createClient();
+    const userId = await getAuthUserId();
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    if (!userId) {
       return NextResponse.json(
         {
           success: false,
@@ -28,30 +26,18 @@ export async function GET(): Promise<NextResponse> {
       );
     }
 
-    const { data: templates, error: templatesError } = await supabase
-      .from("templates")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
-
-    if (templatesError) {
-      console.error("Database query error:", templatesError);
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Failed to retrieve templates",
-          message: templatesError.message,
-        },
-        { status: 500 }
-      );
-    }
+    const userTemplates = await db
+      .select()
+      .from(templates)
+      .where(eq(templates.userId, userId))
+      .orderBy(desc(templates.createdAt));
 
     const response: GetAllTemplatesResult = {
       success: true,
-      data: templates || [],
+      data: userTemplates,
     };
 
-    console.log(`Found ${templates?.length || 0} templates`);
+    console.log(`Found ${userTemplates.length} templates`);
 
     return NextResponse.json(response, { status: 200 });
   } catch (error) {

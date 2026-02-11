@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { GetColumnsResponse, ApiError } from "@/types/api";
-import { createClient } from "@/utils/supabase/server";
+import { db } from "@/db";
+import { columns } from "@/db/schema";
+import { getAuthUserId } from "@/db/auth";
+import { eq } from "drizzle-orm";
 
 /**
  * GET /api/applications/columns
@@ -9,14 +12,10 @@ import { createClient } from "@/utils/supabase/server";
 export async function GET(): Promise<NextResponse> {
   try {
     console.log("GET /api/applications/columns - Fetching all columns");
-    const supabase = await createClient();
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const userId = await getAuthUserId();
 
-    if (authError || !user) {
+    if (!userId) {
       return NextResponse.json(
         {
           success: false,
@@ -27,23 +26,12 @@ export async function GET(): Promise<NextResponse> {
       );
     }
 
-    const { data: columns, error: columnError } = await supabase
-      .from("columns")
-      .select("*")
-      .eq("user_id", user.id);
+    const userColumns = await db
+      .select()
+      .from(columns)
+      .where(eq(columns.userId, userId));
 
-    if (columnError) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Failed to retrieve columns",
-          message: columnError.message,
-        },
-        { status: 500 }
-      );
-    }
-
-    if (!columns) {
+    if (!userColumns || userColumns.length === 0) {
       return NextResponse.json(
         {
           success: false,
@@ -57,7 +45,7 @@ export async function GET(): Promise<NextResponse> {
     const response: GetColumnsResponse = {
       success: true,
       data: {
-        columns,
+        columns: userColumns,
       },
       message: "Columns retrieved successfully",
     };

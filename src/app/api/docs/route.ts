@@ -3,11 +3,14 @@ import { NextRequest, after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { extractTextFromFile } from "@/lib/textExtraction";
 import { ResumeDataExtractorAgent } from "@/lib/agents/resumeDataExtractor";
+import { db } from "@/db";
+import { resumes, coverLetters } from "@/db/schema";
+import { getAuthUserId } from "@/db/auth";
+import { eq, desc } from "drizzle-orm";
 
 // GET /api/docs
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient();
     const { searchParams } = new URL(request.url);
     const documentType = searchParams.get("type");
 
@@ -22,13 +25,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get the current user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const userId = await getAuthUserId();
 
-    if (authError || !user) {
+    if (!userId) {
       return new Response(
         JSON.stringify({
           success: false,
@@ -40,24 +39,16 @@ export async function GET(request: NextRequest) {
     }
 
     // Query only id, file_name, and file_path from the specified table
-    const tableName = documentType === "resumes" ? "resumes" : "cover_letters";
-    const { data, error: queryError } = await supabase
-      .from(tableName)
-      .select("id, file_name, file_path")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
-
-    if (queryError) {
-      console.error("Database query error:", queryError);
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: "Database Error",
-          message: `Database query failed: ${queryError.message}`,
-        }),
-        { status: 500 }
-      );
-    }
+    const table = documentType === "resumes" ? resumes : coverLetters;
+    const data = await db
+      .select({
+        id: table.id,
+        file_name: table.fileName,
+        file_path: table.filePath,
+      })
+      .from(table)
+      .where(eq(table.userId, userId))
+      .orderBy(desc(table.createdAt));
 
     return new Response(
       JSON.stringify({
@@ -87,13 +78,9 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Get the current user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const userId = await getAuthUserId();
 
-    if (authError || !user) {
+    if (!userId) {
       return new Response(
         JSON.stringify({
           success: false,
@@ -137,7 +124,7 @@ export async function POST(request: NextRequest) {
     const timestamp = Date.now();
     const fileExtension = file.name.split(".").pop();
     const sanitizedFileName = fileName.trim().replace(/[^a-zA-Z0-9-_]/g, "_");
-    const storageFileName = `${user.id}/${documentType}/${timestamp}_${sanitizedFileName}.${fileExtension}`;
+    const storageFileName = `${userId}/${documentType}/${timestamp}_${sanitizedFileName}.${fileExtension}`;
 
     // Step 1: Upload file to Supabase Storage
     const { data: uploadData, error: uploadError } = await supabase.storage
@@ -179,35 +166,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Step 2: Insert record into database
-    const tableName = documentType === "resumes" ? "resumes" : "cover_letters";
-    const { data: dbData, error: insertError } = await supabase
-      .from(tableName)
-      .insert({
-        user_id: user.id,
-        file_path: uploadData.path,
-        file_name: fileName.trim(),
-        file_size: file.size,
-        mime_type: file.type,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+    // Step 2: Insert record into database using Drizzle
+    const table = documentType === "resumes" ? resumes : coverLetters;
+    const [dbData] = await db
+      .insert(table)
+      .values({
+        userId,
+        filePath: uploadData.path,
+        fileName: fileName.trim(),
+        fileSize: file.size,
+        mimeType: file.type,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       })
-      .select("id")
-      .single();
-
-    if (insertError) {
-      console.error("Database insert error:", insertError);
-      // Clean up uploaded file if database insert fails
-      await supabase.storage.from("documents").remove([uploadData.path]);
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: "Database Error",
-          message: `Database insert failed: ${insertError.message}`,
-        }),
-        { status: 500 }
-      );
-    }
+      .returning({ id: table.id });
 
     // Revalidate the docs page to show the new file
     revalidatePath("/docs");
@@ -225,15 +197,10 @@ export async function POST(request: NextRequest) {
           const agent = new ResumeDataExtractorAgent();
           const resumeData = await agent.extractResumeData(text);
 
-          const supabaseAfter = await createClient();
-          const { error: updateError } = await supabaseAfter
-            .from("resumes")
-            .update({ resume_data: resumeData })
-            .eq("id", dbData.id);
-
-          if (updateError) {
-            console.error("Failed to save resume_data:", updateError);
-          }
+          await db
+            .update(resumes)
+            .set({ resumeData })
+            .where(eq(resumes.id, dbData.id));
         } catch (error) {
           console.error("Resume data extraction failed:", error);
         }
