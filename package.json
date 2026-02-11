@@ -31,6 +31,7 @@
     "@supabase/supabase-js": "^2.57.4",
     "@syncfusion/ej2-react-documenteditor": "^31.2.2",
     "@tanstack/react-table": "^8.21.3",
+    "@vercel/analytics": "^1.6.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.45.1",
