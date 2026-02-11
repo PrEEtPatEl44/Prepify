@@ -1,18 +1,14 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { signupWithGoogle } from "@/lib/services/authService";
-import { Separator } from "./ui/separator";
-import { FaGoogle } from "react-icons/fa";
+import { GoogleAuthButton } from "./google-oauth-button";
+import { ArrowLeft } from "lucide-react";
+import { Logo } from "./logo";
 
-export function LoginForm({
-  className,
-  ...props
-}: React.ComponentPropsWithoutRef<"div">) {
+export function LoginForm({}: React.ComponentPropsWithoutRef<"div">) {
+  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -29,47 +25,58 @@ export function LoginForm({
   };
 
   return (
-    <div
-      className={cn("flex flex-col gap-6 font-archivo", className)}
-      {...props}
-    >
-      <Card className="px-10">
-        <CardHeader>
-          <CardTitle className="text-2xl font-medium flex flex-col gap-2 items-center justify-center size-full">
-            <span className="mb-2">Login</span>
-            <div className="relative  w-full mb-5">
-              <Separator
-                orientation="horizontal"
-                className="bg-muted flex"
-              />
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-0.5 bg-primary"></div>
-            </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col gap-6">
-            {error && <p className="text-sm text-red-500">{error}</p>}
-            <Button
-              type="button"
-              className="w-full"
-              onClick={() => handleSignupWithGoogle()}
-              disabled={isLoading}
-            >
-              <FaGoogle className="mr-2 h-4 w-4" />
-              {isLoading ? "Signing in..." : "Sign in with Google"}
-            </Button>
-            <div className="mt-4 text-center text-sm">
-              Don&apos;t have an account?{" "}
-              <Link
-                href="/auth/signup"
-                className="underline underline-offset-4 text-primary hover:decoration-primary-hover"
-              >
-                Sign up
-              </Link>
-            </div>
+    <div className="flex-1 flex flex-col justify-center px-6 sm:px-12 lg:px-16 py-12 relative">
+      <button
+        onClick={() => router.back()}
+        className="absolute top-6 left-6 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        <span className="text-sm font-medium">Back</span>
+      </button>
+
+      <div className="lg:hidden mb-8 mt-8">
+        <Logo />
+      </div>
+
+      <div className="max-w-sm mx-auto w-full">
+        <div className="text-center mb-10">
+          <h1
+            className="text-3xl sm:text-4xl font-bold mb-3"
+            style={{ fontFamily: "Space Grotesk, sans-serif" }}
+          >
+            Log in to Prepify
+          </h1>
+          <p className="text-muted-foreground">
+            Continue with your Google account
+          </p>
+        </div>
+
+        <div className="space-y-6">
+          <GoogleAuthButton mode="login" onClick={handleSignupWithGoogle} />
+
+          {error && (
+            <p className="text-sm text-center text-destructive">{error}</p>
+          )}
+
+          <div className="p-4 rounded-xl bg-secondary/50 border border-border/50">
+            <p className="text-sm text-center text-muted-foreground">
+              {isLoading
+                ? "Redirecting to Google..."
+                : "We use Google Sign-In for a secure, passwordless experience."}
+            </p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        <p className="mt-8 text-center text-sm text-muted-foreground">
+          Don&apos;t have an account?{" "}
+          <button
+            onClick={() => router.push("/auth/signup")}
+            className="font-medium text-primary hover:underline"
+          >
+            Sign up
+          </button>
+        </p>
+      </div>
     </div>
   );
 }
