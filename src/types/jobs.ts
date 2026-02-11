@@ -1,5 +1,5 @@
-// Updated types to match your database schema
-// File: src/types/jobs.ts
+// Job types — computed/presentation layer types
+// DB types are inferred from Drizzle schema in @/db/types
 
 interface Job {
   id: string;
@@ -23,19 +23,6 @@ type CreateJob = Omit<
   columnId?: string;
 };
 
-interface JobDbRow {
-  id: string;
-  job_title: string;
-  company_name: string;
-  column_id: string;
-  company_domain?: string;
-  job_description?: string;
-  job_url?: string;
-  resume_id?: string;
-  cover_letter_id?: string;
-  created_at: string; // Assuming this is a string from the database
-}
-
 interface Column {
   id: string;
   name: string;
@@ -43,4 +30,4 @@ interface Column {
   [key: string]: unknown;
 }
 
-export type { Job, Column, JobDbRow, CreateJob };
+export type { Job, Column, CreateJob };
