@@ -1,8 +1,14 @@
 "use server";
 
-import { createClient } from "@/utils/supabase/server";
+import { db } from "@/db";
+import { templates } from "@/db/schema";
+import { getAuthUserId } from "@/db/auth";
+import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { type CreateTemplateResult, type DeleteTemplateResult } from "@/types/templates";
+import {
+  type CreateTemplateResult,
+  type DeleteTemplateResult,
+} from "@/types/templates";
 
 export async function createTemplate(
   name: string,
@@ -10,14 +16,9 @@ export async function createTemplate(
   content: string
 ): Promise<CreateTemplateResult> {
   try {
-    const supabase = await createClient();
+    const userId = await getAuthUserId();
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    if (!userId) {
       return {
         success: false,
         error: "User not authenticated. Please log in.",
@@ -38,25 +39,16 @@ export async function createTemplate(
       };
     }
 
-    const { data: template, error: insertError } = await supabase
-      .from("templates")
-      .insert({
-        user_id: user.id,
+    const [template] = await db
+      .insert(templates)
+      .values({
+        userId,
         name,
         type,
         content,
-        file_path: null,
+        filePath: null,
       })
-      .select()
-      .single();
-
-    if (insertError) {
-      console.error("Database insert error:", insertError);
-      return {
-        success: false,
-        error: insertError.message,
-      };
-    }
+      .returning();
 
     revalidatePath("/templates");
 
@@ -78,33 +70,18 @@ export async function deleteTemplate(
   templateId: string
 ): Promise<DeleteTemplateResult> {
   try {
-    const supabase = await createClient();
+    const userId = await getAuthUserId();
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    if (!userId) {
       return {
         success: false,
         error: "User not authenticated. Please log in.",
       };
     }
 
-    const { error: deleteError } = await supabase
-      .from("templates")
-      .delete()
-      .eq("id", templateId)
-      .eq("user_id", user.id);
-
-    if (deleteError) {
-      console.error("Database delete error:", deleteError);
-      return {
-        success: false,
-        error: deleteError.message,
-      };
-    }
+    await db
+      .delete(templates)
+      .where(and(eq(templates.id, templateId), eq(templates.userId, userId)));
 
     revalidatePath("/templates");
 

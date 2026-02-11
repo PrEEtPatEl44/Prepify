@@ -1,6 +1,9 @@
 "use server";
 
-import { createClient } from "@/utils/supabase/server";
+import { db } from "@/db";
+import { interviewFeedback } from "@/db/schema";
+import { getAuthUserId } from "@/db/auth";
+import { eq, and, desc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 interface QuestionFeedback {
@@ -23,48 +26,30 @@ interface InterviewFeedbackData {
 
 export async function uploadInterview(data: InterviewFeedbackData) {
   try {
-    const supabase = await createClient();
+    const userId = await getAuthUserId();
 
-    // Get the current user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    if (!userId) {
       return {
         success: false,
         message: "User not authenticated",
-        error: authError?.message,
+        error: "Not authenticated",
       };
     }
 
-    // Insert interview feedback into database
-    const { data: insertedData, error: insertError } = await supabase
-      .from("interview_feedback")
-      .insert({
-        user_id: user.id,
-        job_id: data.jobId,
-        overall_score: data.overallScore,
-        general_comments: data.generalComments,
-        questions_feedback: data.questionsFeedback,
-        interview_duration: data.interviewDuration,
+    const [insertedData] = await db
+      .insert(interviewFeedback)
+      .values({
+        userId,
+        jobId: data.jobId,
+        overallScore: data.overallScore,
+        generalComments: data.generalComments,
+        questionsFeedback: data.questionsFeedback,
+        interviewDuration: data.interviewDuration,
         difficulty: data.difficulty,
         type: data.type,
       })
-      .select()
-      .single();
+      .returning();
 
-    if (insertError) {
-      console.error("Error inserting interview feedback:", insertError);
-      return {
-        success: false,
-        message: "Failed to save interview feedback",
-        error: insertError.message,
-      };
-    }
-
-    // Revalidate the interview page
     revalidatePath("/interview");
 
     return {
@@ -84,43 +69,26 @@ export async function uploadInterview(data: InterviewFeedbackData) {
 
 export async function getInterviewFeedback(jobId?: string) {
   try {
-    const supabase = await createClient();
+    const userId = await getAuthUserId();
 
-    // Get the current user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    if (!userId) {
       return {
         success: false,
         message: "User not authenticated",
-        error: authError?.message,
+        error: "Not authenticated",
       };
     }
 
-    let query = supabase
-      .from("interview_feedback")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
-
-    // Filter by job_id if provided
+    const conditions = [eq(interviewFeedback.userId, userId)];
     if (jobId) {
-      query = query.eq("job_id", jobId);
+      conditions.push(eq(interviewFeedback.jobId, jobId));
     }
 
-    const { data: feedbackData, error: fetchError } = await query;
-
-    if (fetchError) {
-      console.error("Error fetching interview feedback:", fetchError);
-      return {
-        success: false,
-        message: "Failed to fetch interview feedback",
-        error: fetchError.message,
-      };
-    }
+    const feedbackData = await db
+      .select()
+      .from(interviewFeedback)
+      .where(and(...conditions))
+      .orderBy(desc(interviewFeedback.createdAt));
 
     return {
       success: true,

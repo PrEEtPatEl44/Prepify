@@ -254,7 +254,7 @@ export default function TemplatesPage() {
                         {template.type.replace("_", " ")}
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Created: {new Date(template.created_at).toLocaleDateString()}
+                        Created: {template.createdAt ? new Date(template.createdAt).toLocaleDateString() : ""}
                       </p>
                     </div>
                     <button

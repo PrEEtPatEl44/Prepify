@@ -1,12 +1,12 @@
 interface Template {
   id: string;
-  user_id: string;
+  userId: string;
   name: string;
-  type: "resume" | "cover_letter";
+  type: string;
   content: string;
-  file_path?: string;
-  created_at: string;
-  updated_at: string;
+  filePath?: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
 }
 
 interface GetAllTemplatesResult {

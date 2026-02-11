@@ -1,6 +1,6 @@
 import { type Job } from "@/types/jobs";
 import { type KanbanItemProps } from "@/components/ui/shadcn-io/kanban/index";
-import { type JobDbRow } from "@/types/jobs";
+import { type JobApplication } from "@/db/types";
 
 export interface JobKanbanItem extends KanbanItemProps {
   title: string;
@@ -44,22 +44,23 @@ const transformKanbanItemsToJobs = (
   companyDomain: originalJob?.companyDomain,
 });
 
-const transformDbRowToJob = (row: JobDbRow): Job => {
+// Drizzle returns camelCase fields — map to the Job type
+const transformDbRowToJob = (row: JobApplication): Job => {
   return {
     id: row.id,
-    title: row.job_title,
-    companyName: row.company_name,
-    columnId: row.column_id,
-    companyIconUrl: row.company_domain
-      ? `https://cdn.brandfetch.io/${row.company_domain}?c=${process.env.BRANDFETCH_CLIENT_ID}`
+    title: row.jobTitle,
+    companyName: row.companyName,
+    columnId: row.columnId ?? "",
+    companyIconUrl: row.companyDomain
+      ? `https://cdn.brandfetch.io/${row.companyDomain}?c=${process.env.BRANDFETCH_CLIENT_ID}`
       : "/logo.svg",
-    description: row.job_description || "",
-    applicationLink: row.job_url || "",
-    resumeId: row.resume_id,
-    coverLetterId: row.cover_letter_id,
-    createdAt: new Date(row.created_at),
-    updatedAt: new Date(row.created_at),
-    companyDomain: row.company_domain,
+    description: row.jobDescription || "",
+    applicationLink: row.jobUrl || "",
+    resumeId: row.resumeId ?? undefined,
+    coverLetterId: row.coverLetterId ?? undefined,
+    createdAt: new Date(row.createdAt),
+    updatedAt: new Date(row.updatedAt),
+    companyDomain: row.companyDomain ?? undefined,
   };
 };
 
