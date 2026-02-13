@@ -1,6 +1,5 @@
 "use server";
 
-import { PDFParse } from "pdf-parse";
 import mammoth from "mammoth";
 
 /**
@@ -45,6 +44,7 @@ export async function extractTextFromFile(
 
     // Extract based on file type
     if (fileType === "application/pdf" || fileName.endsWith(".pdf")) {
+      const { PDFParse } = await import("pdf-parse");
       const arrayBuffer = await file.arrayBuffer();
       const pdf = new PDFParse({ data: new Uint8Array(arrayBuffer) });
       const result = await pdf.getText({ parseHyperlinks: true });
