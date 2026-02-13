@@ -139,7 +139,7 @@ export default function TemplatesPage() {
           selectedTemplate ? "w-1/2" : "w-full"
         } transition-all duration-500 ease-in-out`}
       >
-        <div className="mt-6 px-1 pr-2 flex items-center justify-between">
+        <div className="mt-4 flex items-center justify-between">
           <h1 className="text-2xl font-semibold">Templates</h1>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
@@ -220,7 +220,7 @@ export default function TemplatesPage() {
           </Dialog>
         </div>
 
-        <div className="flex-1 overflow-y-auto mt-6 px-1">
+        <div className="flex-1 overflow-y-auto mt-4">
           {isLoading ? (
             <div className="flex items-center justify-center h-64">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

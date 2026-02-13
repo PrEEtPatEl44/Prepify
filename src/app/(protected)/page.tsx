@@ -66,7 +66,7 @@ export default function Home() {
     router.push(button.url);
   };
   return (
-    <div className="flex flex-col gap-8 mt-10 p-6 w-full">
+    <div className="flex flex-col gap-8 mt-4 w-full">
       {/* Welcome Section */}
       <div>
         <h1 className="text-3xl font-bold">

@@ -111,7 +111,7 @@ const Page = () => {
           selectedFile ? "w-1/2" : "w-full"
         } h-full transition-all duration-500 ease-in-out`}
       >
-        <div className="flex-shrink-0 mt-6 px-1 max-w-[95%]">
+        <div className="flex-shrink-0 mt-4">
           <DocsHeader
             documentType={documentType}
             setDocumentType={setDocumentType}

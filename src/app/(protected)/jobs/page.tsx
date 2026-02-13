@@ -136,7 +136,7 @@ const Page = () => {
           selectedJob ? "w-1/2" : "w-full"
         } transition-all duration-500 ease-in-out`}
       >
-        <div className="mt-6 px-1 pr-2">
+        <div className="mt-4">
           <Header
             columns={columns}
             onCreateJob={handleCreateJob}

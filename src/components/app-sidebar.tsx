@@ -16,9 +16,11 @@ import {
   SidebarMenuItem,
   useSidebar,
   SidebarGroup,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 
 const data = {
   navMain: [
@@ -48,7 +50,7 @@ const data = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
   const [currentPath, setCurrentPath] = useState<string | null>(null);
-  const { state } = useSidebar();
+  const { state, toggleSidebar } = useSidebar();
 
   const isCollapsed = state === "collapsed";
 
@@ -63,22 +65,36 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   }
 
   return (
-    <Sidebar collapsible="icon" className="shadow-xl" {...props}>
+    <Sidebar
+      collapsible="icon"
+      className={cn("shadow-xl", isCollapsed && "cursor-col-resize")}
+      onClick={
+        isCollapsed
+          ? (e) => {
+              // Only toggle if clicking empty space, not interactive elements
+              const target = e.target as HTMLElement;
+              if (!target.closest("a, button, [role='button']")) {
+                toggleSidebar();
+              }
+            }
+          : undefined
+      }
+      {...props}
+    >
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton
-              size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-            >
-              <Image src="/logo.svg" width={32} height={32} alt="logo" />
-
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate text-2xl text-foreground font-semibold">
-                  Prepify
-                </span>
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-2">
+                <Image src="/logo.svg" width={32} height={32} alt="logo" />
+                {!isCollapsed && (
+                  <span className="truncate text-2xl text-foreground font-semibold">
+                    Prepify
+                  </span>
+                )}
               </div>
-            </SidebarMenuButton>
+              {!isCollapsed && <SidebarTrigger className="size-8" />}
+            </div>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
