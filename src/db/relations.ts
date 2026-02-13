@@ -4,7 +4,6 @@ import {
   coverLetters,
   resumes,
   jobApplications,
-  interviewFeedback,
 } from "./schema";
 
 export const columnsRelations = relations(columns, ({ many }) => ({
@@ -21,7 +20,7 @@ export const resumesRelations = relations(resumes, ({ many }) => ({
 
 export const jobApplicationsRelations = relations(
   jobApplications,
-  ({ one, many }) => ({
+  ({ one }) => ({
     column: one(columns, {
       fields: [jobApplications.columnId],
       references: [columns.id],
@@ -33,17 +32,6 @@ export const jobApplicationsRelations = relations(
     resume: one(resumes, {
       fields: [jobApplications.resumeId],
       references: [resumes.id],
-    }),
-    interviewFeedbacks: many(interviewFeedback),
-  })
-);
-
-export const interviewFeedbackRelations = relations(
-  interviewFeedback,
-  ({ one }) => ({
-    jobApplication: one(jobApplications, {
-      fields: [interviewFeedback.jobId],
-      references: [jobApplications.id],
     }),
   })
 );

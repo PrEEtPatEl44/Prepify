@@ -5,7 +5,6 @@ import type {
   resumes,
   jobApplications,
   templates,
-  interviewFeedback,
 } from "./schema";
 
 // Select types (what you get back from queries)
@@ -14,7 +13,6 @@ export type CoverLetter = InferSelectModel<typeof coverLetters>;
 export type Resume = InferSelectModel<typeof resumes>;
 export type JobApplication = InferSelectModel<typeof jobApplications>;
 export type Template = InferSelectModel<typeof templates>;
-export type InterviewFeedback = InferSelectModel<typeof interviewFeedback>;
 
 // Insert types (what you pass to insert)
 export type NewColumn = InferInsertModel<typeof columns>;
@@ -22,4 +20,3 @@ export type NewCoverLetter = InferInsertModel<typeof coverLetters>;
 export type NewResume = InferInsertModel<typeof resumes>;
 export type NewJobApplication = InferInsertModel<typeof jobApplications>;
 export type NewTemplate = InferInsertModel<typeof templates>;
-export type NewInterviewFeedback = InferInsertModel<typeof interviewFeedback>;

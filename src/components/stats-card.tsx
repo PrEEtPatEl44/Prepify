@@ -11,13 +11,11 @@ ChartJS.register(ArcElement, ChartTooltip, Legend);
 
 interface StatsCardProps {
   score?: number; // 0-100
-  interviews?: number;
   applications?: number;
 }
 
 export default function StatsCard({
   score = 80,
-  interviews = 3,
   applications = 78,
 }: StatsCardProps) {
   const chartData = useMemo(() => {
@@ -60,17 +58,6 @@ export default function StatsCard({
         </div>
         <span className="text-sm font-normal text-card-foreground text-center">
           Resume Score
-        </span>
-      </div>
-
-      <div className="w-px h-20 bg-border mx-6"></div>
-
-      <div className="flex flex-col items-center min-w-[120px]">
-        <span className="text-5xl font-medium text-card-foreground mb-1">
-          {interviews}
-        </span>
-        <span className="text-sm font-normal text-card-foreground text-center">
-          Interviews Completed
         </span>
       </div>
 

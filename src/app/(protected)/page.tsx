@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { CloudUpload, BookOpen, Mic, ChevronRight } from "lucide-react";
+import { CloudUpload, BookOpen, ChevronRight } from "lucide-react";
 import Calender from "@/components/github-activity-calender";
 import StatsCard from "@/components/stats-card";
 import { useRouter } from "next/navigation";
@@ -14,7 +14,6 @@ export default function Home() {
 
   const [counts, setCounts] = useState<{
     jobs_count: number;
-    interviews_count: number;
   } | null>(null);
 
   useEffect(() => {
@@ -30,7 +29,6 @@ export default function Home() {
         if (mounted && json?.success && json.data) {
           setCounts({
             jobs_count: Number(json.data.jobs_count ?? 0),
-            interviews_count: Number(json.data.interviews_count ?? 0),
           });
         }
       } catch (err) {
@@ -51,11 +49,6 @@ export default function Home() {
       title: "Upload Your Resume",
       url: "/docs",
       action: "upload-resume",
-    },
-    {
-      icon: <Mic size={40} />,
-      title: "Simulate an Interview",
-      url: "/interview",
     },
     {
       icon: <BookOpen size={40} />,
@@ -111,7 +104,7 @@ export default function Home() {
       {/* Activity Grid (GitHub-like) */}
       <div>
         <h2 className="text-xl font-bold mb-3">
-          Applications Created / Interviews Completed
+          Applications Created
         </h2>
         <div className="shadow-xl bg-card max-w-fit rounded-md pt-3 px-6">
           <Calender />
@@ -123,7 +116,6 @@ export default function Home() {
       <div className="max-w-lg">
         <h2 className="text-xl font-bold mb-3">Progress Overview</h2>
         <StatsCard
-          interviews={counts?.interviews_count ?? 3}
           applications={counts?.jobs_count ?? 78}
         />
       </div>
