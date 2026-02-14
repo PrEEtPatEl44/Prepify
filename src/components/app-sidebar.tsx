@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { BookOpen, Briefcase, House, FileText } from "lucide-react";
+import { BookOpen, Briefcase, House, FileText, PanelLeft } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { NavUser } from "@/components/nav-user";
 import Link from "next/link";
@@ -84,9 +84,36 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <div className="flex items-center justify-between w-full">
-              <div className="flex items-center gap-2">
-                <Image src="/logo.svg" width={32} height={32} alt="logo" />
+            <div className={cn(
+              "flex items-center w-full",
+              isCollapsed ? "justify-center" : "justify-between"
+            )}>
+              <div className={cn(
+                "flex items-center",
+                isCollapsed ? "justify-center" : "gap-2"
+              )}>
+                {isCollapsed ? (
+                  <div
+                    className="relative cursor-pointer group"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleSidebar();
+                    }}
+                  >
+                    <Image
+                      src="/logo.svg"
+                      width={32}
+                      height={32}
+                      alt="logo"
+                      className="transition-opacity duration-200 group-hover:opacity-0"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <PanelLeft className="w-6 h-6 text-sidebar-foreground" />
+                    </div>
+                  </div>
+                ) : (
+                  <Image src="/logo.svg" width={32} height={32} alt="logo" />
+                )}
                 {!isCollapsed && (
                   <span className="truncate text-2xl text-foreground font-semibold">
                     Prepify
@@ -119,11 +146,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       {item.icon && (
                         <item.icon
                           className={
-                            isCollapsed ? "!w-4 !h-4" : "!w-5 !h-5 ml-4"
+                            isCollapsed ? "!w-5 !h-5 mx-auto" : "!w-5 !h-5 ml-4"
                           }
                         />
                       )}
-                      <span className="text-[16px]">{item.title}</span>
+                      {!isCollapsed && (
+                        <span className="text-[16px]">{item.title}</span>
+                      )}
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </Link>
@@ -133,7 +162,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <NavUser />
+        <NavUser isCollapsed={isCollapsed} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

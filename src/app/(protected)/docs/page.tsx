@@ -111,7 +111,7 @@ const Page = () => {
           selectedFile ? "w-1/2" : "w-full"
         } h-full transition-all duration-500 ease-in-out`}
       >
-        <div className="flex-shrink-0 mt-4">
+        <div className="mt-4">
           <DocsHeader
             documentType={documentType}
             setDocumentType={setDocumentType}
@@ -119,7 +119,7 @@ const Page = () => {
           />
         </div>
 
-        <div className="flex-1 overflow-y-auto mt-1">
+        <div className="flex-1 overflow-y-auto mt-4">
           {analysisResult ? (
             <div className="p-4">
               <div className="mb-4">

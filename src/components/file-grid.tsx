@@ -99,7 +99,7 @@ const FileGrid = ({
 
   return (
     <div
-      className={`${selectedFile ? "p-2" : "p-6"}  min-h-screen relative`}
+      className="min-h-screen relative"
       style={{ scrollbarWidth: "thin", msScrollbarTrackColor: "transparent" }}
     >
       <SearchResultsDock
@@ -110,11 +110,11 @@ const FileGrid = ({
       />
 
       <div
-        className={`grid mt-6 ${
+        className={`grid ${
           selectedFile
-            ? "grid-cols-3 "
+            ? "grid-cols-3"
             : "sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7"
-        } gap-6 p-1`}
+        } gap-6`}
       >
         {files && files.length > 0 && (
           <CreateFileModal
