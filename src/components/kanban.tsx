@@ -15,7 +15,8 @@ import { type DocumentBasicInfo } from "@/types/docs";
 import CreateJobModal from "@/components/modals/CreateJobModal";
 import CreateListModal from "@/components/modals/CreateListModal";
 import DeleteJobModal from "@/components/modals/DeleteJobModal";
-import { deleteJob, moveJob, createColumn, updateColumn } from "@/app/(protected)/jobs/actions";
+import DeleteColumnModal from "./modals/DeleteColumnModal";
+import { deleteJob, moveJob, createColumn, updateColumn, deleteColumn } from "@/app/(protected)/jobs/actions";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -104,6 +105,20 @@ const Kanban = ({
     } finally {
       setEditingColumnId(null);
       setEditingColumnName("");
+    }
+  };
+
+  const handleDeleteColumn = async (columnId: string) => {
+    try {
+      const result = await deleteColumn(columnId);
+      if (result.success) {
+        setColumns((prev) => prev.filter((col) => col.id !== columnId));
+        toast.success("Column deleted");
+      } else {
+        toast.error(result.error || "Failed to delete column");
+      }
+    } catch {
+      toast.error("Failed to delete column");
     }
   };
 
@@ -323,6 +338,18 @@ const Kanban = ({
                       >
                         <Pencil size={14} />
                       </button>
+                      <DeleteColumnModal
+                        columnName={column.name}
+                        onConfirm={() => handleDeleteColumn(column.id)}
+                      >
+                        <button
+                          className={`opacity-0 group-hover:opacity-100 p-1 rounded-md transition-all duration-200 hover:bg-destructive/10 text-muted-foreground hover:text-destructive ${
+                            hoveredColumnId === column.id ? "opacity-100" : ""
+                          }`}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </DeleteColumnModal>
                     </div>
                   )}
 
