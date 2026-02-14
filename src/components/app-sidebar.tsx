@@ -51,6 +51,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
   const [currentPath, setCurrentPath] = useState<string | null>(null);
   const { state, toggleSidebar } = useSidebar();
+  const [isLogoHovered, setIsLogoHovered] = useState(false);
 
   const isCollapsed = state === "collapsed";
 
@@ -58,6 +59,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   useEffect(() => {
     setCurrentPath(pathname);
   }, [pathname]);
+
+  // Reset logo hover state when sidebar expands
+  useEffect(() => {
+    if (!isCollapsed) {
+      setIsLogoHovered(false);
+    }
+  }, [isCollapsed]);
 
   //temp fix to avoid sidebar on auth pages
   if (pathname.startsWith("/auth") || pathname.startsWith("/error")) {
@@ -94,7 +102,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               )}>
                 {isCollapsed ? (
                   <div
-                    className="relative cursor-pointer group"
+                    className="relative cursor-pointer"
+                    onMouseEnter={() => setIsLogoHovered(true)}
+                    onMouseLeave={() => setIsLogoHovered(false)}
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleSidebar();
@@ -105,9 +115,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       width={32}
                       height={32}
                       alt="logo"
-                      className="transition-opacity duration-200 group-hover:opacity-0"
+                      className={cn(
+                        "transition-opacity duration-200",
+                        isLogoHovered && "opacity-0"
+                      )}
                     />
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <div className={cn(
+                      "absolute inset-0 flex items-center justify-center transition-opacity duration-200",
+                      isLogoHovered ? "opacity-100" : "opacity-0"
+                    )}>
                       <PanelLeft className="w-6 h-6 text-sidebar-foreground" />
                     </div>
                   </div>
