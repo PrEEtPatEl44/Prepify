@@ -8,14 +8,14 @@ import {
   KanbanProvider,
 } from "@/components/ui/shadcn-io/kanban";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Ellipsis, Eye, ExternalLink, FileText, GripVertical, Mail, Pencil, Trash2 } from "lucide-react";
+import { Check, Ellipsis, Eye, ExternalLink, FileText, GripVertical, Mail, Pencil, Trash2 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import { CreateJob, type Column, type Job } from "@/types/jobs";
 import { type DocumentBasicInfo } from "@/types/docs";
 import CreateJobModal from "@/components/modals/CreateJobModal";
 import CreateListModal from "@/components/modals/CreateListModal";
 import DeleteJobModal from "@/components/modals/DeleteJobModal";
-import { deleteJob, moveJob, createColumn } from "@/app/(protected)/jobs/actions";
+import { deleteJob, moveJob, createColumn, updateColumn } from "@/app/(protected)/jobs/actions";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -76,6 +76,36 @@ const Kanban = ({
   const [prevJobs, setPrevJobs] = useState<Job[] | null>(null);
   const [resumes, setResumes] = useState<DocumentBasicInfo[]>([]);
   const [coverLetters, setCoverLetters] = useState<DocumentBasicInfo[]>([]);
+  const [editingColumnId, setEditingColumnId] = useState<string | null>(null);
+  const [editingColumnName, setEditingColumnName] = useState("");
+  const [hoveredColumnId, setHoveredColumnId] = useState<string | null>(null);
+
+  const handleUpdateColumnName = async (columnId: string) => {
+    if (!editingColumnName.trim()) {
+      setEditingColumnId(null);
+      setEditingColumnName("");
+      return;
+    }
+
+    try {
+      const result = await updateColumn(columnId, editingColumnName.trim());
+      if (result.success) {
+        setColumns((prev) =>
+          prev.map((col) =>
+            col.id === columnId ? { ...col, name: editingColumnName.trim() } : col
+          )
+        );
+        toast.success("Column name updated");
+      } else {
+        toast.error(result.error || "Failed to update column name");
+      }
+    } catch {
+      toast.error("Failed to update column name");
+    } finally {
+      setEditingColumnId(null);
+      setEditingColumnName("");
+    }
+  };
 
   useEffect(() => {
     const fetchDocuments = async () => {
@@ -243,14 +273,58 @@ const Kanban = ({
             >
               <KanbanHeader className="border-0">
                 <div className="flex justify-between items-center gap-2">
-                  <span
-                    className={`text-md font-archivo font-semibold flex items-center gap-2`}
-                  >
-                    <span className="text-muted-foreground/70 text-xs">
-                      <GripVertical size={16} />
-                    </span>
-                    {column.name}
-                  </span>
+                  {editingColumnId === column.id ? (
+                    <div className="flex items-center gap-1 flex-1">
+                      <span className="text-muted-foreground/70 text-xs">
+                        <GripVertical size={16} />
+                      </span>
+                      <input
+                        type="text"
+                        value={editingColumnName}
+                        onChange={(e) => setEditingColumnName(e.target.value)}
+                        className="text-sm font-archivo font-semibold bg-transparent border-b border-primary focus:outline-none w-full px-1"
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            handleUpdateColumnName(column.id);
+                          } else if (e.key === "Escape") {
+                            setEditingColumnId(null);
+                            setEditingColumnName("");
+                          }
+                        }}
+                      />
+                      <button
+                        onClick={() => handleUpdateColumnName(column.id)}
+                        className="p-1 rounded-md hover:bg-primary/10 text-primary transition-colors"
+                      >
+                        <Check size={14} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div
+                      className="group flex items-center gap-2 flex-1"
+                      onMouseEnter={() => setHoveredColumnId(column.id)}
+                      onMouseLeave={() => setHoveredColumnId(null)}
+                    >
+                      <span className="text-muted-foreground/70 text-xs">
+                        <GripVertical size={16} />
+                      </span>
+                      <span className="text-md font-archivo font-semibold">
+                        {column.name}
+                      </span>
+                      <button
+                        onClick={() => {
+                          setEditingColumnId(column.id);
+                          setEditingColumnName(column.name);
+                        }}
+                        className={`opacity-0 group-hover:opacity-100 p-1 rounded-md transition-all duration-200 hover:bg-muted text-muted-foreground hover:text-foreground ${
+                          hoveredColumnId === column.id ? "opacity-100" : ""
+                        }`}
+                      >
+                        <Pencil size={14} />
+                      </button>
+                    </div>
+                  )}
 
                   <CreateJobModal
                     onSubmit={handleCreateJob}

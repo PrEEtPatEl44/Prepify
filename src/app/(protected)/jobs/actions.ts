@@ -204,3 +204,29 @@ export async function createColumn(
     return { success: false, error: `An unexpected error occurred: ${error}` };
   }
 }
+
+export async function updateColumn(
+  columnId: string,
+  name: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const userId = await getAuthUserId();
+
+    if (!userId) {
+      return {
+        success: false,
+        error: "User not authenticated. Please log in.",
+      };
+    }
+
+    await db
+      .update(columnsTable)
+      .set({ name })
+      .where(and(eq(columnsTable.id, columnId), eq(columnsTable.userId, userId)));
+
+    return { success: true };
+  } catch (error) {
+    console.error("Unexpected error:", error);
+    return { success: false, error: `An unexpected error occurred: ${error}` };
+  }
+}
