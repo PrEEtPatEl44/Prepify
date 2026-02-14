@@ -8,7 +8,7 @@ import {
   KanbanProvider,
 } from "@/components/ui/shadcn-io/kanban";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Ellipsis, Eye, FileText, GripVertical, Mail } from "lucide-react";
+import { Ellipsis, Eye, ExternalLink, FileText, GripVertical, Mail, Pencil, Trash2 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import { CreateJob, type Column, type Job } from "@/types/jobs";
 import { type DocumentBasicInfo } from "@/types/docs";
@@ -315,7 +315,7 @@ const Kanban = ({
                             </DropdownMenuTrigger>
                             <DropdownMenuContent
                               align="end"
-                              className="w-40"
+                              className="w-48"
                               side="bottom"
                               sideOffset={4}
                               onCloseAutoFocus={(e) => e.preventDefault()}
@@ -388,6 +388,7 @@ const Kanban = ({
                                   );
                                 }}
                               >
+                                <ExternalLink className="h-4 w-4 mr-2" />
                                 View Posting
                               </DropdownMenuItem>
                               <DeleteJobModal
@@ -397,6 +398,15 @@ const Kanban = ({
                                   );
                                 }}
                                 job={transformKanbanItemsToJobs(jobData) as Job}
+                                trigger={
+                                  <DropdownMenuItem
+                                    className="cursor-pointer text-red-600 hover:bg-destructive/10 focus:bg-destructive/10"
+                                    onSelect={(e) => e.preventDefault()}
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Delete
+                                  </DropdownMenuItem>
+                                }
                               />
                               <EditJobModal
                                 job={
@@ -407,7 +417,8 @@ const Kanban = ({
                                 }
                                 onJobUpdated={handleJobUpdated}
                               >
-                                <div>Edit</div>
+                                <Pencil className="h-4 w-4 mr-2" />
+                                Edit
                               </EditJobModal>
                             </DropdownMenuContent>
                           </DropdownMenu>
