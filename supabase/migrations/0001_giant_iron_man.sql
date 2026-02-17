@@ -1,2 +1,2 @@
-DROP TYPE "public"."application_status";--> statement-breakpoint
-DROP TYPE "public"."employment_type";
+DROP TYPE IF EXISTS "public"."application_status";
+DROP TYPE IF EXISTS "public"."employment_type";
