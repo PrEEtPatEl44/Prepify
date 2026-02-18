@@ -22,6 +22,13 @@
       "when": 1771381266205,
       "tag": "0002_wild_inertia",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1771381753300,
+      "tag": "0003_amusing_stick",
+      "breakpoints": true
     }
   ]
 }

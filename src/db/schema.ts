@@ -313,5 +313,29 @@ export const userProfiles = pgTable(
   },
   (table) => [
     index("idx_user_profiles_user_id").on(table.userId),
+    pgPolicy("Users can view their own profile", {
+      as: "permissive",
+      for: "select",
+      to: ["authenticated"],
+      using: sql`(( SELECT auth.uid() AS uid) = user_id)`,
+    }),
+    pgPolicy("Users can insert their own profile", {
+      as: "permissive",
+      for: "insert",
+      to: ["authenticated"],
+      withCheck: sql`(( SELECT auth.uid() AS uid) = user_id)`,
+    }),
+    pgPolicy("Users can update their own profile", {
+      as: "permissive",
+      for: "update",
+      to: ["authenticated"],
+      using: sql`(( SELECT auth.uid() AS uid) = user_id)`,
+    }),
+    pgPolicy("Users can delete their own profile", {
+      as: "permissive",
+      for: "delete",
+      to: ["authenticated"],
+      using: sql`(( SELECT auth.uid() AS uid) = user_id)`,
+    }),
   ]
 )

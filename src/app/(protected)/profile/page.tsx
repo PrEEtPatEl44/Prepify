@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { UserCircle, Upload, PenLine } from "lucide-react"
 import { type ResumeData } from "@/lib/agents/resumeDataExtractor"
 import { ImportResumeDialog } from "./components/ImportResumeDialog"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 type PageState = "loading" | "empty" | "form"
 
@@ -39,24 +40,26 @@ export default function ProfilePage() {
 
   if (pageState === "loading") {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-12 w-full" />
-        <Skeleton className="h-12 w-full" />
-        <Skeleton className="h-12 w-full" />
-      </div>
+      <ScrollArea className="h-full">
+        <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+        </div>
+      </ScrollArea>
     )
   }
 
   if (pageState === "empty" && !showForm) {
     return (
-      <>
+      <ScrollArea className="h-full">
         <ImportResumeDialog
           open={importOpen}
           onOpenChange={setImportOpen}
           onImport={handleImport}
         />
-        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 px-4">
+        <div className="flex flex-col items-center justify-center min-h-full gap-6 px-4">
           <UserCircle className="w-16 h-16 text-muted-foreground" />
           <div className="text-center space-y-1">
             <h1 className="text-2xl font-semibold">Set up your profile</h1>
@@ -82,13 +85,15 @@ export default function ProfilePage() {
             </Button>
           </div>
         </div>
-      </>
+      </ScrollArea>
     )
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
-      <ProfileForm initialData={importedData ?? profileData} />
-    </div>
+    <ScrollArea className="h-full">
+      <div className="max-w-3xl mx-auto px-4 py-8">
+        <ProfileForm initialData={importedData ?? profileData} />
+      </div>
+    </ScrollArea>
   )
 }
