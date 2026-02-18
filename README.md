@@ -1,74 +1,79 @@
-# Prepify 🚀
+# Prepify
 
-> Your AI-powered career preparation platform for job applications and interview success
+> Your AI-powered career preparation platform — track job applications, manage your resume, and generate tailored resumes with LaTeX templates.
 
-Prepify is a comprehensive career preparation platform that leverages AI agents to help job seekers optimize their resumes, track job applications, and prepare for interviews. Built with Next.js 15 and powered by LangChain agents, Prepify provides intelligent analysis and personalized recommendations to improve your chances of landing your dream job.
+Prepify is a modern career preparation platform built with Next.js 15. It helps job seekers organize their job search, manage resume documents, maintain a master profile, and generate polished PDF resumes from LaTeX templates.
 
-## ✨ Features
+> **Note:** Features like AI resume scoring, keyword analysis, and interview question generation are from an older version and are no longer part of the active codebase.
 
-### 📄 Resume Analysis
-- **AI-Powered Resume Scoring**: Upload your resume and get it analyzed against specific job descriptions
-- **Comprehensive Scoring System**: 
-  - Keyword matching analysis (40% weight)
-  - Holistic evaluation (60% weight)
-  - Detailed breakdown of strengths and areas for improvement
-- **Smart Recommendations**: Get actionable suggestions to improve your resume for specific roles
-- **Multi-Format Support**: Supports PDF and DOCX resume formats
+## Features
 
-### 💼 Job Application Tracking
-- **Job Management Dashboard**: Keep track of all your job applications in one place
-- **Kanban Board View**: Visualize your application pipeline with drag-and-drop functionality
-- **List & Table Views**: Multiple ways to organize and view your job applications
-- **Custom Statuses**: Track applications through stages like Applied, Interview, Offer, etc.
-- **Resume Linking**: Associate specific resumes with each job application
+### Job Application Tracking
+- **Kanban Board**: Visualize your application pipeline with drag-and-drop columns
+- **Table View**: Spreadsheet-style view of all applications
+- **Custom Columns**: Create and rename status stages (Applied, Interview, Offer, etc.)
+- **Job Details**: Store company name, job title, description, URL, and linked documents
+- **Company Logos**: Automatic company logo fetching via Brandfetch
 
-### 🎤 Interview Preparation
-- **Customized Interview Questions**: AI-generated interview questions based on:
-  - Your resume
-  - The job description
-  - Your preferred difficulty level (beginner, intermediate, advanced, expert)
-  - Question type (technical, behavioral, or mixed)
-- **Job Analysis**: Get insights into key skills required and focus areas for your interview
-- **Question Customization**: Control the number and type of questions generated
-- **Interactive Practice**: Practice answering questions and track your progress
+### Document Management
+- **Resume & Cover Letter Upload**: Supports PDF and DOCX formats
+- **Supabase Storage**: Files stored securely with per-user access
+- **AI Data Extraction**: Background extraction of structured data from uploaded resumes (contact info, experience, education, skills, projects)
+- **In-App Viewer**: Preview PDFs and DOCX files without leaving the app
 
-### 📊 Dashboard & Analytics
-- **Activity Calendar**: Track your daily activity and progress
-- **Statistics Overview**: View counts of jobs tracked and interviews prepared
-- **Document Management**: Organize and access your resumes and cover letters
-- **Quick Actions**: Easy access to upload resumes, find jobs, and prepare interviews
+### Master Profile
+- **Centralized Profile**: Maintain a single source of truth for your career data
+- **Import from Resume**: Auto-populate from any uploaded resume
+- **Structured Sections**: Contact info, work experience, education, skills, certifications, projects, and links
+- **Reusable for Generation**: Profile data feeds directly into resume generation
 
-## 🛠️ Tech Stack
+### LaTeX-Based Resume Generation
+- **Template Management**: Create and store custom LaTeX resume templates
+- **PDF Compilation**: Templates are compiled to PDF via an external LaTeX service
+- **Built-in Jake Template**: Generate a polished PDF from your master profile using a pre-built LaTeX template
+- **Cover Letter Templates**: Template system supports both resumes and cover letters
+
+### Dashboard
+- **Activity Calendar**: GitHub-style heatmap of your application activity
+- **Application Stats**: At-a-glance count of tracked jobs and documents
+- **Quick Actions**: Fast access to upload resumes or view documents
+
+## Tech Stack
 
 ### Frontend
-- **Next.js 15**: React framework with App Router
-- **React 19**: Latest React features
-- **TypeScript**: Type-safe development
-- **Tailwind CSS 4**: Modern utility-first CSS
-- **Radix UI**: Accessible component primitives
-- **Lucide Icons**: Beautiful & consistent icons
+- **Next.js 15** — App Router with React 19
+- **TypeScript** — end-to-end type safety
+- **Tailwind CSS 4** — utility-first styling
+- **shadcn/ui + Radix UI** — accessible component primitives
+- **Lucide Icons** — consistent icon set
+- **@dnd-kit** — drag-and-drop for Kanban board
+- **@tanstack/react-table** — table view
 
 ### Backend & AI
-- **LangChain**: Multi-agent orchestration framework
-- **OpenAI/OpenRouter**: LLM integration for intelligent analysis
-- **Supabase**: Authentication and database
-- **Next.js API Routes**: Serverless backend functions
+- **Next.js Server Actions** — data mutations (colocated `actions.ts` files)
+- **Next.js API Routes** — read-only data fetching
+- **LangChain + OpenAI/OpenRouter** — resume data extraction agent
+- **External LaTeX Service** — PDF compilation from LaTeX templates
+
+### Database & Auth
+- **Supabase** — PostgreSQL database, authentication, and file storage
+- **Drizzle ORM** — type-safe database queries and migrations
+- **Row Level Security** — database-level per-user data isolation
 
 ### Key Libraries
-- **@tanstack/react-table**: Advanced table functionality
-- **@dnd-kit**: Drag-and-drop interactions
-- **react-pdf**: PDF rendering
-- **mammoth**: DOCX parsing
-- **zod**: Schema validation
-- **sonner**: Toast notifications
+- **pdf-parse** / **mammoth** — PDF and DOCX text extraction
+- **sonner** — toast notifications
+- **next-themes** — dark/light mode
+- **zod** — schema validation for AI-extracted data
+- **react-pdf** — in-app PDF rendering
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
-- Node.js 20+ installed
-- npm or yarn package manager
-- Supabase account (for authentication & database)
+- Node.js 20+
+- Supabase project (database, auth, storage)
 - OpenAI API key or OpenRouter API key
+- LaTeX service URL (for PDF compilation)
 
 ### Installation
 
@@ -81,186 +86,131 @@ cd prepify
 2. **Install dependencies**
 ```bash
 npm install
-# or
-yarn install
 ```
 
-3. **Set up environment variables**
+3. **Configure environment variables**
 
-- Create a `.env` file in the root directory:
-- Copy the contents of `.env.example` to `.env` and fill in your credentials:
+Copy `.env.example` to `.env.local` and fill in:
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY=
+DATABASE_URL=           # pooled connection
+DIRECT_URL=             # direct connection for Drizzle migrations
+OPENAI_API_KEY=         # or OPENROUTER_API_KEY
+OPENAI_MODEL_NAME=      # defaults to gpt-4o-mini
+LATEX_SERVICE_URL=      # external LaTeX compiler endpoint
+NEXT_PUBLIC_APP_URL=    # your app URL
+BRANDFETCH_CLIENT_ID=   # optional, for company logos
 ```
-
 
 4. **Run the development server**
 ```bash
 npm run dev
-# or
-yarn dev
 ```
 
-5. **Open your browser**
+Open [http://localhost:3000](http://localhost:3000).
 
-Navigate to [http://localhost:3000](http://localhost:3000)
-
-## 📁 Project Structure
+## Project Structure
 
 ```
 prepify/
 ├── src/
-│   ├── app/                    # Next.js app directory
-│   │   ├── api/               # API routes
-│   │   │   ├── resume-analysis/    # Resume analysis endpoints
-│   │   │   ├── interview/          # Interview generation endpoints
-│   │   │   ├── jobs/               # Job management endpoints
-│   │   │   └── ...
-│   │   ├── auth/              # Authentication pages
-│   │   ├── jobs/              # Job tracking pages
-│   │   ├── interview/         # Interview preparation pages
-│   │   └── docs/              # Document management pages
-│   ├── components/            # React components
-│   │   ├── ui/               # Reusable UI components
-│   │   ├── modals/           # Modal dialogs
-│   │   └── ...
-│   ├── lib/                   # Utility libraries
-│   │   ├── agents/           # LangChain AI agents
-│   │   │   ├── orchestrator.ts           # Resume analysis orchestrator
-│   │   │   ├── keywordExtractor.ts       # Keyword extraction agent
-│   │   │   ├── keywordComparator.ts      # Keyword comparison agent
-│   │   │   ├── holisticComparator.ts     # Holistic analysis agent
-│   │   │   └── interview-agents/         # Interview preparation agents
-│   │   └── services/         # Business logic services
-│   ├── hooks/                 # Custom React hooks
-│   ├── types/                 # TypeScript type definitions
-│   └── utils/                 # Utility functions
-├── public/                    # Static assets
-└── docs/                      # Documentation
+│   ├── app/
+│   │   ├── (protected)/           # Authenticated routes
+│   │   │   ├── page.tsx           # Dashboard
+│   │   │   ├── jobs/              # Job tracking (Kanban + Table)
+│   │   │   ├── docs/              # Document management
+│   │   │   ├── profile/           # Master profile
+│   │   │   └── templates/         # LaTeX template management
+│   │   ├── (public)/
+│   │   │   └── landing/           # Marketing landing page
+│   │   ├── api/                   # GET API routes
+│   │   │   ├── applications/      # Job application data
+│   │   │   ├── docs/              # Document listing + PDF generation
+│   │   │   ├── templates/         # Template listing + compilation
+│   │   │   ├── profile/           # Profile data
+│   │   │   └── dashboard/         # Stats and calendar data
+│   │   └── auth/                  # Login, signup, callback
+│   ├── components/                # Shared React components
+│   │   └── ui/                    # shadcn/ui components
+│   ├── db/
+│   │   ├── schema.ts              # Drizzle table definitions
+│   │   ├── auth.ts                # getAuthUserId() utility
+│   │   └── relations.ts           # Drizzle relations
+│   ├── lib/
+│   │   ├── agents/
+│   │   │   └── resumeDataExtractor.ts  # LangChain extraction agent
+│   │   ├── textExtraction.ts      # PDF/DOCX parsing
+│   │   └── utils.ts               # cn() and shared utilities
+│   ├── adapters/
+│   │   └── jobAdapters.ts         # DB row ↔ UI type transforms
+│   ├── hooks/                     # Custom React hooks
+│   └── types/                     # Shared TypeScript types
+└── supabase/
+    └── migrations/                # Drizzle-generated SQL migrations
 ```
 
-## 🤖 AI Agents Architecture
+## Database Schema
 
-Prepify uses a multi-agent system powered by LangChain for intelligent analysis:
+| Table | Purpose |
+|-------|---------|
+| `jobApplications` | Core job tracking — links to columns, resumes, cover letters |
+| `columns` | User-defined Kanban board columns |
+| `resumes` | Uploaded resume files + AI-extracted structured data (JSONB) |
+| `coverLetters` | Uploaded cover letter files |
+| `templates` | User-created LaTeX templates (resume or cover letter) |
+| `userProfiles` | Master profile data (JSONB, sourced from resumes or manual input) |
 
-### Resume Analysis System
+## Data Flow
 
-1. **Keyword Extractor Agent**: Extracts relevant keywords from resumes and job descriptions
-   - Technical skills
-   - Soft skills
-   - Experience keywords
-   - Education keywords
-   - Industry terms
+**Mutations** use Server Actions (`actions.ts` colocated with each route):
+```
+Client → Server Action → Drizzle → Supabase (PostgreSQL) → revalidatePath()
+```
 
-2. **Keyword Comparator Agent**: Compares keywords between resume and job description
-   - Identifies matching keywords
-   - Finds missing important keywords
-   - Calculates keyword match score
-   - Provides keyword insights
+**Reads** use API routes:
+```
+Client → fetch() → GET /api/... → Drizzle → Supabase → JSON response
+```
 
-3. **Holistic Comparator Agent**: Performs comprehensive analysis
-   - Experience match evaluation
-   - Qualification alignment
-   - Cultural fit assessment
-   - Career trajectory analysis
-   - Overall scoring (0-100)
+**Resume upload & AI extraction:**
+```
+POST /api/docs → Supabase Storage upload → DB insert → after() background job
+  → ResumeDataExtractor agent → structured JSON → resumes.resumeData (JSONB)
+```
 
-4. **Resume Analysis Orchestrator**: Coordinates all agents
-   - Orchestrates the analysis workflow
-   - Combines scores (40% keywords, 60% holistic)
-   - Generates actionable recommendations
-   - Produces comprehensive analysis reports
+**LaTeX PDF generation:**
+```
+Profile data / template content → LaTeX string → POST to LATEX_SERVICE_URL → PDF binary
+```
 
-### Interview Preparation System
+## Development Commands
 
-1. **Job Analysis Agent**: Analyzes job requirements and candidate background
-   - Identifies key skills required
-   - Summarizes candidate experience
-   - Determines interview focus areas
+```bash
+npm run dev      # Start dev server (Turbopack)
+npm run build    # Production build
+npm run start    # Start production server
+npm run lint     # Run ESLint
+```
 
-2. **Question Generator Agent**: Creates customized interview questions
-   - Generates questions based on difficulty level
-   - Creates technical, behavioral, or mixed question sets
-   - Customizable question count
-   - Context-aware question generation
+## Authentication & Security
 
-3. **Interview Orchestrator**: Manages the interview preparation workflow
-   - Coordinates job analysis and question generation
-   - Provides interview preparation summary
-   - Generates metadata for tracking
+- **Supabase Auth** — email/password authentication
+- **Middleware** — refreshes session on every request (`src/middleware.ts`)
+- **Row Level Security** — all tables enforce per-user access at the database level
+- **`getAuthUserId()`** — called first in every server action and API route
 
-## 🔐 Authentication & Security
-
-- **Supabase Authentication**: Secure user authentication with email/password
-- **Session Management**: Server-side session handling with middleware
-- **Row Level Security**: Database-level security policies
-- **Protected Routes**: Automatic redirect for unauthenticated users
-
-## 📊 Database Schema
-
-The application uses Supabase (PostgreSQL) with the following main tables:
-- `users`: User profiles and settings
-- `resumes`: Resume files and metadata
-- `jobs`: Job applications tracking
-- `interviews`: Interview preparation data
-- `documents`: General document storage
-
-## 🎨 UI/UX Features
-
-- **Dark/Light Mode**: Theme switching support
-- **Responsive Design**: Mobile-first, works on all devices
-- **Drag & Drop**: Intuitive file upload and kanban board
-- **Loading States**: Smooth loading indicators
-- **Toast Notifications**: Real-time feedback
-- **Accessible Components**: WCAG compliant UI elements
-
-## 🚀 Deployment
-
-### Build for Production
+## Deployment
 
 ```bash
 npm run build
 npm start
 ```
 
-### Environment Setup
-
-Ensure all production environment variables are configured:
-- Supabase production credentials
-- API keys (OpenAI/OpenRouter)
-- Production URL
-
-### Recommended Platforms
-- **Vercel**: Optimized for Next.js (recommended)
-- **Netlify**: Alternative deployment option
-- **AWS/GCP**: Self-hosted options
-
-## 🤝 Contributing
-
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
-
-### Development Workflow
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📝 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🙏 Acknowledgments
-
-- Built with [Next.js](https://nextjs.org/)
-- AI powered by [LangChain](https://langchain.com/)
-- UI components from [Radix UI](https://www.radix-ui.com/)
-- Styled with [Tailwind CSS](https://tailwindcss.com/)
-- Authentication by [Supabase](https://supabase.com/)
-
-## 📧 Contact & Support
-
-For questions, issues, or suggestions:
-- Open an issue on GitHub
+Required environment variables must be set in your deployment environment. Recommended platforms: **Vercel** (optimized for Next.js), Netlify, or any Node.js host.
 
 ---
 
-Made with ❤️ by the Prepify Team
+## License
+
+MIT
