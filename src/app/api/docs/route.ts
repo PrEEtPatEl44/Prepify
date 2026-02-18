@@ -38,17 +38,29 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Query only id, file_name, and file_path from the specified table
-    const table = documentType === "resumes" ? resumes : coverLetters;
-    const data = await db
-      .select({
-        id: table.id,
-        file_name: table.fileName,
-        file_path: table.filePath,
-      })
-      .from(table)
-      .where(eq(table.userId, userId))
-      .orderBy(desc(table.createdAt));
+    let data;
+    if (documentType === "resumes") {
+      data = await db
+        .select({
+          id: resumes.id,
+          file_name: resumes.fileName,
+          file_path: resumes.filePath,
+          resumeData: resumes.resumeData,
+        })
+        .from(resumes)
+        .where(eq(resumes.userId, userId))
+        .orderBy(desc(resumes.createdAt));
+    } else {
+      data = await db
+        .select({
+          id: coverLetters.id,
+          file_name: coverLetters.fileName,
+          file_path: coverLetters.filePath,
+        })
+        .from(coverLetters)
+        .where(eq(coverLetters.userId, userId))
+        .orderBy(desc(coverLetters.createdAt));
+    }
 
     return new Response(
       JSON.stringify({

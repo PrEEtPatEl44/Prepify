@@ -12,6 +12,7 @@ import {
   foreignKey,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
+import { type ResumeData } from "@/lib/agents/resumeDataExtractor";
 
 export const columns = pgTable(
   "columns",
@@ -300,3 +301,41 @@ export const jobApplications = pgTable(
     }),
   ],
 );
+
+export const userProfiles = pgTable(
+  "user_profiles",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: uuid("user_id").notNull().unique(),
+    profileData: jsonb("profile_data").$type<ResumeData>(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("idx_user_profiles_user_id").on(table.userId),
+    pgPolicy("Users can view their own profile", {
+      as: "permissive",
+      for: "select",
+      to: ["authenticated"],
+      using: sql`(( SELECT auth.uid() AS uid) = user_id)`,
+    }),
+    pgPolicy("Users can insert their own profile", {
+      as: "permissive",
+      for: "insert",
+      to: ["authenticated"],
+      withCheck: sql`(( SELECT auth.uid() AS uid) = user_id)`,
+    }),
+    pgPolicy("Users can update their own profile", {
+      as: "permissive",
+      for: "update",
+      to: ["authenticated"],
+      using: sql`(( SELECT auth.uid() AS uid) = user_id)`,
+    }),
+    pgPolicy("Users can delete their own profile", {
+      as: "permissive",
+      for: "delete",
+      to: ["authenticated"],
+      using: sql`(( SELECT auth.uid() AS uid) = user_id)`,
+    }),
+  ]
+)

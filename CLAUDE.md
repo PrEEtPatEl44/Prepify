@@ -11,71 +11,74 @@ npm run start        # Start production server
 npm run lint         # Run ESLint
 ```
 
-The app runs at http://localhost:3000.
+The app runs at http://localhost:3000. No test framework is configured.
 
 ## Environment Setup
 
 Copy `.env.example` to `.env.local` and configure:
 - **Supabase**: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY`
-- **LLM**: Either `OPENAI_API_KEY` (recommended) or `OPENROUTER_API_KEY`
-- **Optional**: Brandfetch, Syncfusion, RapidAPI keys for additional features
+- **Database**: `DATABASE_URL` (pooled), `DIRECT_URL` (for Drizzle migrations)
+- **LLM**: `OPENAI_API_KEY` or `OPENROUTER_API_KEY`; `OPENAI_MODEL_NAME` (default: `gpt-4o-mini`)
+- **Optional**: `BRANDFETCH_CLIENT_ID`, `LATEX_SERVICE_URL`, `NEXT_PUBLIC_APP_URL`
 
 ## Architecture Overview
 
 ### Tech Stack
 - **Framework**: Next.js 15 with App Router (React 19, TypeScript)
-- **Styling**: Tailwind CSS 4 with Radix UI primitives
-- **Database/Auth**: Supabase (PostgreSQL with Row Level Security)
-- **AI**: LangChain with OpenAI/OpenRouter for multi-agent orchestration
+- **Styling**: Tailwind CSS 4 with Radix UI primitives (shadcn/ui)
+- **Database/Auth**: Supabase (PostgreSQL with Row Level Security) + Drizzle ORM
+- **AI**: LangChain with OpenAI/OpenRouter
 
 ### Source Structure (`src/`)
 
 **App Router** (`app/`):
-- `/` - Dashboard with activity calendar and stats
-- `/jobs` - Job application tracking (kanban, list, table views)
-- `/docs` - Resume/document management
-- `/interview` - AI interview preparation
-- `/auth/*` - Authentication flows (Supabase-based)
+- `/` — Dashboard with activity calendar and stats
+- `/jobs` — Job application tracking (kanban, list, table views)
+- `/docs` — Resume/document management
+- `/auth/*` — Authentication flows (Supabase-based)
 
-**API Routes** (`app/api/`):
-- `/resume-analysis` - Resume scoring against job descriptions
-- `/interview/generate` - AI question generation
-- `/interview/feedback` - Interview answer feedback
-- `/applications/*` - Job application CRUD
-- `/docs/*` - Document management and text extraction
+**API Routes** (`app/api/`) — GET only (reads):
+- `/applications`, `/applications/columns`, `/applications/by-resume`
+- `/docs`, `/docs/template-resume`
+- `/dashboard`, `/dashboard/calendar`
+- `/templates`, `/templates/compile`
 
-### AI Agents System (`lib/agents/`)
+**Database** (`db/`):
+- `db/schema.ts` — Drizzle ORM table definitions (`columns`, `jobApplications`, `resumes`, `coverLetters`, `templates`)
+- `db/auth.ts` — `getAuthUserId()` utility; call this first in every server action/API route
+- `db/relations.ts` — Drizzle foreign key relations
+- Migrations generated via Drizzle Kit into `supabase/migrations/`
 
-**Resume Analysis Pipeline** (scoring weights: 40% keywords, 60% holistic):
-1. `keywordExtractor.ts` - Extracts skills/keywords from resume and job description
-2. `keywordComparator.ts` - Compares and scores keyword matches
-3. `holisticComparator.ts` - Evaluates experience, qualifications, cultural fit
-4. `orchestrator.ts` - `ResumeAnalysisOrchestrator` coordinates the pipeline
+**Key Utilities**:
+- `utils/supabase/server.ts` & `client.ts` — Supabase client initialization
+- `lib/agents/resumeDataExtractor.ts` — LangChain agent; extracts structured data from resume text using Zod schema + `ChatOpenAI`
+- `lib/textExtraction.ts` — PDF/DOCX text parsing (pdf-parse, mammoth)
+- `adapters/jobAdapters.ts` — Transforms DB rows ↔ `Job`/`KanbanItem` types; generates Brandfetch company logo URLs
+- `lib/utils.ts` — `cn()` for Tailwind class merging
+- `middleware.ts` — Refreshes Supabase session on every request
 
-**Interview Preparation** (`interview-agents/`):
-1. `jobAnalysisAgent.ts` - Analyzes job requirements and candidate profile
-2. `questionGeneratorAgent.ts` - Generates customized questions (difficulty, type, count)
-3. `feedbackGeneratorAgent.ts` - Evaluates interview answers
-4. `interviewOrchestrator.ts` - `InterviewOrchestrator` coordinates preparation
-
-### Key Services
-
-- `lib/services/authService.ts` - Supabase authentication
-- `lib/services/jobService.ts` - Job application business logic
-- `utils/supabase/server.ts` & `client.ts` - Supabase client initialization
-- `middleware.ts` - Session management via Supabase
-
-### Path Alias
-
-Use `@/*` to import from `src/*` (e.g., `@/components/ui/button`).
+### AI Agent: ResumeDataExtractor
+The only implemented agent (`lib/agents/resumeDataExtractor.ts`). Invoked in the background via Next.js `after()` inside `POST /api/docs` after file upload. Extracts structured resume data (contact, experience, education, skills, projects) into JSONB stored in `resumes.resumeData`.
 
 ## Data Fetching & Mutations
 
-- **Data fetching (GET)**: Use API routes (`app/api/`) for fetching data
-- **Data mutations (POST/PUT/DELETE)**: Use Server Actions instead of API routes
-  - Place server actions in `actions.ts` files alongside the page that uses them (e.g., `app/(protected)/templates/actions.ts`)
-  - Always add `"use server"` directive at the top
-  - Use `revalidatePath()` after mutations to update the UI
+- **Data fetching (GET)**: Use API routes (`app/api/`)
+- **Data mutations**: Use Server Actions
+  - Place in `actions.ts` colocated with the page (e.g., `app/(protected)/jobs/actions.ts`)
+  - Always add `"use server"` directive at top
+  - Authenticate via `getAuthUserId()` from `@/db/auth`
+  - Use `revalidatePath()` after mutations
+  - Return `{ success: boolean; data?: T; error?: string }`
+
+## Code Style
+
+- **No semicolons** at end of statements
+- **Components**: function declarations (not arrow functions); props interface named `ComponentNameProps`
+- **Imports**: `import { type Foo }` for type-only imports; group React/Next → third-party → `@/` → relative
+- **Naming**: kebab-case files, PascalCase components, camelCase variables/utilities
+- **Classes**: use `cn()` from `@/lib/utils` for conditional Tailwind merging
+- **Types**: `interface` for object shapes, `type` for unions; place in `src/types/*.ts`
+- **Path alias**: `@/*` maps to `src/*`
 
 ## Commit Convention
 
