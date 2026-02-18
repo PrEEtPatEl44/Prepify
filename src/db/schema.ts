@@ -12,6 +12,7 @@ import {
   foreignKey,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
+import { type ResumeData } from "@/lib/agents/resumeDataExtractor";
 
 export const columns = pgTable(
   "columns",
@@ -300,3 +301,17 @@ export const jobApplications = pgTable(
     }),
   ],
 );
+
+export const userProfiles = pgTable(
+  "user_profiles",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: uuid("user_id").notNull().unique(),
+    profileData: jsonb("profile_data").$type<ResumeData>(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("idx_user_profiles_user_id").on(table.userId),
+  ]
+)
