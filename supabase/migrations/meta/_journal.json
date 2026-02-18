@@ -15,6 +15,13 @@
       "when": 1771301309333,
       "tag": "0001_giant_iron_man",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1771381266205,
+      "tag": "0002_wild_inertia",
+      "breakpoints": true
     }
   ]
 }
