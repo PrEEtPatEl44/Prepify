@@ -268,6 +268,19 @@ export async function generateResumeFromProfile(
       return { success: false, error: "User not authenticated. Please log in." }
     }
 
+    // Fetch job application to get company name
+    const [job] = await db
+      .select({ companyName: jobApplications.companyName })
+      .from(jobApplications)
+      .where(
+        and(eq(jobApplications.id, jobId), eq(jobApplications.userId, userId))
+      )
+      .limit(1)
+
+    if (!job) {
+      return { success: false, error: "Job application not found" }
+    }
+
     // Fetch user profile
     const [profile] = await db
       .select()
@@ -313,7 +326,8 @@ export async function generateResumeFromProfile(
     // Upload PDF to Supabase Storage
     const supabase = await createClient()
     const timestamp = Date.now()
-    const storagePath = `${userId}/resumes/${timestamp}_generated_resume.pdf`
+    const sanitizedCompany = job.companyName.trim().replace(/[^a-zA-Z0-9-_]/g, "_")
+    const storagePath = `${userId}/resumes/${timestamp}_resume_${sanitizedCompany}.pdf`
 
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from("documents")
@@ -332,7 +346,7 @@ export async function generateResumeFromProfile(
       .insert(resumes)
       .values({
         userId,
-        fileName: "Generated Resume",
+        fileName: `Resume_${job.companyName}`,
         filePath: uploadData.path,
         fileSize: pdfBuffer.byteLength,
         mimeType: "application/pdf",
@@ -353,7 +367,7 @@ export async function generateResumeFromProfile(
     revalidatePath("/jobs")
     revalidatePath("/docs")
 
-    return { success: true, data: { resumeId: newResume.id, fileName: "Generated Resume", filePath: uploadData.path } }
+    return { success: true, data: { resumeId: newResume.id, fileName: `Resume_${job.companyName}`, filePath: uploadData.path } }
   } catch (error) {
     console.error("generateResumeFromProfile error:", error)
     return { success: false, error: `An unexpected error occurred: ${error}` }
