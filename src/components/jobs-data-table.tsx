@@ -18,8 +18,10 @@ import {
   ExternalLink,
   Eye,
   FileText,
+  Loader2,
   Mail,
   Pencil,
+  Sparkles,
   Trash2,
 } from "lucide-react";
 
@@ -54,7 +56,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { Job, Column } from "@/types/jobs";
-import { editJob, deleteJob } from "@/app/(protected)/jobs/actions";
+import { editJob, deleteJob, generateResumeFromProfile } from "@/app/(protected)/jobs/actions";
 import { toast } from "sonner";
 import { useSidebar } from "@/components/ui/sidebar";
 import EditJobModal from "@/components/modals/EditJobModal";
@@ -86,6 +88,7 @@ export function JobsDataTable({
   const [coverLetters, setCoverLetters] = React.useState<DocumentBasicInfo[]>(
     [],
   );
+  const [generatingJobId, setGeneratingJobId] = React.useState<string | null>(null);
   const { setOpen } = sidebar;
   // Fetch resumes and cover letters on mount
   React.useEffect(() => {
@@ -387,6 +390,46 @@ export function JobsDataTable({
                   <TooltipContent>Open Link</TooltipContent>
                 </Tooltip>
 
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      disabled={generatingJobId === job.id}
+                      onClick={async () => {
+                        setGeneratingJobId(job.id)
+                        try {
+                          const result = await generateResumeFromProfile(job.id)
+                          if (result.success && result.data) {
+                            setJobs((prev) =>
+                              prev.map((j) =>
+                                j.id === job.id
+                                  ? { ...j, resumeId: result.data!.resumeId }
+                                  : j
+                              )
+                            )
+                            toast.success("Resume generated successfully")
+                          } else {
+                            toast.error(result.error || "Failed to generate resume")
+                          }
+                        } catch {
+                          toast.error("Failed to generate resume")
+                        } finally {
+                          setGeneratingJobId(null)
+                        }
+                      }}
+                    >
+                      {generatingJobId === job.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Sparkles className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Generate Resume</TooltipContent>
+                </Tooltip>
+
                 <EditJobModal
                   job={job}
                   onJobUpdated={handleJobUpdated}
@@ -416,7 +459,7 @@ export function JobsDataTable({
         },
       },
     ],
-    [columns, resumes, coverLetters, handleConfirmDelete, handleJobUpdated],
+    [columns, resumes, coverLetters, handleConfirmDelete, handleJobUpdated, generatingJobId, setJobs],
   );
 
   const table = useReactTable({

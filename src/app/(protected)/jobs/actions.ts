@@ -1,11 +1,15 @@
 "use server";
 
 import { db } from "@/db";
-import { jobApplications, columns as columnsTable } from "@/db/schema";
+import { jobApplications, columns as columnsTable, resumes, userProfiles } from "@/db/schema";
 import { getAuthUserId } from "@/db/auth";
 import { eq, and } from "drizzle-orm";
 import { type Column, type CreateJob, type Job } from "@/types/jobs";
 import { transformDbRowToJob } from "@/adapters/jobAdapters";
+import { type ResumeData } from "@/lib/agents/resumeDataExtractor";
+import { buildJakeResume } from "@/lib/data/jake-resume-template";
+import { createClient } from "@/utils/supabase/server";
+import { revalidatePath } from "next/cache";
 
 // create a job record in the database
 export async function createJob(
@@ -252,5 +256,106 @@ export async function deleteColumn(
   } catch (error) {
     console.error("Unexpected error:", error);
     return { success: false, error: `An unexpected error occurred: ${error}` };
+  }
+}
+
+export async function generateResumeFromProfile(
+  jobId: string
+): Promise<{ success: boolean; data?: { resumeId: string }; error?: string }> {
+  try {
+    const userId = await getAuthUserId()
+    if (!userId) {
+      return { success: false, error: "User not authenticated. Please log in." }
+    }
+
+    // Fetch user profile
+    const [profile] = await db
+      .select()
+      .from(userProfiles)
+      .where(eq(userProfiles.userId, userId))
+      .limit(1)
+
+    if (!profile?.profileData) {
+      return { success: false, error: "Please create a profile first" }
+    }
+
+    const profileData = profile.profileData as ResumeData
+
+    // Build LaTeX from profile data
+    const latexContent = buildJakeResume(profileData)
+
+    // Compile LaTeX to PDF
+    const latexServiceUrl = process.env.LATEX_SERVICE_URL
+    if (!latexServiceUrl) {
+      return { success: false, error: "LaTeX service URL not configured" }
+    }
+
+    const compileResponse = await fetch(`${latexServiceUrl}/compile`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        latex: latexContent,
+        compiler: "pdflatex",
+        filename: "resume.tex",
+      }),
+    })
+
+    if (!compileResponse.ok) {
+      const errorData = await compileResponse.json().catch(() => ({}))
+      return {
+        success: false,
+        error: errorData.message || "Failed to compile LaTeX to PDF",
+      }
+    }
+
+    const pdfBuffer = Buffer.from(await compileResponse.arrayBuffer())
+
+    // Upload PDF to Supabase Storage
+    const supabase = await createClient()
+    const timestamp = Date.now()
+    const storagePath = `${userId}/resumes/${timestamp}_generated_resume.pdf`
+
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from("documents")
+      .upload(storagePath, pdfBuffer, {
+        contentType: "application/pdf",
+        cacheControl: "3600",
+        upsert: false,
+      })
+
+    if (uploadError) {
+      return { success: false, error: `Storage upload failed: ${uploadError.message}` }
+    }
+
+    // Insert resume record
+    const [newResume] = await db
+      .insert(resumes)
+      .values({
+        userId,
+        fileName: "Generated Resume",
+        filePath: uploadData.path,
+        fileSize: pdfBuffer.byteLength,
+        mimeType: "application/pdf",
+        resumeData: profileData,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
+      .returning({ id: resumes.id })
+
+    // Link resume to job application
+    await db
+      .update(jobApplications)
+      .set({ resumeId: newResume.id, updatedAt: new Date().toISOString() })
+      .where(
+        and(eq(jobApplications.id, jobId), eq(jobApplications.userId, userId))
+      )
+
+    revalidatePath("/jobs")
+    revalidatePath("/docs")
+
+    return { success: true, data: { resumeId: newResume.id } }
+  } catch (error) {
+    console.error("generateResumeFromProfile error:", error)
+    return { success: false, error: `An unexpected error occurred: ${error}` }
   }
 }

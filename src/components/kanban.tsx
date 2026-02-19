@@ -8,7 +8,7 @@ import {
   KanbanProvider,
 } from "@/components/ui/shadcn-io/kanban";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Check, Ellipsis, Eye, ExternalLink, FileText, GripVertical, Mail, Pencil, Trash2 } from "lucide-react";
+import { Check, Ellipsis, Eye, ExternalLink, FileText, GripVertical, Loader2, Mail, Pencil, Sparkles, Trash2 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import { CreateJob, type Column, type Job } from "@/types/jobs";
 import { type DocumentBasicInfo } from "@/types/docs";
@@ -16,7 +16,7 @@ import CreateJobModal from "@/components/modals/CreateJobModal";
 import CreateListModal from "@/components/modals/CreateListModal";
 import DeleteJobModal from "@/components/modals/DeleteJobModal";
 import DeleteColumnModal from "./modals/DeleteColumnModal";
-import { deleteJob, moveJob, createColumn, updateColumn, deleteColumn } from "@/app/(protected)/jobs/actions";
+import { deleteJob, moveJob, createColumn, updateColumn, deleteColumn, generateResumeFromProfile } from "@/app/(protected)/jobs/actions";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -77,6 +77,7 @@ const Kanban = ({
   const [prevJobs, setPrevJobs] = useState<Job[] | null>(null);
   const [resumes, setResumes] = useState<DocumentBasicInfo[]>([]);
   const [coverLetters, setCoverLetters] = useState<DocumentBasicInfo[]>([]);
+  const [generatingJobId, setGeneratingJobId] = useState<string | null>(null);
   const [editingColumnId, setEditingColumnId] = useState<string | null>(null);
   const [editingColumnName, setEditingColumnName] = useState("");
   const [hoveredColumnId, setHoveredColumnId] = useState<string | null>(null);
@@ -476,6 +477,41 @@ const Kanban = ({
                                     >
                                       <Mail className="h-4 w-4 mr-2" />
                                       View Cover Letter
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      className="cursor-pointer"
+                                      disabled={generatingJobId === jobData.id}
+                                      onSelect={async (e) => {
+                                        e.preventDefault()
+                                        if (!originalJob) return
+                                        setGeneratingJobId(originalJob.id)
+                                        try {
+                                          const result = await generateResumeFromProfile(originalJob.id)
+                                          if (result.success && result.data) {
+                                            setJobs((prev) =>
+                                              prev.map((j) =>
+                                                j.id === originalJob.id
+                                                  ? { ...j, resumeId: result.data!.resumeId }
+                                                  : j
+                                              )
+                                            )
+                                            toast.success("Resume generated successfully")
+                                          } else {
+                                            toast.error(result.error || "Failed to generate resume")
+                                          }
+                                        } catch {
+                                          toast.error("Failed to generate resume")
+                                        } finally {
+                                          setGeneratingJobId(null)
+                                        }
+                                      }}
+                                    >
+                                      {generatingJobId === jobData.id ? (
+                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                      ) : (
+                                        <Sparkles className="h-4 w-4 mr-2" />
+                                      )}
+                                      Generate Resume
                                     </DropdownMenuItem>
                                   </>
                                 );
