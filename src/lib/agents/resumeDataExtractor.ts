@@ -3,7 +3,7 @@ import { StructuredOutputParser } from "@langchain/core/output_parsers";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { z } from "zod";
 
-const resumeDataSchema = z.object({
+export const resumeDataSchema = z.object({
   name: z.string().describe("Full name of the candidate"),
   email: z.string().optional().describe("Email address"),
   phone: z.string().optional().describe("Phone number"),

@@ -6,7 +6,8 @@ import { getAuthUserId } from "@/db/auth";
 import { eq, and } from "drizzle-orm";
 import { type Column, type CreateJob, type Job } from "@/types/jobs";
 import { transformDbRowToJob } from "@/adapters/jobAdapters";
-import { type ResumeData } from "@/lib/agents/resumeDataExtractor";
+import { type ResumeData } from "@/lib/agents/resumeDataExtractor"
+import { ResumeTailorAgent } from "@/lib/agents/resumeTailor"
 import { buildJakeResume } from "@/lib/data/jake-resume-template";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
@@ -268,9 +269,12 @@ export async function generateResumeFromProfile(
       return { success: false, error: "User not authenticated. Please log in." }
     }
 
-    // Fetch job application to get company name
+    // Fetch job application to get company name and description
     const [job] = await db
-      .select({ companyName: jobApplications.companyName })
+      .select({
+        companyName: jobApplications.companyName,
+        jobDescription: jobApplications.jobDescription,
+      })
       .from(jobApplications)
       .where(
         and(eq(jobApplications.id, jobId), eq(jobApplications.userId, userId))
@@ -292,7 +296,17 @@ export async function generateResumeFromProfile(
       return { success: false, error: "Please create a profile first" }
     }
 
-    const profileData = profile.profileData as ResumeData
+    let profileData = profile.profileData as ResumeData
+
+    // Tailor resume to job description if available
+    if (job.jobDescription) {
+      try {
+        const tailorAgent = new ResumeTailorAgent()
+        profileData = await tailorAgent.tailorResume(profileData, job.jobDescription)
+      } catch (error) {
+        console.error("Resume tailoring failed, using untailored profile:", error)
+      }
+    }
 
     // Build LaTeX from profile data
     const latexContent = buildJakeResume(profileData)
