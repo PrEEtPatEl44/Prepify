@@ -215,6 +215,32 @@ ${rows}
  \\end{itemize}`;
 }
 
+function buildSummary(data: ResumeData): string {
+  if (!data.summary) return "";
+
+  return `\\section{Summary}
+ \\begin{itemize}[leftmargin=0.15in, label={}]
+    \\small{\\item{
+     ${e(data.summary)}
+    }}
+ \\end{itemize}`;
+}
+
+function buildCertifications(data: ResumeData): string {
+  if (!data.certifications?.length) return "";
+
+  const items = data.certifications
+    .map((cert) => `     ${e(cert)}`)
+    .join(" \\\\\n");
+
+  return `\\section{Certifications}
+ \\begin{itemize}[leftmargin=0.15in, label={}]
+    \\small{\\item{
+${items}
+    }}
+ \\end{itemize}`;
+}
+
 export function buildJakeResume(data: ResumeData): string {
   const sections = [
     PREAMBLE,
@@ -223,6 +249,8 @@ export function buildJakeResume(data: ResumeData): string {
     "",
     buildHeading(data),
     "",
+    buildSummary(data),
+    "",
     buildEducation(data),
     "",
     buildExperience(data),
@@ -230,6 +258,8 @@ export function buildJakeResume(data: ResumeData): string {
     buildProjects(data),
     "",
     buildSkills(data),
+    "",
+    buildCertifications(data),
     "",
     "\\end{document}",
   ];
