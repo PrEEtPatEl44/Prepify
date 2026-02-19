@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { CheckCircle, Clock, FileText } from "lucide-react"
 import { getResumeDataById } from "../actions"
 import { type ResumeData } from "@/lib/agents/resumeDataExtractor"
@@ -94,41 +95,43 @@ export function ImportResumeDialog({
         )}
 
         {!loading && resumes.length > 0 && (
-          <ul className="space-y-2">
-            {resumes.map((resume) => {
-              const hasData = !!resume.resumeData
-              const isImporting = importing === resume.id
+          <ScrollArea className="max-h-[300px]">
+            <ul className="space-y-2 pr-4">
+              {resumes.map((resume) => {
+                const hasData = !!resume.resumeData
+                const isImporting = importing === resume.id
 
-              return (
-                <li key={resume.id}>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start gap-3 h-auto py-3"
-                    disabled={!hasData || isImporting}
-                    onClick={() => handleSelect(resume.id)}
-                  >
-                    <FileText className="shrink-0 w-4 h-4" />
-                    <span className="flex-1 text-left truncate text-sm">
-                      {resume.file_name}
-                    </span>
-                    {hasData ? (
-                      <CheckCircle className="shrink-0 w-4 h-4 text-green-500" />
-                    ) : (
-                      <span className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
-                        <Clock className="w-3 h-3" />
-                        processing…
+                return (
+                  <li key={resume.id}>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start gap-3 h-auto py-3"
+                      disabled={!hasData || isImporting}
+                      onClick={() => handleSelect(resume.id)}
+                    >
+                      <FileText className="shrink-0 w-4 h-4" />
+                      <span className="flex-1 text-left truncate text-sm">
+                        {resume.file_name}
                       </span>
-                    )}
-                    {isImporting && (
-                      <span className="text-xs text-muted-foreground shrink-0">
-                        Importing…
-                      </span>
-                    )}
-                  </Button>
-                </li>
-              )
-            })}
-          </ul>
+                      {hasData ? (
+                        <CheckCircle className="shrink-0 w-4 h-4 text-green-500" />
+                      ) : (
+                        <span className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
+                          <Clock className="w-3 h-3" />
+                          processing…
+                        </span>
+                      )}
+                      {isImporting && (
+                        <span className="text-xs text-muted-foreground shrink-0">
+                          Importing…
+                        </span>
+                      )}
+                    </Button>
+                  </li>
+                )
+              })}
+            </ul>
+          </ScrollArea>
         )}
       </DialogContent>
     </Dialog>
