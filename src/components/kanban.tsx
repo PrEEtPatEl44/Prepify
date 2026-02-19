@@ -488,10 +488,15 @@ const Kanban = ({
                                         try {
                                           const result = await generateResumeFromProfile(originalJob.id)
                                           if (result.success && result.data) {
+                                            const { resumeId, fileName, filePath } = result.data
+                                            setResumes((prev) => [
+                                              ...prev,
+                                              { id: resumeId, file_name: fileName, file_path: filePath, documentType: "resumes" as const },
+                                            ])
                                             setJobs((prev) =>
                                               prev.map((j) =>
                                                 j.id === originalJob.id
-                                                  ? { ...j, resumeId: result.data!.resumeId }
+                                                  ? { ...j, resumeId }
                                                   : j
                                               )
                                             )

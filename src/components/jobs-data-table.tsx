@@ -402,10 +402,15 @@ export function JobsDataTable({
                         try {
                           const result = await generateResumeFromProfile(job.id)
                           if (result.success && result.data) {
+                            const { resumeId, fileName, filePath } = result.data
+                            setResumes((prev) => [
+                              ...prev,
+                              { id: resumeId, file_name: fileName, file_path: filePath, documentType: "resumes" as const },
+                            ])
                             setJobs((prev) =>
                               prev.map((j) =>
                                 j.id === job.id
-                                  ? { ...j, resumeId: result.data!.resumeId }
+                                  ? { ...j, resumeId }
                                   : j
                               )
                             )

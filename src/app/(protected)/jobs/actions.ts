@@ -261,7 +261,7 @@ export async function deleteColumn(
 
 export async function generateResumeFromProfile(
   jobId: string
-): Promise<{ success: boolean; data?: { resumeId: string }; error?: string }> {
+): Promise<{ success: boolean; data?: { resumeId: string; fileName: string; filePath: string }; error?: string }> {
   try {
     const userId = await getAuthUserId()
     if (!userId) {
@@ -353,7 +353,7 @@ export async function generateResumeFromProfile(
     revalidatePath("/jobs")
     revalidatePath("/docs")
 
-    return { success: true, data: { resumeId: newResume.id } }
+    return { success: true, data: { resumeId: newResume.id, fileName: "Generated Resume", filePath: uploadData.path } }
   } catch (error) {
     console.error("generateResumeFromProfile error:", error)
     return { success: false, error: `An unexpected error occurred: ${error}` }
