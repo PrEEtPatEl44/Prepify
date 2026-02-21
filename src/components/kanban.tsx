@@ -10,6 +10,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Check, Ellipsis, Eye, ExternalLink, FileText, GripVertical, Loader2, Mail, Pencil, Sparkles, Trash2 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { CreateJob, type Column, type Job } from "@/types/jobs";
 import { type DocumentBasicInfo } from "@/types/docs";
 import CreateJobModal from "@/components/modals/CreateJobModal";
@@ -49,6 +50,8 @@ const Kanban = ({
   searchTerm?: string;
   onViewFile?: (job: Job, file?: DocumentBasicInfo) => void;
 }) => {
+  const router = useRouter();
+
   // UPDATED: Handle kanban data changes and transform back to Job format
   const handleKanbanDataChange = (updatedKanbanItems: JobKanbanItem[]) => {
     console.log("Kanban data changed:", updatedKanbanItems);
@@ -500,7 +503,7 @@ const Kanban = ({
                                                   : j
                                               )
                                             )
-                                            toast.success("Resume generated successfully")
+                                            router.push(`/jobs/${originalJob.id}/resume`)
                                           } else {
                                             toast.error(result.error || "Failed to generate resume")
                                           }

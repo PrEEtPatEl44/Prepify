@@ -262,7 +262,7 @@ export async function deleteColumn(
 
 export async function generateResumeFromProfile(
   jobId: string
-): Promise<{ success: boolean; data?: { resumeId: string; fileName: string; filePath: string }; error?: string }> {
+): Promise<{ success: boolean; data?: { resumeId: string; fileName: string; filePath: string; resumeData: ResumeData; pdfBase64: string }; error?: string }> {
   try {
     const userId = await getAuthUserId()
     if (!userId) {
@@ -336,6 +336,7 @@ export async function generateResumeFromProfile(
     }
 
     const pdfBuffer = Buffer.from(await compileResponse.arrayBuffer())
+    const pdfBase64 = pdfBuffer.toString("base64")
 
     // Upload PDF to Supabase Storage
     const supabase = await createClient()
@@ -381,7 +382,7 @@ export async function generateResumeFromProfile(
     revalidatePath("/jobs")
     revalidatePath("/docs")
 
-    return { success: true, data: { resumeId: newResume.id, fileName: `Resume_${job.companyName}`, filePath: uploadData.path } }
+    return { success: true, data: { resumeId: newResume.id, fileName: `Resume_${job.companyName}`, filePath: uploadData.path, resumeData: profileData, pdfBase64 } }
   } catch (error) {
     console.error("generateResumeFromProfile error:", error)
     return { success: false, error: `An unexpected error occurred: ${error}` }

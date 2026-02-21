@@ -25,6 +25,7 @@ export class ResumeTailorAgent {
         apiKey: apiKey || process.env.OPENAI_API_KEY,
         temperature: 0.3,
         maxRetries: 2,
+        stop: ["```"],
       });
     } else if (useOpenRouter) {
       this.llm = new ChatOpenAI({
@@ -44,6 +45,7 @@ export class ResumeTailorAgent {
         apiKey: process.env.OPENROUTER_API_KEY,
         temperature: 0.3,
         maxRetries: 2,
+        stop: ["```"],
       });
     } else {
       throw new Error(
@@ -83,7 +85,9 @@ CANDIDATE PROFILE:
 TARGET JOB DESCRIPTION:
 {jobDescription}
 
-{format_instructions}`,
+{format_instructions}
+
+IMPORTANT: Respond with ONLY the raw JSON object. Do NOT wrap it in markdown code fences or any other formatting.`,
       inputVariables: ["profileData", "jobDescription"],
       partialVariables: { format_instructions: formatInstructions },
     });
@@ -93,6 +97,10 @@ TARGET JOB DESCRIPTION:
       jobDescription,
     });
     const response = await this.llm.invoke(input);
-    return this.parser.parse(response.content as string);
+    const raw = (response.content as string)
+      .replace(/^```(?:json)?\s*/i, "")
+      .replace(/\s*```$/g, "")
+      .trim();
+    return this.parser.parse(raw);
   }
 }
