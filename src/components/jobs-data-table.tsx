@@ -59,7 +59,6 @@ import { Job, Column } from "@/types/jobs";
 import { editJob, deleteJob, generateResumeFromProfile } from "@/app/(protected)/jobs/actions";
 import { toast } from "sonner";
 import { useSidebar } from "@/components/ui/sidebar";
-import { useRouter } from "next/navigation";
 import EditJobModal from "@/components/modals/EditJobModal";
 import DeleteJobModal from "@/components/modals/DeleteJobModal";
 
@@ -81,7 +80,6 @@ export function JobsDataTable({
   onViewFile,
 }: JobsDataTableProps) {
   const sidebar = useSidebar();
-  const router = useRouter();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
@@ -416,7 +414,7 @@ export function JobsDataTable({
                                   : j
                               )
                             )
-                            router.push(`/jobs/${job.id}/resume`)
+                            toast.success("Resume generated successfully")
                           } else {
                             toast.error(result.error || "Failed to generate resume")
                           }
@@ -466,7 +464,7 @@ export function JobsDataTable({
         },
       },
     ],
-    [columns, resumes, coverLetters, handleConfirmDelete, handleJobUpdated, generatingJobId, setJobs, router],
+    [columns, resumes, coverLetters, handleConfirmDelete, handleJobUpdated, generatingJobId, setJobs],
   );
 
   const table = useReactTable({

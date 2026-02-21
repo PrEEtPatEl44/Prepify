@@ -3,7 +3,8 @@ import React from "react";
 import Header, { type ViewMode } from "@/components/header";
 import dynamic from "next/dynamic";
 import { useEffect, useState, useCallback } from "react";
-import { X, Building2 } from "lucide-react";
+import { X, Building2, Pencil } from "lucide-react";
+import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { type DocumentBasicInfo } from "@/types/docs";
@@ -189,10 +190,20 @@ const Page = () => {
                   </p>
                 </div>
               </div>
-              <X
-                className="h-5 w-5 shrink-0 text-muted-foreground hover:text-foreground cursor-pointer"
-                onClick={() => setSelectedJob(null)}
-              />
+              <div className="flex items-center gap-2 shrink-0">
+                {file && file.documentType === "resumes" && selectedJob && (
+                  <Link
+                    href={`/jobs/${selectedJob.id}/resume`}
+                    className="text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Link>
+                )}
+                <X
+                  className="h-5 w-5 text-muted-foreground hover:text-foreground cursor-pointer"
+                  onClick={() => setSelectedJob(null)}
+                />
+              </div>
             </div>
             <ScrollArea className="flex-1 min-h-0">
               {file ? (
