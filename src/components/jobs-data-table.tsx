@@ -415,6 +415,12 @@ export function JobsDataTable({
                               )
                             )
                             toast.success("Resume generated successfully")
+                            if (onViewFile) {
+                              onViewFile(
+                                { ...job, resumeId },
+                                { id: resumeId, file_name: fileName, file_path: filePath, documentType: "resumes" as const }
+                              )
+                            }
                           } else {
                             toast.error(result.error || "Failed to generate resume")
                           }
