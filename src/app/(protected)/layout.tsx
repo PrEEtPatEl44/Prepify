@@ -9,7 +9,7 @@ export default function ProtectedLayout({
   return (
     <SidebarProvider defaultOpen={false}>
       <AppSidebar collapsible="icon" />
-      <main className="flex-1 min-w-0 p-4">{children}</main>
+      <main className="flex-1 min-w-0">{children}</main>
     </SidebarProvider>
   );
 }
