@@ -92,6 +92,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             }
           : undefined
       }
+      onMouseEnter={isCollapsed ? () => setIsLogoHovered(true) : undefined}
+      onMouseLeave={isCollapsed ? () => setIsLogoHovered(false) : undefined}
       {...props}
     >
       <SidebarHeader>
@@ -108,8 +110,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 {isCollapsed ? (
                   <div
                     className="relative cursor-pointer"
-                    onMouseEnter={() => setIsLogoHovered(true)}
-                    onMouseLeave={() => setIsLogoHovered(false)}
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleSidebar();
