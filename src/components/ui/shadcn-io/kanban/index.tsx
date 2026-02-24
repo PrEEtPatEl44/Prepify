@@ -11,7 +11,6 @@ import {
   closestCenter,
   DndContext,
   DragOverlay,
-  KeyboardSensor,
   MouseSensor,
   TouchSensor,
   useDroppable,
@@ -276,8 +275,7 @@ export const KanbanProvider = <
         delay: 250,
         tolerance: 5,
       },
-    }),
-    useSensor(KeyboardSensor)
+    })
   );
 
   const handleDragStart = (event: DragStartEvent) => {
