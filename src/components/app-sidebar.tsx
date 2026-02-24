@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { BookOpen, Briefcase, House, FileText, PanelLeft, User } from "lucide-react";
+import { BookOpen, Briefcase, House, FileText, MessageSquare, PanelLeft, User } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { NavUser } from "@/components/nav-user";
 import Link from "next/link";
@@ -28,6 +28,11 @@ const data = {
       title: "Home",
       url: "/",
       icon: House,
+    },
+    {
+      title: "Chat",
+      url: "/chat",
+      icon: MessageSquare,
     },
     {
       title: "Jobs",
