@@ -278,12 +278,11 @@ export default function ChatPage() {
         <>
           {/* Messages — scrollable, takes remaining space */}
           <div className="flex-1 overflow-hidden">
-            <div className={cn("mx-auto h-full", !showArtifact && "max-w-3xl")}>
-              <ChatMessageList
-                messages={messages}
-                onOpenArtifact={handleOpenArtifact}
-              />
-            </div>
+            <ChatMessageList
+              messages={messages}
+              onOpenArtifact={handleOpenArtifact}
+              maxWidthClass={!showArtifact ? "max-w-3xl mx-auto" : undefined}
+            />
           </div>
           {/* Input pinned at bottom */}
           <div className="relative">
@@ -320,7 +319,7 @@ export default function ChatPage() {
               <h1 className="text-2xl font-semibold tracking-tight">
                 What can I help you with?
               </h1>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-base text-muted-foreground">
                 Ask me anything — I can write code, explain concepts, and more.
               </p>
             </div>
@@ -348,7 +347,7 @@ export default function ChatPage() {
         {showArtifact && (
           <>
             <ResizableHandle withHandle />
-            <ResizablePanel defaultSize={45} minSize={25}>
+            <ResizablePanel defaultSize={45}>
               <ArtifactPanel
                 artifacts={artifacts}
                 activeIndex={activeArtifactIndex}

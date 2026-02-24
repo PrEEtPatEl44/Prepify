@@ -1,8 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Bot, User, Copy, Check, PanelRight, ChevronDown, ChevronUp } from "lucide-react"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Copy, Check, PanelRight, ChevronDown, ChevronUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -125,37 +124,18 @@ function ChatMessage({ message, onOpenArtifact }: ChatMessageProps) {
 
   if (message.isLoading) {
     return (
-      <div className="flex gap-4 px-4 py-6">
-        <Avatar className="size-7 shrink-0 mt-0.5">
-          <AvatarFallback className="bg-primary/10 text-primary text-xs">
-            <Bot className="size-4" />
-          </AvatarFallback>
-        </Avatar>
-        <div className="pt-1">
-          <ThinkingDots />
-        </div>
+      <div className="px-4 py-6">
+        <ThinkingDots />
       </div>
     )
   }
 
   return (
-    <div className={cn("flex gap-4 px-4 py-6", isUser && "flex-row-reverse")}>
-      <Avatar className="size-7 shrink-0 mt-0.5">
-        <AvatarFallback
-          className={cn(
-            "text-xs",
-            isUser
-              ? "bg-primary text-primary-foreground"
-              : "bg-primary/10 text-primary"
-          )}
-        >
-          {isUser ? <User className="size-4" /> : <Bot className="size-4" />}
-        </AvatarFallback>
-      </Avatar>
+    <div className={cn("px-4 py-6", isUser && "flex justify-end")}>
       <div
         className={cn(
-          "min-w-0 max-w-[85%] text-sm",
-          isUser && "text-right"
+          "min-w-0 text-base",
+          isUser && "rounded-2xl bg-muted px-4 py-3 inline-block text-left max-w-[85%]"
         )}
       >
         {message.content && <ExpandableText text={message.content} />}

@@ -120,7 +120,7 @@ function ChatInput({ onSend, disabled }: ChatInputProps) {
           disabled={disabled}
           rows={1}
           className={cn(
-            "w-full resize-none bg-transparent px-4 py-3 text-sm",
+            "w-full resize-none bg-transparent px-4 py-3 text-base",
             "placeholder:text-muted-foreground",
             "focus-visible:outline-none",
             "disabled:opacity-50"
