@@ -70,7 +70,7 @@ const Page = () => {
   return (
     <div className="h-screen flex flex-col lg:flex-row flex-1 w-full">
       <div
-        className={`flex flex-col ${
+        className={`flex flex-col p-4 ${
           selectedFile ? "w-1/2" : "w-full"
         } h-full transition-all duration-500 ease-in-out`}
       >

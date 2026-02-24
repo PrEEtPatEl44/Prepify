@@ -117,7 +117,7 @@ const Page = () => {
 
   if (isLoading) {
     return (
-      <div className="h-screen flex flex-col w-full">
+      <div className="h-screen flex flex-col w-full p-4">
         <Skeleton className="h-12 mt-6 px-1 max-w-[95%] rounded-xl bg-muted mb-2" />
 
         <div className="flex flex-1 gap-2">
@@ -133,7 +133,7 @@ const Page = () => {
   return (
     <div className="h-screen flex flex-row  flex-1 min-w-0">
       <div
-        className={`flex flex-col h-full ${
+        className={`flex flex-col h-full p-4 ${
           selectedJob ? "w-1/2" : "w-full"
         } transition-all duration-500 ease-in-out`}
       >

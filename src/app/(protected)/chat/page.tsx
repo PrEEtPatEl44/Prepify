@@ -334,13 +334,15 @@ export default function ChatPage() {
   )
 
   return (
-    <div className="flex h-[calc(100vh-1rem)] flex-col">
+    <div className="flex h-screen flex-col">
       <ResizablePanelGroup orientation="horizontal" className="flex-1">
         <ResizablePanel
           defaultSize={showArtifact ? 55 : 100}
           minSize={35}
         >
-          {chatContent}
+          <div className="h-full p-4">
+            {chatContent}
+          </div>
         </ResizablePanel>
 
         {showArtifact && (

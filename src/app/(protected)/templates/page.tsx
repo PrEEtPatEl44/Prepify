@@ -135,7 +135,7 @@ export default function TemplatesPage() {
   return (
     <div className="h-screen flex flex-row flex-1 min-w-0">
       <div
-        className={`flex flex-col h-full ${
+        className={`flex flex-col h-full p-4 ${
           selectedTemplate ? "w-1/2" : "w-full"
         } transition-all duration-500 ease-in-out`}
       >

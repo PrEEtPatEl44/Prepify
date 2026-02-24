@@ -163,7 +163,7 @@ export default function ResumeEditorPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-[calc(100vh-4rem)] w-full gap-4 p-4">
+      <div className="flex h-screen w-full gap-4 p-4">
         <div className="flex w-1/3 flex-col gap-4">
           <Skeleton className="h-10 w-full" />
           <Skeleton className="h-full w-full flex-1" />
@@ -179,7 +179,7 @@ export default function ResumeEditorPage() {
 
   if (!resumeData) {
     return (
-      <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
+      <div className="flex h-screen items-center justify-center">
         <div className="text-center">
           <p className="text-muted-foreground mb-4">
             No resume found for this job. Generate one first.
@@ -194,7 +194,7 @@ export default function ResumeEditorPage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] w-full gap-0">
+    <div className="flex h-screen w-full gap-0">
       {/* Left column — Chat */}
       <div className="flex w-[380px] min-w-[320px] flex-col border-r">
         {/* Chat header */}
