@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Bot, Copy, Check, PanelRight, ChevronDown, ChevronUp } from "lucide-react"
+import { Bot, User, Copy, Check, PanelRight, ChevronDown, ChevronUp } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -26,10 +26,10 @@ interface ChatMessageProps {
 
 function ThinkingDots() {
   return (
-    <div className="flex items-center gap-1 py-1">
-      <div className="size-2 animate-bounce rounded-full bg-muted-foreground/50 [animation-delay:0ms]" />
-      <div className="size-2 animate-bounce rounded-full bg-muted-foreground/50 [animation-delay:150ms]" />
-      <div className="size-2 animate-bounce rounded-full bg-muted-foreground/50 [animation-delay:300ms]" />
+    <div className="flex items-center gap-1.5 py-1">
+      <div className="size-1.5 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:0ms]" />
+      <div className="size-1.5 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:150ms]" />
+      <div className="size-1.5 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:300ms]" />
     </div>
   )
 }
@@ -52,14 +52,14 @@ function CodeBlockView({
   }
 
   return (
-    <div className="my-2 overflow-hidden rounded-lg border bg-muted/50">
-      <div className="flex items-center justify-between border-b bg-muted/80 px-3 py-1.5">
-        <span className="text-xs text-muted-foreground">{language}</span>
+    <div className="my-3 overflow-hidden rounded-xl border">
+      <div className="flex items-center justify-between border-b bg-muted px-4 py-2">
+        <span className="text-xs font-medium text-muted-foreground">{language}</span>
         <div className="flex items-center gap-1">
           <Button
             variant="ghost"
             size="icon"
-            className="size-6"
+            className="size-7 text-muted-foreground hover:text-foreground"
             onClick={handleCopy}
           >
             {copied ? (
@@ -71,7 +71,7 @@ function CodeBlockView({
           <Button
             variant="ghost"
             size="icon"
-            className="size-6"
+            className="size-7 text-muted-foreground hover:text-foreground"
             onClick={() =>
               onOpenArtifact(code, language, `${language} snippet`)
             }
@@ -80,7 +80,7 @@ function CodeBlockView({
           </Button>
         </div>
       </div>
-      <pre className="overflow-x-auto p-3 text-sm">
+      <pre className="overflow-x-auto bg-muted/40 p-4 text-[13px] leading-relaxed">
         <code>{code}</code>
       </pre>
     </div>
@@ -92,18 +92,18 @@ function ExpandableText({ text }: { text: string }) {
   const limit = 800
 
   if (text.length <= limit) {
-    return <p className="whitespace-pre-wrap">{text}</p>
+    return <p className="whitespace-pre-wrap leading-relaxed">{text}</p>
   }
 
   return (
     <div>
-      <p className="whitespace-pre-wrap">
+      <p className="whitespace-pre-wrap leading-relaxed">
         {expanded ? text : text.slice(0, limit) + "..."}
       </p>
       <Button
         variant="ghost"
         size="sm"
-        className="mt-1 h-7 gap-1 text-xs text-muted-foreground"
+        className="mt-1 h-7 gap-1 text-xs text-muted-foreground hover:text-foreground"
         onClick={() => setExpanded(!expanded)}
       >
         {expanded ? (
@@ -125,13 +125,13 @@ function ChatMessage({ message, onOpenArtifact }: ChatMessageProps) {
 
   if (message.isLoading) {
     return (
-      <div className="flex items-start gap-3 px-4 py-3">
-        <Avatar className="size-8 shrink-0">
-          <AvatarFallback className="bg-primary/10 text-primary">
+      <div className="flex gap-4 px-4 py-6">
+        <Avatar className="size-7 shrink-0 mt-0.5">
+          <AvatarFallback className="bg-primary/10 text-primary text-xs">
             <Bot className="size-4" />
           </AvatarFallback>
         </Avatar>
-        <div className="rounded-2xl bg-muted px-4 py-3">
+        <div className="pt-1">
           <ThinkingDots />
         </div>
       </div>
@@ -139,25 +139,23 @@ function ChatMessage({ message, onOpenArtifact }: ChatMessageProps) {
   }
 
   return (
-    <div
-      className={cn(
-        "flex items-start gap-3 px-4 py-3",
-        isUser && "flex-row-reverse"
-      )}
-    >
-      {!isUser && (
-        <Avatar className="size-8 shrink-0">
-          <AvatarFallback className="bg-primary/10 text-primary">
-            <Bot className="size-4" />
-          </AvatarFallback>
-        </Avatar>
-      )}
+    <div className={cn("flex gap-4 px-4 py-6", isUser && "flex-row-reverse")}>
+      <Avatar className="size-7 shrink-0 mt-0.5">
+        <AvatarFallback
+          className={cn(
+            "text-xs",
+            isUser
+              ? "bg-primary text-primary-foreground"
+              : "bg-primary/10 text-primary"
+          )}
+        >
+          {isUser ? <User className="size-4" /> : <Bot className="size-4" />}
+        </AvatarFallback>
+      </Avatar>
       <div
         className={cn(
-          "max-w-[85%] space-y-1 rounded-2xl px-4 py-3 text-sm",
-          isUser
-            ? "bg-primary text-primary-foreground"
-            : "bg-muted text-foreground"
+          "min-w-0 max-w-[85%] text-sm",
+          isUser && "text-right"
         )}
       >
         {message.content && <ExpandableText text={message.content} />}

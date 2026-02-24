@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, useCallback, useState } from "react"
-import { Paperclip, Send } from "lucide-react"
+import { Paperclip, ArrowUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { AttachmentChip, type Attachment } from "./attachment-chip"
 import { cn } from "@/lib/utils"
@@ -23,7 +23,7 @@ function ChatInput({ onSend, disabled }: ChatInputProps) {
     const textarea = textareaRef.current
     if (!textarea) return
     textarea.style.height = "auto"
-    const maxHeight = 6 * 24 // ~6 rows
+    const maxHeight = 6 * 24
     textarea.style.height = `${Math.min(textarea.scrollHeight, maxHeight)}px`
   }, [])
 
@@ -84,39 +84,29 @@ function ChatInput({ onSend, disabled }: ChatInputProps) {
     }
   }
 
-  return (
-    <div className="border-t bg-background px-4 py-3">
-      {/* Attachment chips */}
-      {attachments.length > 0 && (
-        <div className="mb-2 flex flex-wrap gap-1.5">
-          {attachments.map((a) => (
-            <AttachmentChip
-              key={a.id}
-              attachment={a}
-              onRemove={removeAttachment}
-            />
-          ))}
-        </div>
-      )}
+  const hasContent = value.trim() || attachments.length > 0
 
-      {/* Input row */}
-      <div className="flex items-end gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-9 shrink-0"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={disabled}
-        >
-          <Paperclip className="size-5" />
-        </Button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          className="hidden"
-          onChange={handleFileChange}
-        />
+  return (
+    <div className="px-4">
+      <div className={cn(
+        "relative rounded-2xl border bg-muted/50 shadow-sm",
+        "focus-within:ring-1 focus-within:ring-ring",
+        "transition-shadow"
+      )}>
+        {/* Attachment chips */}
+        {attachments.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 px-4 pt-3">
+            {attachments.map((a) => (
+              <AttachmentChip
+                key={a.id}
+                attachment={a}
+                onRemove={removeAttachment}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Textarea */}
         <textarea
           ref={textareaRef}
           value={value}
@@ -126,24 +116,53 @@ function ChatInput({ onSend, disabled }: ChatInputProps) {
           }}
           onKeyDown={handleKeyDown}
           onPaste={handlePaste}
-          placeholder="Type a message..."
+          placeholder="Message Prepify..."
           disabled={disabled}
           rows={1}
           className={cn(
-            "flex-1 resize-none rounded-xl border bg-muted/50 px-4 py-2.5 text-sm",
-            "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+            "w-full resize-none bg-transparent px-4 py-3 text-sm",
+            "placeholder:text-muted-foreground",
+            "focus-visible:outline-none",
             "disabled:opacity-50"
           )}
         />
-        <Button
-          size="icon"
-          className="size-9 shrink-0 rounded-full"
-          onClick={handleSend}
-          disabled={disabled || (!value.trim() && attachments.length === 0)}
-        >
-          <Send className="size-4" />
-        </Button>
+
+        {/* Bottom toolbar */}
+        <div className="flex items-center justify-between px-3 pb-2">
+          <div className="flex items-center">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8 rounded-lg text-muted-foreground hover:text-foreground"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={disabled}
+            >
+              <Paperclip className="size-4" />
+            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              className="hidden"
+              onChange={handleFileChange}
+            />
+          </div>
+          <Button
+            size="icon"
+            className={cn(
+              "size-8 rounded-lg transition-opacity",
+              hasContent ? "opacity-100" : "opacity-40"
+            )}
+            onClick={handleSend}
+            disabled={disabled || !hasContent}
+          >
+            <ArrowUp className="size-4" />
+          </Button>
+        </div>
       </div>
+      <p className="mt-2 text-center text-xs text-muted-foreground">
+        Prepify can make mistakes. Verify important information.
+      </p>
     </div>
   )
 }

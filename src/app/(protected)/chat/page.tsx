@@ -11,6 +11,7 @@ import { ChatInput } from "./components/chat-input"
 import { ArtifactPanel, type Artifact } from "./components/artifact-panel"
 import { type ChatMessageData, type CodeBlock } from "./components/chat-message"
 import { type Attachment } from "./components/attachment-chip"
+import { cn } from "@/lib/utils"
 
 // --- Mock response generation ---
 
@@ -205,6 +206,8 @@ export default function ChatPage() {
   )
   const [showArtifact, setShowArtifact] = useState(false)
 
+  const hasMessages = messages.length > 0
+
   const handleOpenArtifact = useCallback(
     (code: string, language: string, title: string) => {
       const existing = artifacts.findIndex((a) => a.content === code)
@@ -227,7 +230,6 @@ export default function ChatPage() {
   )
 
   function handleSend(text: string, attachments: Attachment[]) {
-    // Build user message content
     let content = text
     if (attachments.length > 0) {
       const attachmentTexts = attachments.map((a) =>
@@ -254,7 +256,6 @@ export default function ChatPage() {
     setMessages((prev) => [...prev, userMsg, loadingMsg])
     setIsProcessing(true)
 
-    // Simulate response delay
     setTimeout(() => {
       const mockResponse = getNextMockResponse()
       const assistantMsg: ChatMessageData = {
@@ -271,26 +272,77 @@ export default function ChatPage() {
     }, 1200 + Math.random() * 800)
   }
 
-  return (
-    <div className="flex h-[calc(100vh-1rem)] flex-col">
-      <ResizablePanelGroup orientation="horizontal" className="flex-1">
-        {/* Chat Panel */}
-        <ResizablePanel
-          defaultSize={showArtifact ? 55 : 100}
-          minSize={35}
-        >
-          <div className="flex h-full flex-col">
-            <div className="flex-1 overflow-hidden">
+  const chatContent = (
+    <div className="flex h-full flex-col">
+      {hasMessages ? (
+        <>
+          {/* Messages — scrollable, takes remaining space */}
+          <div className="flex-1 overflow-hidden">
+            <div className={cn("mx-auto h-full", !showArtifact && "max-w-3xl")}>
               <ChatMessageList
                 messages={messages}
                 onOpenArtifact={handleOpenArtifact}
               />
             </div>
-            <ChatInput onSend={handleSend} disabled={isProcessing} />
           </div>
+          {/* Input pinned at bottom */}
+          <div className="relative">
+            <div className={cn(
+              "pointer-events-none absolute inset-x-0 -top-8 h-8",
+              "bg-gradient-to-t from-background to-transparent"
+            )} />
+            <div className={cn("mx-auto w-full pb-4", !showArtifact && "max-w-3xl")}>
+              <ChatInput onSend={handleSend} disabled={isProcessing} />
+            </div>
+          </div>
+        </>
+      ) : (
+        /* Empty state — vertically centered */
+        <div className="flex flex-1 flex-col items-center justify-center px-4">
+          <div className={cn("flex w-full flex-col items-center gap-8", !showArtifact && "max-w-3xl")}>
+            <div className="flex flex-col items-center gap-3 text-center">
+              <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-primary"
+                >
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
+              </div>
+              <h1 className="text-2xl font-semibold tracking-tight">
+                What can I help you with?
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Ask me anything — I can write code, explain concepts, and more.
+              </p>
+            </div>
+            <div className="w-full">
+              <ChatInput onSend={handleSend} disabled={isProcessing} />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+
+  return (
+    <div className="flex h-[calc(100vh-1rem)] flex-col">
+      <ResizablePanelGroup orientation="horizontal" className="flex-1">
+        <ResizablePanel
+          defaultSize={showArtifact ? 55 : 100}
+          minSize={35}
+        >
+          {chatContent}
         </ResizablePanel>
 
-        {/* Artifact Panel */}
         {showArtifact && (
           <>
             <ResizableHandle withHandle />

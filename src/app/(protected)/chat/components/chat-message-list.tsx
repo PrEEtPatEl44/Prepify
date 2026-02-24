@@ -16,32 +16,9 @@ function ChatMessageList({ messages, onOpenArtifact }: ChatMessageListProps) {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
-  if (messages.length === 0) {
-    return (
-      <div className="flex h-full flex-col items-center justify-center gap-3 text-muted-foreground">
-        <div className="rounded-full bg-muted p-4">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="32"
-            height="32"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-          </svg>
-        </div>
-        <p className="text-sm">Start a conversation</p>
-      </div>
-    )
-  }
-
   return (
     <ScrollArea className="h-full">
-      <div className="flex flex-col py-4">
+      <div className="flex flex-col divide-y divide-border/40">
         {messages.map((msg) => (
           <ChatMessage
             key={msg.id}
